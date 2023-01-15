@@ -1,0 +1,4 @@
+﻿Name      = Sky Battles + Inverse Battles
+Version   = 1.0
+Website   = https://github.com/Jack1324567/PE-Custom-Script
+Credits   = mej71 (original), bo4p5687 (update)

@@ -1,0 +1,301 @@
+#-------------------------------
+[RIVAL1]
+BattleBGM        = B2W2-RivalTheme.ogg
+BattleVS         = classicVS
+#-------------------------------
+[RIVAL2]
+BattleBGM        = Goldeneye - Cradle.ogg
+BattleVS         = classicVS
+#-------------------------------
+[LEADER_Blaine]
+BattleBGM        = Gym Leader.ogg
+BattleVS         = plasmaSM
+BattleScript	 = TURNER
+Ace				 = 6
+#-------------------------------
+[LEADER_Sabrina]
+BattleBGM        = Gym Leader.ogg
+BattleVS         = plasmaSM
+BattleScript	 = HAZEL
+Ace				 = 6
+#-------------------------------
+[LEADER_Erika]
+BattleBGM        = Gym Leader.ogg
+BattleVS         = plasmaSM
+BattleScript	 = ASTRID
+Ace				 = 6
+#-------------------------------
+[LEADER_Misty]
+BattleBGM        = Gym Leader.ogg
+BattleVS         = plasmaSM
+BattleScript	 = GAIL
+Ace				 = 6
+#-------------------------------
+[LEADER_Brock]
+BattleBGM        = Gym Leader.ogg
+BattleVS         = plasmaSM
+BattleScript	 = GORDON
+Ace				 = 6
+#-------------------------------
+[LEADER_Winslow]
+BattleBGM        = Gym Leader.ogg
+BattleVS         = plasmaSM
+BattleScript	 = WINSLOW
+Ace				 = 6
+#-------------------------------
+[LEADER_Surge]
+BattleBGM        = Gym Leader.ogg
+BattleVS         = plasmaSM
+BattleScript	 = VINCENT
+Ace				 = 6
+#-------------------------------
+[LEADER_Jackson]
+BattleBGM        = Gym Leader.ogg
+BattleVS         = plasmaSM
+BattleScript	 = JACKSON
+Ace				 = 6
+#-------------------------------
+[TEAMROCKET_M]
+BattleBGM        = BW-NeoPlasmaBattle.ogg
+BattleVS         = teamSkull
+#-------------------------------
+[TEAMROCKET_F]
+BattleBGM        = BW-NeoPlasmaBattle.ogg
+BattleVS         = teamSkull
+#-------------------------------
+[ARMY]
+BattleBGM        = BW-NeoPlasmaBattle.ogg
+#-------------------------------
+[SCIENTIST]
+BattleBGM        = BW-NeoPlasmaBattle.ogg
+#-------------------------------
+[NAVY]
+BattleBGM        = BW-NeoPlasmaBattle.ogg
+#-------------------------------
+[AIRFORCECAPTAIN]
+BattleBGM        = BW-NeoPlasmaBattle.ogg
+#-------------------------------
+[AIRFORCE]
+BattleBGM        = BW-NeoPlasmaBattle.ogg
+#-------------------------------
+[ROCKETBOSS]
+BattleBGM        = Goldeneye - Cradle.ogg
+BattleVS         = plasmaSM
+#-------------------------------
+[CREATOR]
+BattleBGM        = Goldeneye - Cradle.ogg
+BattleVS         = plasmaSM
+#-------------------------------
+[ROCKETBOSS,Armand]
+BattleScript	 = MILITIA1
+#-------------------------------
+[ROCKETBOSS,Armand,6]
+BattleScript	 = MILITIA2
+#-------------------------------
+[ARMYBOSS]
+BattleBGM        = Goldeneye - Silo.ogg
+BattleVS         = plasmaSM
+#-------------------------------
+[ARMYBOSS,Ahab,0]
+BattleScript	 = ARMY1
+#-------------------------------
+[ARMYBOSS,Ahab,1]
+BattleScript	 = ARMY2
+#-------------------------------
+[NAVYBOSS]
+BattleBGM        = Goldeneye - Silo.ogg
+BattleVS         = plasmaSM
+#-------------------------------
+[NAVYBOSS,Eugene]
+BattleScript	 = NAVY1
+#-------------------------------
+[NAVYBOSS,Eugene,1]
+BattleScript	 = NAVY2
+#-------------------------------
+[AIRFORCEBOSS]
+BattleBGM        = Goldeneye - Silo.ogg
+BattleScript	 = AIRFORCE1
+BattleVS         = plasmaSM
+#-------------------------------
+[GUARDBOSS]
+BattleBGM        = Goldeneye - Silo.ogg
+BattleVS         = plasmaSM
+#-------------------------------
+[GUARDBOSS,Sunni]
+BattleScript	 = GUARD1
+#-------------------------------
+[GUARDBOSS,Sunni,1]
+BattleBGM        = Goldeneye - Silo.ogg
+BattleVS         = plasmaSM
+#-------------------------------
+[OFFCORP]
+BattleBGM        = Goldeneye - Silo.ogg
+BattleVS         = plasmaSM
+#-------------------------------
+[OFFCORP,Bruce]
+BattleBGM        = Goldeneye - Silo.ogg
+BattleScript	 = OFFCORP1
+BattleVS         = plasmaSM
+#-------------------------------
+[OFFCORP,Bruce,1]
+BattleBGM        = Goldeneye - Silo.ogg
+BattleVS         = plasmaSM
+#-------------------------------
+[DEFCORP]
+BattleBGM        = Goldeneye - Silo.ogg
+BattleVS         = plasmaSM
+#-------------------------------
+[PSYCORP]
+BattleBGM        = Goldeneye - Silo.ogg
+BattleVS         = plasmaSM
+#-------------------------------
+[CHANCELLOR]
+BattleBGM        = B2W2-ColressBattle.ogg
+BattleScript	 = CHANCELLOR1
+BattleVS         = plasmaSM
+Ace = 6
+#-------------------------------
+[POKEMONTRAINER_Joseph]
+BattleBGM        = HGSS-278-BattleChampion.ogg
+BattleVS         = plasmaSM
+#-------------------------------
+#Mini Bosses
+#-------------------------------
+[BUGCATCHER,Cale,4]
+BattleVS         = classicVS
+#-------------------------------
+[LASS,Sheena,4]
+BattleVS         = classicVS
+#-------------------------------
+[TEAMROCKET_M,Grunt,100]
+BattleVS         = classicVS
+#-------------------------------
+[SCIENTIST,Grunt,102]
+BattleVS         = classicVS
+#-------------------------------
+[BUGCATCHER,Sheldon,4]
+BattleVS         = classicVS
+#-------------------------------
+[FISHERMAN,Robert,4]
+BattleVS         = classicVS
+#-------------------------------
+[FISHERMAN,Dexter,4]
+BattleVS         = classicVS
+#-------------------------------
+[COOLTRAINER_F,Lisa,4]
+BattleVS         = classicVS
+#-------------------------------
+[COOLTRAINER_F,Marge,4]
+BattleVS         = classicVS
+#-------------------------------
+[COOLTRAINER_F,Raquel,4]
+BattleVS         = classicVS
+#-------------------------------
+[COOLTRAINER_M,Zack,4]
+BattleVS         = classicVS
+#-------------------------------
+[COOLTRAINER_M,Tony,4]
+BattleVS         = classicVS
+#-------------------------------
+[COOLTRAINER_M,Matt,4]
+BattleVS         = classicVS
+#-------------------------------
+[RUINMANIAC,Darius,4]
+BattleVS         = classicVS
+#-------------------------------
+[HIKER,Tucker,4]
+BattleVS         = classicVS
+#-------------------------------
+[COOLTRAINER_M,Will,4]
+BattleVS         = classicVS
+#-------------------------------
+#Post-Game
+#-------------------------------
+[DOJO_Jasper]
+BattleBGM        = DPPT-Gym Leader.ogg
+BattleVS         = plasmaSM
+BattleScript	 = JASPER
+Ace				 = 6
+#-------------------------------
+[DOJO_Apollo]
+BattleBGM        = DPPT-Gym Leader.ogg
+BattleVS         = plasmaSM
+BattleScript	 = APOLLO
+Ace				 = 6
+#-------------------------------+
+[DOJO_Luna]
+BattleBGM        = DPPT-Gym Leader.ogg
+BattleVS         = plasmaSM
+BattleScript	 = LUNA
+Ace				 = 6
+#-------------------------------
+[DOJO_Maloki]
+BattleBGM        = DPPT-Gym Leader.ogg
+BattleVS         = plasmaSM
+BattleScript	 = MALOKI
+Ace				 = 6
+#-------------------------------
+[DOJO_Juliet]
+BattleBGM        = DPPT-Gym Leader.ogg
+BattleVS         = plasmaSM
+BattleScript	 = JULIET
+Ace				 = 6
+#-------------------------------
+[DOJO_Olaf]
+BattleBGM        = DPPT-Gym Leader.ogg
+BattleVS         = plasmaSM
+BattleScript	 = OLAF
+Ace				 = 6
+#-------------------------------
+[DOJO_Wendy]
+BattleBGM        = DPPT-Gym Leader.ogg
+BattleVS         = plasmaSM
+BattleScript	 = WENDY
+Ace				 = 6
+#-------------------------------
+[DOJO_Adam]
+BattleBGM        = DPPT-Gym Leader.ogg
+BattleVS         = plasmaSM
+BattleScript	 = ADAM
+Ace				 = 6
+#-------------------------------
+[LEAGUE_Astrid]
+BattleBGM        = Goldeneye - Cradle.ogg
+BattleVS         = plasmaSM
+BattleScript	 = ASTRIDLEAGUE
+Ace				 = 6
+#-------------------------------
+[LEAGUE_Winslow]
+BattleBGM        = Goldeneye - Cradle.ogg
+BattleVS         = plasmaSM
+BattleScript	 = WINSLOWLEAGUE
+Ace				 = 6
+#-------------------------------
+[LEAGUE_Eugene]
+BattleBGM        = Goldeneye - Cradle.ogg
+BattleVS         = plasmaSM
+Ace				 = 6
+#-------------------------------
+[LEAGUE_Armand]
+BattleBGM        = Goldeneye - Cradle.ogg
+BattleVS         = plasmaSM
+BattleScript	 = ARMANDLEAGUE
+Ace				 = 6
+#-------------------------------
+[LEAGUE_Vincent]
+BattleBGM        = Goldeneye - Cradle.ogg
+BattleVS         = plasmaSM
+BattleScript	 = VINCENTLEAGUE
+Ace				 = 6
+#-------------------------------
+[LEAGUE_Winston]
+BattleBGM        = Goldeneye - Cradle.ogg
+BattleVS         = plasmaSM
+BattleScript	 = WINSTONLEAGUE
+Ace				 = 6
+#-------------------------------
+[CHAMPION]
+BattleBGM        = HGSS-278-BattleChampion.ogg 
+BattleVS         = plasmaSM
+Ace				 = 6
+#-------------------------------

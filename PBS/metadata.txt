@@ -1,0 +1,1816 @@
+﻿# See the documentation on the wiki to learn how to edit this file.
+#-------------------------------
+[000]
+Home = 33,8,4,8
+WildBattleBGM = HGSS-110-BattleWild.ogg
+TrainerBattleBGM = HGSS-118-BattleTrainer.ogg
+WildVictoryME = Battle victory wild.ogg
+TrainerVictoryME = Battle victory trainer.ogg
+SurfBGM = HGSS-170-Surf.ogg
+BicycleBGM = Bicycle.mid
+PlayerA = POKEMONTRAINER_Red,trainer_POKEMONTRAINER_Red,boy_bike,boy_surf,boy_run,boy_surf,boy_fish_offset,boy_fish_offset
+PlayerB = POKEMONTRAINER_Leaf,trainer_POKEMONTRAINER_Leaf,girl_bike,girl_surf,girl_run,girl_surf,girl_fish_offset,girl_fish_offset
+#-------------------------------
+[001]
+# Intro
+#-------------------------------
+[002]
+# Lappet Town
+Outdoor = true
+ShowArea = true
+MapPosition = 0,13,12
+BattleBack = field
+#-------------------------------
+[003]
+# \PN's house
+HealingSpot = 2,8,8
+MapPosition = 0,13,12
+#-------------------------------
+[004]
+# Pokémon Lab
+ShowArea = false
+MapPosition = 0,13,12
+#-------------------------------
+[005]
+# Route 1
+Outdoor = true
+ShowArea = true
+MapPosition = 0,13,11
+BattleBack = field
+#-------------------------------
+[006]
+# Kurt's house
+MapPosition = 0,13,11
+#-------------------------------
+[007]
+# Cedolan City
+Outdoor = true
+ShowArea = true
+MapPosition = 0,13,10
+MapSize = 2,11
+#-------------------------------
+[008]
+# Daisy's house
+MapPosition = 0,13,12
+#-------------------------------
+[009]
+# Cedolan City Poké Center
+HealingSpot = 8,17,11
+MapPosition = 0,14,10
+#-------------------------------
+[010]
+# Cedolan Gym
+MapPosition = 0,13,10
+BattleBack = indoor3
+Environment = Rock
+#-------------------------------
+[011]
+# Pokémon Institute
+MapPosition = 0,14,10
+#-------------------------------
+[012]
+# Cedolan City Condo
+MapPosition = 0,14,10
+#-------------------------------
+[013]
+# Game Corner
+MapPosition = 0,18,5
+#-------------------------------
+[014]
+# Dept. 1F
+MapPosition = 0,18,5
+#-------------------------------
+[015]
+# Dept. 2F
+MapPosition = 0,18,5
+#-------------------------------
+[016]
+# Dept. 3F
+MapPosition = 0,18,5
+#-------------------------------
+[017]
+# Dept. 4F
+MapPosition = 0,18,5
+#-------------------------------
+[018]
+# Dept. 5F
+MapPosition = 0,18,5
+#-------------------------------
+[019]
+# Dept. Rooftop
+MapPosition = 0,18,5
+#-------------------------------
+[020]
+# Dept. Elevator
+MapPosition = 0,18,5
+#-------------------------------
+[021]
+# Route 2
+Outdoor = true
+ShowArea = true
+Weather = Rain,100
+MapPosition = 0,14,8
+BattleBack = field
+MapSize = 1,11
+#-------------------------------
+[023]
+# Lerucean Town
+Outdoor = true
+ShowArea = true
+MapPosition = 0,15,8
+#-------------------------------
+[024]
+# Lerucean Town Poké Center
+HealingSpot = 23,11,15
+MapPosition = 0,15,8
+#-------------------------------
+[025]
+# Lerucean Town Mart
+MapPosition = 0,15,8
+#-------------------------------
+[026]
+# Pokémon Fan Club
+MapPosition = 0,15,8
+#-------------------------------
+[027]
+# Pokémon Day Care
+MapPosition = 0,15,8
+#-------------------------------
+[028]
+# Natural Park
+Outdoor = true
+ShowArea = true
+MapPosition = 0,16,8
+BattleBack = field
+#-------------------------------
+[029]
+# Natural Park Entrance
+Bicycle = true
+MapPosition = 0,16,8
+#-------------------------------
+[030]
+# Natural Park Pavillion
+MapPosition = 0,16,8
+#-------------------------------
+[031]
+# Route 3
+Outdoor = true
+ShowArea = true
+MapPosition = 0,14,6
+BattleBack = field
+MapSize = 2,1101
+#-------------------------------
+[032]
+# Garon Town
+Outdoor = true
+ShowArea = true
+Bicycle = false
+MapPosition = 0,20,1
+SnapEdges = true
+#-------------------------------
+[034]
+# Ice Cave
+Bicycle = true
+MapPosition = 0,15,6
+BattleBack = cave1
+Environment = Cave
+#-------------------------------
+[035]
+# Ingido Plateau
+Outdoor = true
+ShowArea = true
+MapPosition = 0,13,6
+#-------------------------------
+[036]
+# Pokémon League
+HealingSpot = 35,17,7
+MapPosition = 0,13,6
+#-------------------------------
+[037]
+# Pokémon League
+MapPosition = 0,13,6
+BattleBack = elite1
+#-------------------------------
+[038]
+# Hall of Fame
+MapPosition = 0,13,6
+#-------------------------------
+[039]
+# Route 4
+Outdoor = true
+ShowArea = true
+MapPosition = 0,11,6
+BattleBack = field
+MapSize = 2,11
+#-------------------------------
+[040]
+# Route 4
+Outdoor = true
+ShowArea = true
+BicycleAlways = true
+MapPosition = 0,11,6
+#-------------------------------
+[041]
+# Route 5
+Outdoor = true
+ShowArea = true
+BicycleAlways = true
+MapPosition = 0,11,7
+MapSize = 1,111
+#-------------------------------
+[043]
+# Garon PMC
+HealingSpot = 32,32,14
+MapPosition = 0,20,1
+#-------------------------------
+[044]
+# Route 6
+Outdoor = true
+ShowArea = true
+MapPosition = 0,11,10
+BattleBack = field
+MapSize = 2,11
+#-------------------------------
+[045]
+# Route 6
+Outdoor = true
+ShowArea = true
+BicycleAlways = true
+MapPosition = 0,11,10
+#-------------------------------
+[046]
+# Cycling Road gate
+Bicycle = true
+MapPosition = 0,12,6
+#-------------------------------
+[047]
+# Route 7
+Outdoor = true
+ShowArea = true
+Weather = Rain,0
+MapPosition = 0,15,10
+BattleBack = rocky
+MapSize = 2,11
+Environment = Rock
+#-------------------------------
+[049]
+# Rock Cave
+Bicycle = true
+MapPosition = 0,16,10
+BattleBack = cave1
+Environment = Cave
+#-------------------------------
+[050]
+# Rock Cave
+Bicycle = true
+MapPosition = 0,16,10
+DarkMap = true
+BattleBack = cave3
+Environment = Cave
+#-------------------------------
+[051]
+# Dungeon
+Bicycle = true
+MapPosition = 0,16,10
+Dungeon = true
+BattleBack = cave2
+Environment = Cave
+#-------------------------------
+[052]
+# Battle Frontier
+Outdoor = true
+ShowArea = true
+MapPosition = 0,17,10
+#-------------------------------
+[053]
+# Battle Frontier Poké Center
+HealingSpot = 52,17,14
+MapPosition = 0,17,10
+#-------------------------------
+[054]
+# Battle Frontier Mart
+MapPosition = 0,17,10
+#-------------------------------
+[055]
+# Battle Tower
+HealingSpot = 52,30,10
+MapPosition = 0,17,10
+#-------------------------------
+[056]
+# Battle Tower arena
+MapPosition = 0,17,10
+BattleBack = indoor1
+#-------------------------------
+[057]
+# Stadium Cup lobby
+MapPosition = 0,17,10
+#-------------------------------
+[058]
+# Battle Palace
+MapPosition = 0,17,10
+#-------------------------------
+[059]
+# Battle Palace arena
+MapPosition = 0,17,10
+BattleBack = indoor1
+#-------------------------------
+[060]
+# Battle Arena
+MapPosition = 0,17,10
+#-------------------------------
+[061]
+# Battle Arena arena
+MapPosition = 0,17,10
+BattleBack = indoor1
+#-------------------------------
+[062]
+# Battle Factory
+MapPosition = 0,17,10
+#-------------------------------
+[063]
+# Battle Factory intro corridor
+MapPosition = 0,17,10
+#-------------------------------
+[064]
+# Battle Factory arena
+MapPosition = 0,17,10
+BattleBack = indoor1
+#-------------------------------
+[065]
+# Battle Factory corridor
+MapPosition = 0,17,10
+#-------------------------------
+[066]
+# Safari Zone
+Outdoor = true
+ShowArea = true
+MapPosition = 0,12,12
+BattleBack = field
+#-------------------------------
+[067]
+# Safari Zone gate
+MapPosition = 0,12,12
+#-------------------------------
+[068]
+# Safari Zone
+Outdoor = true
+ShowArea = true
+MapPosition = 0,12,12
+SafariMap = true
+BattleBack = forest
+Environment = Forest
+#-------------------------------
+[069]
+# Route 8
+Outdoor = true
+ShowArea = true
+MapPosition = 0,13,13
+DiveMap = 70
+BattleBack = field
+#-------------------------------
+[070]
+# Underwater
+MapPosition = 0,13,13
+BattleBack = underwater
+Environment = Underwater
+#-------------------------------
+[071]
+# Harbor
+MapPosition = 0,13,13
+#-------------------------------
+[072]
+# Berth Island
+Outdoor = true
+ShowArea = true
+Weather = Storm,50
+MapPosition = 0,18,17
+BattleBack = field
+#-------------------------------
+[073]
+# Faraday Island
+Outdoor = true
+ShowArea = true
+MapPosition = 0,22,16
+BattleBack = field
+#-------------------------------
+[074]
+# Cycling Road gate
+Bicycle = true
+MapPosition = 0,12,10
+#-------------------------------
+[075]
+# Tiall Region
+Outdoor = true
+MapPosition = 1,13,16
+BattleBack = city
+#-------------------------------
+[077]
+# Route 1
+Outdoor = true
+ShowArea = true
+Weather = Snow,0
+MapPosition = 0,19,2
+SnapEdges = true
+#-------------------------------
+[078]
+# Hidden Grotto - Garon
+Outdoor = true
+MapPosition = 0,20,1
+SnapEdges = true
+#-------------------------------
+[079]
+# Hidden Grotto - Route 1
+Outdoor = true
+ShowArea = false
+MapPosition = 0,19,2
+SnapEdges = true
+#-------------------------------
+[080]
+# Garon Woods
+Outdoor = true
+ShowArea = true
+MapPosition = 0,18,2
+SnapEdges = true
+#-------------------------------
+[081]
+# Hidden Grotto - Woods 1
+Outdoor = true
+MapPosition = 0,18,2
+SnapEdges = true
+#-------------------------------
+[082]
+# Hidden Grotto - Woods 2
+Outdoor = true
+MapPosition = 0,18,2
+SnapEdges = true
+#-------------------------------
+[083]
+# Boro Town
+Outdoor = true
+ShowArea = true
+MapPosition = 0,16,2
+SnapEdges = true
+#-------------------------------
+[084]
+# Boro PMC
+HealingSpot = 83,10,8
+MapPosition = 0,16,2
+SnapEdges = true
+#-------------------------------
+[085]
+# Hidden Grotto - Boro
+Outdoor = true
+SnapEdges = true
+#-------------------------------
+[088]
+# Route 2
+Outdoor = true
+ShowArea = true
+MapPosition = 0,15,1
+SnapEdges = true
+#-------------------------------
+[089]
+# House
+MapPosition = 0,15,1
+SnapEdges = true
+#-------------------------------
+[090]
+# Helum Tunnel
+ShowArea = true
+MapPosition = 0,14,1
+SnapEdges = true
+#-------------------------------
+[091]
+# Helum City
+Outdoor = true
+ShowArea = true
+MapPosition = 0,10,1
+SnapEdges = true
+#-------------------------------
+[092]
+# Helum PMC
+ShowArea = false
+HealingSpot = 91,37,23
+MapPosition = 0,10,1
+SnapEdges = true
+#-------------------------------
+[093]
+# Helum Gym
+MapPosition = 0,10,1
+SnapEdges = true
+#-------------------------------
+[094]
+# House
+MapPosition = 0,10,1
+SnapEdges = true
+#-------------------------------
+[097]
+# Nenox Canyon
+Outdoor = true
+ShowArea = true
+MapPosition = 0,9,1
+SnapEdges = true
+#-------------------------------
+[098]
+# Nenox Caverns
+Outdoor = false
+ShowArea = true
+MapPosition = 0,8,1
+SnapEdges = true
+#-------------------------------
+[099]
+# Route 3
+Outdoor = true
+ShowArea = true
+Weather = Rain,0
+MapPosition = 0,3,1
+SnapEdges = true
+#-------------------------------
+[100]
+# Hidden Grotto - Route 3
+MapPosition = 0,3,1
+SnapEdges = true
+#-------------------------------
+[101]
+# Ogan City
+Outdoor = true
+ShowArea = true
+Weather = Rain,0
+MapPosition = 0,1,1
+SnapEdges = true
+#-------------------------------
+[102]
+# Hidden Cave
+MapPosition = 0,1,1
+SnapEdges = true
+#-------------------------------
+[103]
+# Ogan PMC
+HealingSpot = 102,27,24
+MapPosition = 0,1,1
+SnapEdges = true
+#-------------------------------
+[105]
+# Mt. Nenox
+ShowArea = true
+MapPosition = 0,5,4
+SafariMap = false
+SnapEdges = true
+Environment = Cave
+#-------------------------------
+[106]
+# Mt. Nenox
+Outdoor = true
+ShowArea = false
+Weather = Rain,0
+MapPosition = 0,5,1
+SnapEdges = true
+#-------------------------------
+[107]
+# Mt. Nenox
+SnapEdges = true
+Environment = Cave
+#-------------------------------
+[108]
+# Mt. Nenox
+MapPosition = 0,5,1
+SnapEdges = true
+#-------------------------------
+[109]
+# Mt. Nenox
+Outdoor = true
+Weather = Rain,0
+MapPosition = 0,5,1
+SnapEdges = true
+#-------------------------------
+[110]
+# Nenox Ruins
+MapPosition = 0,6,0
+SnapEdges = true
+#-------------------------------
+[111]
+# Ogan Gym
+MapPosition = 0,1,1
+SnapEdges = true
+#-------------------------------
+[112]
+# Other House
+MapPosition = 0,1,1
+SnapEdges = true
+#-------------------------------
+[113]
+# Route 4
+Outdoor = true
+ShowArea = true
+MapPosition = 0,12,2
+SnapEdges = true
+#-------------------------------
+[114]
+# Neonn Town
+Outdoor = true
+ShowArea = true
+MapPosition = 0,12,4
+SnapEdges = true
+#-------------------------------
+[115]
+# Neonn Town
+Outdoor = true
+ShowArea = true
+Weather = Rain,0
+MapPosition = 0,12,4
+SnapEdges = true
+#-------------------------------
+[116]
+# Neonn PMC
+HealingSpot = 114,21,10
+MapPosition = 0,12,4
+#-------------------------------
+[117]
+# Hidden Grotto - Route 4
+MapPosition = 0,12,2
+SnapEdges = true
+#-------------------------------
+[118]
+# Mt. Nenox
+Outdoor = false
+ShowArea = true
+MapPosition = 0,11,4
+SnapEdges = true
+#-------------------------------
+[119]
+# Darkfire Cave
+ShowArea = true
+Weather = Rain,0
+SnapEdges = true
+#-------------------------------
+[120]
+# Darkfire Cave
+ShowArea = true
+Weather = Rain,0
+SnapEdges = true
+#-------------------------------
+[122]
+# Neonn Gym
+Outdoor = false
+MapPosition = 0,12,4
+SnapEdges = true
+#-------------------------------
+[124]
+# Abandoned DefCorp Building
+ShowArea = true
+MapPosition = 0,12,4
+DarkMap = true
+SnapEdges = true
+#-------------------------------
+[125]
+# Hidden Grotto - Helum
+MapPosition = 0,10,1
+SnapEdges = true
+#-------------------------------
+[126]
+# Nenox Peak
+Outdoor = true
+ShowArea = true
+Weather = Rain,0
+MapPosition = 0,7,2
+SnapEdges = true
+#-------------------------------
+[127]
+# PsyCorp
+ShowArea = true
+MapPosition = 0,7,2
+SnapEdges = true
+#-------------------------------
+[128]
+# Route 5
+Outdoor = true
+ShowArea = true
+MapPosition = 0,13,4
+SnapEdges = true
+#-------------------------------
+[129]
+# Route 6
+Outdoor = true
+ShowArea = true
+MapPosition = 0,15,5
+SnapEdges = true
+#-------------------------------
+[130]
+# Secret Grove
+Outdoor = true
+ShowArea = true
+Bicycle = false
+MapPosition = 0,15,4
+SnapEdges = true
+#-------------------------------
+[131]
+# Sodum Town
+Outdoor = true
+ShowArea = true
+MapPosition = 0,16,5
+SnapEdges = true
+#-------------------------------
+[132]
+# Sodum PMC
+HealingSpot = 131,15,22
+MapPosition = 0,16,5
+SnapEdges = true
+#-------------------------------
+[133]
+# Route 7
+Outdoor = true
+ShowArea = true
+MapPosition = 0,16,6
+SnapEdges = true
+#-------------------------------
+[134]
+# Cassim Desert
+Outdoor = true
+ShowArea = true
+Weather = Rain,0
+MapPosition = 0,16,8
+SnapEdges = true
+#-------------------------------
+[135]
+# Cassim Desert
+Outdoor = true
+ShowArea = true
+Weather = Storm,0
+MapPosition = 0,21,9
+SnapEdges = true
+#-------------------------------
+[136]
+# Route 8
+Outdoor = true
+ShowArea = true
+MapPosition = 0,18,13
+SnapEdges = true
+#-------------------------------
+[137]
+# Krypto Quay
+Outdoor = true
+ShowArea = true
+MapPosition = 0,18,15
+SnapEdges = true
+#-------------------------------
+[138]
+# Krypto PMC
+HealingSpot = 137,7,12
+MapPosition = 0,18,5
+SnapEdges = true
+#-------------------------------
+[139]
+# Cassim Caves
+Outdoor = false
+ShowArea = true
+MapPosition = 0,16,8
+SnapEdges = true
+#-------------------------------
+[140]
+# Hidden Grotto - Route 5
+MapPosition = 0,15,4
+SnapEdges = true
+#-------------------------------
+[141]
+# Hidden Grotto - Route 6
+MapPosition = 0,15,4
+SnapEdges = true
+#-------------------------------
+[142]
+# Hidden Grotto - Route 2
+MapPosition = 0,15,1
+SnapEdges = true
+#-------------------------------
+[143]
+# Army Main Office
+MapPosition = 0,16,5
+SnapEdges = true
+#-------------------------------
+[144]
+# Army Base
+ShowArea = true
+MapPosition = 0,16,5
+SnapEdges = true
+#-------------------------------
+[145]
+# Army Base
+ShowArea = true
+MapPosition = 0,16,5
+SnapEdges = true
+#-------------------------------
+[147]
+# Mercur Ruins
+ShowArea = true
+MapPosition = 0,18,8
+SnapEdges = true
+#-------------------------------
+[148]
+# Hidden Grotto - Route 8
+MapPosition = 0,18,3
+SnapEdges = true
+#-------------------------------
+[150]
+# Krypto Gym
+MapPosition = 0,18,5
+SnapEdges = true
+#-------------------------------
+[151]
+# Route 9
+Outdoor = true
+ShowArea = true
+MapPosition = 0,19,16
+SnapEdges = true
+#-------------------------------
+[152]
+# Hydro Island
+Outdoor = true
+ShowArea = true
+MapPosition = 0,22,16
+SnapEdges = true
+#-------------------------------
+[153]
+# Hydro PMC
+HealingSpot = 152,22,31
+MapPosition = 0,22,16
+SnapEdges = true
+#-------------------------------
+[154]
+# Naval Base
+ShowArea = true
+MapPosition = 0,22,16
+SnapEdges = true
+#-------------------------------
+[157]
+# Naval Base
+MapPosition = 0,22,16
+SnapEdges = true
+#-------------------------------
+[158]
+# Mt. Nenox
+MapPosition = 0,11,4
+SnapEdges = true
+#-------------------------------
+[159]
+# Route 10
+Outdoor = true
+ShowArea = true
+Weather = Rain,0
+MapPosition = 0,10,6
+SnapEdges = true
+#-------------------------------
+[160]
+# Route 11
+Outdoor = true
+ShowArea = true
+Weather = Rain,0
+MapPosition = 0,11,8
+SnapEdges = true
+#-------------------------------
+[161]
+# Chloros City
+Outdoor = true
+ShowArea = true
+MapPosition = 0,11,10
+SnapEdges = true
+#-------------------------------
+[162]
+# Chloros PMC
+HealingSpot = 161,22,19
+MapPosition = 0,11,10
+SnapEdges = true
+#-------------------------------
+[163]
+# Potion Plant
+ShowArea = false
+MapPosition = 0,11,10
+SnapEdges = true
+#-------------------------------
+[166]
+# Chloros Gym
+MapPosition = 0,11,10
+SnapEdges = true
+#-------------------------------
+[167]
+# Lake Chloros
+Outdoor = true
+ShowArea = true
+MapPosition = 0,11,13
+DiveMap = 190
+SnapEdges = true
+#-------------------------------
+[168]
+# Dread Forest
+Outdoor = true
+ShowArea = true
+Weather = Rain,0
+MapPosition = 0,12,9
+SnapEdges = true
+#-------------------------------
+[169]
+# Haunted Tower
+ShowArea = true
+MapPosition = 0,12,9
+SnapEdges = true
+#-------------------------------
+[170]
+# Hidden Lab
+Outdoor = false
+MapPosition = 0,11,10
+SnapEdges = true
+#-------------------------------
+[171]
+# Hidden Grotto - Route 11
+MapPosition = 0,11,8
+SnapEdges = true
+#-------------------------------
+[172]
+# Cobalt Cave
+Outdoor = false
+ShowArea = true
+MapPosition = 0,20,0
+SnapEdges = true
+#-------------------------------
+[173]
+# Canyon Cave
+ShowArea = true
+MapPosition = 0,9,1
+SnapEdges = true
+#-------------------------------
+[174]
+# Route 16
+Outdoor = true
+ShowArea = true
+MapPosition = 0,22,1
+SnapEdges = true
+#-------------------------------
+[175]
+# Route 17
+Outdoor = true
+ShowArea = true
+MapPosition = 0,22,3
+SnapEdges = true
+#-------------------------------
+[176]
+# Carbo Valley
+Outdoor = true
+ShowArea = true
+MapPosition = 0,24,3
+SnapEdges = true
+#-------------------------------
+[177]
+# Carbo PMC
+HealingSpot = 176,7,15
+MapPosition = 0,24,3
+#-------------------------------
+[181]
+# Air Force Main Office
+MapPosition = 0,24,3
+SnapEdges = true
+#-------------------------------
+[183]
+# Hidden Grotto - Route 16
+Outdoor = false
+MapPosition = 0,22,1
+SnapEdges = true
+#-------------------------------
+[184]
+# Route 12
+Outdoor = true
+ShowArea = true
+MapPosition = 0,11,17
+SnapEdges = true
+#-------------------------------
+[185]
+# Mangan Village
+Outdoor = true
+ShowArea = true
+MapPosition = 0,7,17
+SnapEdges = true
+#-------------------------------
+[186]
+# Mangan PMC
+HealingSpot = 175,19,6
+MapPosition = 0,7,17
+#-------------------------------
+[187]
+# Route 13
+Outdoor = true
+ShowArea = true
+MapPosition = 0,6,16
+SnapEdges = true
+#-------------------------------
+[188]
+# Nitro City
+Outdoor = true
+ShowArea = true
+Weather = Rain,0
+MapPosition = 0,4,14
+SnapEdges = true
+#-------------------------------
+[189]
+# Nitro PMC
+HealingSpot = 188,43,8
+MapPosition = 0,4,14
+#-------------------------------
+[191]
+# Nitro Gym
+MapPosition = 0,4,14
+SnapEdges = true
+#-------------------------------
+[192]
+# Underground Village
+ShowArea = true
+MapPosition = 0,4,14
+SnapEdges = true
+#-------------------------------
+[202]
+# Hidden Grotto - Route 12
+MapPosition = 0,9,17
+SnapEdges = true
+#-------------------------------
+[203]
+# Hidden Grotto - Route 13
+MapPosition = 0,6,16
+SnapEdges = true
+#-------------------------------
+[204]
+# Hidden Grotto - Weather
+MapPosition = 0,6,16
+SnapEdges = true
+#-------------------------------
+[205]
+# Abandoned Weather Station
+MapPosition = 0,6,16
+SnapEdges = true
+#-------------------------------
+[206]
+# Inactive Power Plant
+MapPosition = 0,4,14
+SnapEdges = true
+#-------------------------------
+[207]
+# Hidden Grotto - Lake Chloros
+MapPosition = 0,11,13
+SnapEdges = true
+#-------------------------------
+[208]
+# Rubid Outpost
+Outdoor = true
+ShowArea = true
+MapPosition = 0,24,9
+SnapEdges = true
+#-------------------------------
+[209]
+# Rubid PMC
+HealingSpot = 208,5,7
+MapPosition = 0,2,8
+#-------------------------------
+[212]
+# Route 14
+Outdoor = true
+ShowArea = true
+MapPosition = 0,4,12
+SnapEdges = true
+#-------------------------------
+[213]
+# Hidden Grotto - Route 14
+MapPosition = 0,4,12
+SnapEdges = true
+#-------------------------------
+[214]
+# Route 15
+Outdoor = true
+ShowArea = true
+MapPosition = 0,4,8
+SnapEdges = true
+#-------------------------------
+[215]
+# Oxy Town
+Outdoor = true
+ShowArea = true
+MapPosition = 0,2,8
+SnapEdges = true
+#-------------------------------
+[216]
+# Oxy PMC
+HealingSpot = 215,21,6
+MapPosition = 0,2,8
+#-------------------------------
+[218]
+# War Path Ruins
+Outdoor = true
+ShowArea = true
+MapPosition = 0,5,7
+SnapEdges = true
+#-------------------------------
+[219]
+# Ruins Cave
+ShowArea = true
+MapPosition = 0,5,7
+SnapEdges = true
+#-------------------------------
+[220]
+# Government Secret Lab
+MapPosition = 0,11,13
+DiveMap = 230
+#-------------------------------
+[223]
+# Hidden Grotto - Route 15
+MapPosition = 0,25,11
+SnapEdges = true
+#-------------------------------
+[225]
+# Route 20
+Outdoor = true
+ShowArea = true
+MapPosition = 0,25,11
+SnapEdges = true
+#-------------------------------
+[226]
+# Hidden Grotto - Route 20
+ShowArea = true
+MapPosition = 0,25,10
+SnapEdges = true
+#-------------------------------
+[227]
+# The Capitol
+Outdoor = true
+ShowArea = true
+MapPosition = 0,27,12
+SnapEdges = true
+#-------------------------------
+[228]
+# Capitol PMC
+HealingSpot = 227,13,31
+MapPosition = 0,2,8
+#-------------------------------
+[236]
+# Zirco Mountain
+ShowArea = true
+MapPosition = 0,21,8
+SnapEdges = true
+#-------------------------------
+[237]
+# Zirco Mountain
+ShowArea = true
+MapPosition = 0,21,8
+SnapEdges = true
+#-------------------------------
+[238]
+# Zirco Mountain
+Outdoor = true
+ShowArea = true
+MapPosition = 0,21,8
+SnapEdges = true
+#-------------------------------
+[239]
+# Zirco Gym
+MapPosition = 0,21,8
+#-------------------------------
+[240]
+# Route 18
+Outdoor = true
+ShowArea = true
+MapPosition = 0,26,3
+SnapEdges = true
+#-------------------------------
+[241]
+# Route 19
+Outdoor = true
+ShowArea = true
+MapPosition = 0,27,5
+SnapEdges = true
+#-------------------------------
+[242]
+# Rado Foothills
+Outdoor = true
+ShowArea = true
+MapPosition = 0,28,7
+SnapEdges = true
+#-------------------------------
+[243]
+# Rado PMC
+HealingSpot = 242,7,6
+MapPosition = 0,2,8
+#-------------------------------
+[245]
+# Hidden Grotto - Route 19
+ShowArea = true
+MapPosition = 0,27,4
+SnapEdges = true
+#-------------------------------
+[246]
+# Victory Road
+ShowArea = true
+MapPosition = 0,28,4
+SnapEdges = true
+#-------------------------------
+[247]
+# Abandoned Space Station
+ShowArea = true
+MapPosition = 0,29,4
+SnapEdges = true
+#-------------------------------
+[248]
+# Pokémon League
+Outdoor = true
+ShowArea = true
+MapPosition = 0,28,0
+SnapEdges = true
+#-------------------------------
+[249]
+# Pokémon League
+Outdoor = true
+ShowArea = true
+MapPosition = 0,28,0
+SnapEdges = true
+#-------------------------------
+[250]
+# Pokémon League
+ShowArea = true
+MapPosition = 0,28,0
+SnapEdges = true
+#-------------------------------
+[254]
+# Helum Mine
+ShowArea = true
+MapPosition = 0,10,0
+SnapEdges = true
+#-------------------------------
+[255]
+# Helum Mine
+ShowArea = true
+MapPosition = 0,10,0
+SnapEdges = true
+#-------------------------------
+[263]
+# Port Lithum
+Outdoor = true
+ShowArea = true
+MapPosition = 1,22,2
+SnapEdges = true
+#-------------------------------
+[264]
+# Route 21
+Outdoor = true
+ShowArea = true
+MapPosition = 1,23,3
+SnapEdges = true
+#-------------------------------
+[265]
+# Route 22
+Outdoor = true
+ShowArea = true
+MapPosition = 1,25,6
+SnapEdges = true
+#-------------------------------
+[266]
+# Ferro Village
+Outdoor = true
+ShowArea = true
+MapPosition = 1,28,6
+SnapEdges = true
+#-------------------------------
+[267]
+# Lithum PMC
+HealingSpot = 263,5,12
+MapPosition = 1,22,2
+#-------------------------------
+[268]
+# Ferro PMC
+HealingSpot = 266,8,5
+MapPosition = 1,28,6
+#-------------------------------
+[269]
+# Pokémon Day Care
+MapPosition = 1,28,6
+#-------------------------------
+[270]
+# Houses
+MapPosition = 1,28,6
+#-------------------------------
+[271]
+# Route 23
+Outdoor = true
+ShowArea = true
+MapPosition = 1,22,6
+SnapEdges = true
+#-------------------------------
+[272]
+# Lithum Dojo
+MapPosition = 1,22,2
+SnapEdges = true
+#-------------------------------
+[273]
+# House
+MapPosition = 1,22,2
+#-------------------------------
+[274]
+# House
+MapPosition = 1,23,3
+#-------------------------------
+[275]
+# Hidden Grotto - Route 21
+Outdoor = true
+MapPosition = 1,23,3
+SnapEdges = true
+#-------------------------------
+[276]
+# Hidden Grotto - Route 22
+MapPosition = 1,26,6
+SnapEdges = true
+#-------------------------------
+[277]
+# Plumbum Town
+Outdoor = true
+ShowArea = true
+MapPosition = 1,22,9
+SnapEdges = true
+#-------------------------------
+[278]
+# Plumbum PMC
+HealingSpot = 277,26,8
+MapPosition = 1,22,9
+#-------------------------------
+[279]
+# Hidden Grotto - Route 23
+MapPosition = 1,22,6
+SnapEdges = true
+#-------------------------------
+[280]
+# Plumbum Ruins
+ShowArea = true
+MapPosition = 1,22,9
+SnapEdges = true
+#-------------------------------
+[281]
+# House
+MapPosition = 1,22,9
+#-------------------------------
+[282]
+# Plumbum Lab
+MapPosition = 1,22,9
+#-------------------------------
+[283]
+# House
+MapPosition = 1,22,6
+#-------------------------------
+[284]
+# Route 24
+Outdoor = true
+ShowArea = true
+MapPosition = 1,24,9
+SnapEdges = true
+#-------------------------------
+[285]
+# Haunted Dimension
+Outdoor = true
+ShowArea = true
+MapPosition = 1,24,9
+SnapEdges = true
+#-------------------------------
+[286]
+# Haunted Cave
+ShowArea = true
+MapPosition = 1,24,9
+SnapEdges = true
+#-------------------------------
+[287]
+# Hidden Grotto - Route 24
+MapPosition = 1,24,9
+SnapEdges = true
+#-------------------------------
+[288]
+# Route 25
+Outdoor = true
+ShowArea = true
+MapPosition = 1,26,11
+SnapEdges = true
+#-------------------------------
+[289]
+# Argyros City
+Outdoor = true
+ShowArea = true
+MapPosition = 1,25,14
+SnapEdges = true
+#-------------------------------
+[290]
+# Hidden Grotto - Argyros
+MapPosition = 1,25,14
+SnapEdges = true
+#-------------------------------
+[291]
+# Argyros PMC
+HealingSpot = 289,40,13
+MapPosition = 1,25,14
+#-------------------------------
+[292]
+# Argyros Dojo
+MapPosition = 1,25,14
+SnapEdges = true
+#-------------------------------
+[293]
+# Houses
+MapPosition = 1,25,14
+#-------------------------------
+[294]
+# Argyros Observatory
+MapPosition = 1,25,14
+#-------------------------------
+[295]
+# House
+MapPosition = 1,26,14
+#-------------------------------
+[296]
+# Offshoot Cave
+ShowArea = true
+MapPosition = 1,26,11
+SnapEdges = true
+#-------------------------------
+[297]
+# SS Aqua
+ShowArea = true
+MapPosition = 1,24,15
+SnapEdges = true
+#-------------------------------
+[300]
+# Urani Island
+Outdoor = true
+ShowArea = true
+Weather = Rain,0
+MapPosition = 1,27,18
+SnapEdges = true
+#-------------------------------
+[302]
+# Urani Dojo
+MapPosition = 1,27,18
+SnapEdges = true
+#-------------------------------
+[303]
+# Wartime Lab
+ShowArea = true
+MapPosition = 1,27,18
+SnapEdges = true
+#-------------------------------
+[305]
+# SS Aqua
+ShowArea = true
+MapPosition = 1,23,14
+SnapEdges = true
+#-------------------------------
+[307]
+# Stannum Town
+Outdoor = true
+ShowArea = true
+Weather = Rain,0
+MapPosition = 1,21,16
+SnapEdges = true
+#-------------------------------
+[308]
+# Harbor
+MapPosition = 1,21,16
+#-------------------------------
+[309]
+# Stannum PMC
+HealingSpot = 307,27,17
+MapPosition = 1,21,16
+#-------------------------------
+[310]
+# Route 26
+Outdoor = true
+ShowArea = true
+MapPosition = 1,19,16
+SnapEdges = true
+#-------------------------------
+[311]
+# Route 27
+Outdoor = true
+ShowArea = true
+Weather = Rain,0
+MapPosition = 1,17,16
+SnapEdges = true
+#-------------------------------
+[312]
+# Stibni Village
+Outdoor = true
+ShowArea = true
+MapPosition = 1,16,18
+SnapEdges = true
+#-------------------------------
+[313]
+# Houses
+MapPosition = 1,16,18
+#-------------------------------
+[314]
+# Stibni PMC
+HealingSpot = 312,30,15
+MapPosition = 1,16,18
+#-------------------------------
+[315]
+# Houses
+MapPosition = 1,21,16
+#-------------------------------
+[316]
+# Route 28
+Outdoor = true
+ShowArea = true
+MapPosition = 1,15,12
+SnapEdges = true
+#-------------------------------
+[317]
+# Wolfram City
+Outdoor = true
+ShowArea = true
+MapPosition = 1,15,8
+SnapEdges = true
+#-------------------------------
+[318]
+# Abandoned Mansion
+MapPosition = 1,16,18
+SnapEdges = true
+#-------------------------------
+[319]
+# Abandoned Mansion
+MapPosition = 1,16,18
+SnapEdges = true
+#-------------------------------
+[320]
+# Hidden Grotto - Route 26
+Outdoor = false
+ShowArea = false
+MapPosition = 1,20,16
+SnapEdges = true
+#-------------------------------
+[321]
+# Hidden Grotto - Wolfram
+ShowArea = false
+MapPosition = 1,15,8
+SnapEdges = true
+#-------------------------------
+[322]
+# Wolfram PMC
+HealingSpot = 325,27,22
+MapPosition = 1,11,1
+#-------------------------------
+[323]
+# Route 29
+Outdoor = true
+ShowArea = true
+MapPosition = 1,13,8
+SnapEdges = true
+#-------------------------------
+[324]
+# Route 30
+Outdoor = true
+ShowArea = true
+MapPosition = 1,11,6
+SnapEdges = true
+#-------------------------------
+[325]
+# Oro City
+Outdoor = true
+ShowArea = true
+MapPosition = 1,11,1
+SnapEdges = true
+#-------------------------------
+[327]
+# Oro Ruins
+ShowArea = true
+MapPosition = 1,11,1
+SnapEdges = true
+#-------------------------------
+[328]
+# Hidden Grotto - Route 27
+MapPosition = 1,17,14
+SnapEdges = true
+#-------------------------------
+[329]
+# Hidden Grotto - Route 29
+MapPosition = 1,13,8
+SafariMap = false
+SnapEdges = true
+#-------------------------------
+[330]
+# Hidden Grotto - Route 30
+MapPosition = 1,11,6
+SnapEdges = true
+#-------------------------------
+[331]
+# Stibni Dojo
+MapPosition = 1,16,18
+SnapEdges = true
+#-------------------------------
+[332]
+# Wolfram Dojo
+MapPosition = 1,15,8
+SnapEdges = true
+#-------------------------------
+[333]
+# Oro Dojo
+MapPosition = 1,11,1
+SnapEdges = true
+#-------------------------------
+[334]
+# Route 31
+Outdoor = true
+ShowArea = true
+MapPosition = 1,8,5
+SnapEdges = true
+#-------------------------------
+[335]
+# Route 32
+Outdoor = true
+ShowArea = true
+MapPosition = 1,2,5
+SnapEdges = true
+#-------------------------------
+[336]
+# Yttrius Coast
+Outdoor = true
+ShowArea = true
+MapPosition = 1,2,3
+SnapEdges = true
+#-------------------------------
+[337]
+# Route 33
+Outdoor = true
+ShowArea = true
+MapPosition = 1,8,8
+SnapEdges = true
+#-------------------------------
+[338]
+# Hidden Grotto - Route 33
+MapPosition = 1,8,8
+SnapEdges = true
+#-------------------------------
+[339]
+# Route 34
+Outdoor = true
+ShowArea = true
+MapPosition = 1,4,10
+SnapEdges = true
+#-------------------------------
+[340]
+# Route 35
+Outdoor = true
+ShowArea = true
+MapPosition = 1,4,16
+SnapEdges = true
+#-------------------------------
+[341]
+# Kallim Sanctuary
+Outdoor = true
+ShowArea = true
+MapPosition = 1,2,17
+SnapEdges = true
+#-------------------------------
+[342]
+# Yttrius Ruins
+ShowArea = true
+MapPosition = 1,2,3
+#-------------------------------
+[343]
+# Kallim Ruins
+ShowArea = true
+MapPosition = 1,2,17
+SnapEdges = true
+#-------------------------------
+[344]
+# Kallim Dojo
+ShowArea = false
+MapPosition = 1,2,17
+SnapEdges = true
+#-------------------------------
+[345]
+# Route 36
+Outdoor = true
+ShowArea = true
+MapPosition = 1,6,17
+SnapEdges = true
+#-------------------------------
+[346]
+# Alumi Steppes
+Outdoor = true
+ShowArea = true
+MapPosition = 1,10,17
+SnapEdges = true
+#-------------------------------
+[347]
+# Mt. Titanus
+ShowArea = true
+MapPosition = 1,10,16
+SnapEdges = true
+#-------------------------------
+[348]
+# Mt. Titanus
+Outdoor = true
+ShowArea = true
+Weather = Snow,100
+MapPosition = 1,10,16
+SnapEdges = true
+#-------------------------------
+[349]
+# Mt. Titanus
+Outdoor = true
+ShowArea = true
+Weather = Snow,100
+MapPosition = 1,10,16
+SnapEdges = true
+#-------------------------------
+[350]
+# Titanus Apex
+Outdoor = true
+ShowArea = true
+Weather = Snow,100
+MapPosition = 1,9,13
+SnapEdges = true
+#-------------------------------
+[351]
+# Duskbound Forest
+Outdoor = true
+ShowArea = true
+Weather = Rain,0
+MapPosition = 1,14,14
+SnapEdges = true
+#-------------------------------
+[352]
+# Forest Cave
+Outdoor = false
+ShowArea = true
+MapPosition = 1,14,15
+SnapEdges = true
+#-------------------------------
+[353]
+# Kallim PMC
+HealingSpot = 341,8,14
+MapPosition = 1,2,17
+#-------------------------------
+[354]
+# Apartment 1
+MapPosition = 1,15,8
+#-------------------------------
+[355]
+# Apartment 2
+MapPosition = 1,15,8
+#-------------------------------
+[356]
+# Houses
+MapPosition = 1,15,8
+#-------------------------------
+[357]
+# Pokémon Lab
+MapPosition = 1,15,8
+#-------------------------------
+[358]
+# Alumi PMC
+HealingSpot = 346,7,25
+MapPosition = 1,10,17
+#-------------------------------
+[359]
+# Alumi Dojo
+MapPosition = 1,10,17
+SnapEdges = true
+#-------------------------------
+[360]
+# Alumi Ruins
+ShowArea = true
+MapPosition = 1,10,17
+SnapEdges = true
+#-------------------------------
+[361]
+# Houses
+MapPosition = 1,10,17
+#-------------------------------
+[362]
+# Houses
+MapPosition = 1,11,1
+#-------------------------------
+[363]
+# House
+MapPosition = 1,8,5
+#-------------------------------
+[364]
+# Hidden Grotto - Route 34
+MapPosition = 1,5,12
+SnapEdges = true
+#-------------------------------
+[365]
+# Hidden Grotto - Route 35
+MapPosition = 1,4,15
+SnapEdges = true
+#-------------------------------
+[366]
+# Titanus Temple
+ShowArea = true
+MapPosition = 1,9,13
+SnapEdges = true
+#-------------------------------
+[369]
+# Hidden Grotto - Mt. Titanus
+MapPosition = 1,10,16
+SnapEdges = true
+#-------------------------------
+[370]
+# Hidden Grotto - Route 36
+MapPosition = 1,6,17
+SnapEdges = true
