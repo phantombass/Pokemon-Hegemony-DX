@@ -2486,6 +2486,9 @@ class Scene_Credits
   ardicoozer
   riddlemeree
 
+  Protagonist Sprites:
+  RichardPT on Deviantart
+
   Regional Variant Sprites:
   Phantombass
 

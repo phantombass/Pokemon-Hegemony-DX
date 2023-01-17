@@ -3648,32 +3648,71 @@ Pokemon = HAWLUCHA,91
 #-------------------------------
 # Normal Mode Gym Battles
 #-------------------------------
+[DOJO_Olaf,Olaf]
+LoseText = "Well you stood strong. Well done."
+Pokemon = SCRAGGY,15
+	Item = BERRYJUICE
+	Ability = INTIMIDATE
+	Moves = FAKEOUT,POWERUPPUNCH,DRAINPUNCH,FEINTATTACK
+	Role = SETUPSWEEPER
+Pokemon = EMOLGA,15
+	Item = BERRYJUICE
+	Ability = MOTORDRIVE
+	Moves = CHARGEBEAM,AIRCUTTER,GRASSKNOT,ROOST
+	Role = SETUPSWEEPER
+Pokemon = BUNNELBY,15
+	Item = BERRYJUICE
+	Ability = HUGEPOWER
+	Moves = QUICKATTACK,BULLDOZE,HEADBUTT,POWERUPPUNCH
+	Role = SETUPSWEEPER
+Pokemon = SMOOCHUM,15
+	Item = COLBURBERRY
+	Ability = DRYSKIN
+	Moves = ICYWIND,PSYBEAM,CALMMIND,LOVELYKISS
+	Role = SETUPSWEEPER
+Pokemon = POIPOLE,15
+	Item = FOCUSSASH
+	Ability = BEASTBOOST
+	Moves = NASTYPLOT,SLUDGE,AURORABEAM,DRAGONBREATH
+	Role = SETUPSWEEPER
+Pokemon = PAWNIARD2,15
+	Item = BERRYJUICE
+	Ability = SHARPNESS
+	Moves = HONECLAWS,ASTROCUTTER,FURYCUTTER,KARATECHOP
+	Role = WINCON
+#-------------------------------
 [LEADER_Blaine,Turner]
 LoseText = "Well done! You'll go far in this Gym challenge!"
-Pokemon = THWACKEY,18
-	Ability = GRASSYSURGE
-	Item = TERRAINEXTENDER
-	Moves = UTURN,FAKEOUT,RAZORLEAF,LEECHSEED
-Pokemon = ORTHWORM,18
-	Ability = EARTHEATER
-	Item = BERRYJUICE
-	Moves = SHEDTAIL,IRONFANGS,BITE,TOXIC
-Pokemon = BUIZEL,18
-	Ability = TECHNICIAN
-	Item = MYSTICWATER
-	Moves = FLIPTURN,AQUAJET,AERIALACE,PURSUIT
-Pokemon = GROWLITHE,18
+Pokemon = QWILFISH,18
 	Ability = INTIMIDATE
+	Item = BLACKSLUDGE
+	Moves = FLIPTURN,POISONTAIL,AQUAJET,TOXICSPIKES
+	Role = HAZARDLEAD
+Pokemon = VULLABY,18
+	Ability = OVERCOAT
 	Item = BERRYJUICE
-	Moves = TELEPORT,FLAMEWHEEL,PROTECT,TOXIC
-Pokemon = COMFEY,18
-	Ability = TRIAGE
-	Item = BIGROOT
-	Moves = UTURN,LEECHSEED,DRAININGKISS,MEGADRAIN
-Pokemon = BLITZLE2,20
-	Ability = SAPSIPPER
+	Moves = PLUCK,ROOST,UTURN,KNOCKOFF
+	Role = DEFENSIVEPIVOT
+Pokemon = SPRITZEE,18
+	Ability = AROMAVEIL
 	Item = BERRYJUICE
-	Moves = SPARK,FLAMECHARGE,STOMPINGTANTRUM,VOLTSWITCH
+	Moves = DRAININGKISS,WISH,PROTECT,ECHOEDVOICE
+	Role = CLERIC
+Pokemon = PAWMO,18
+	Ability = IRONFIST
+	Item = MUSCLEBAND
+	Moves = MACHPUNCH,SPARK,ICEPUNCH,POWERUPPUNCH
+	Role = WINCON
+Pokemon = CUBONE,18
+	Ability = BATTLEARMOR
+	Item = THICKCLUB
+	Moves = BONECLUB,THUNDERPUNCH,HEADBUTT,POWERUPPUNCH
+	Role = SETUPSWEEPER
+Pokemon = GIRAFARIG2,20
+	Ability = TIGHTFOCUS
+	Item = BERRYJUICE
+	Moves = REFLECTION,MIRRORSHOT,SCORCHINGSANDS,DRAGONBREATH
+	Role = SPECIALBREAKER
 #-------------------------------
 [LEADER_Sabrina,Hazel]
 LoseText = "You've overcome our hazard-heavy strategy. Well done."
@@ -3707,38 +3746,34 @@ Pokemon = GYARADOS,35
 	Nature = JOLLY
 	Moves = WATERFALL,CRUNCH,ICEFANG,BULLDOZE
 #-------------------------------
-[LEADER_Erika,Astrid]
-LoseText = "Even the stars can't hold you back. Spectacular indeed."
-Pokemon = XATU,40
-	Ability = EQUINOX
+[LEADER_Erika,Yuki]
+LoseText = "Oh you brought quite the chill down my spine!"
+Pokemon = SNOVER,15
+	Ability = SNOWWARNING
 	Item = WEATHERROCK
-	Nature = TIMID
-	Moves = PROTECT,ASTRALGALE,ROOST,HEATWAVE
-Pokemon = ASTREON,40
-	Ability = MINDGAMES
-	Item = LEFTOVERS
-	Nature = BOLD
-	Moves = STARSAP,ASTRALGALE,PROTECT,CALMMIND
-Pokemon = MISMAGIUS,40
-	Ability = MAGICGUARD
-	Item = LIFEORB
-	Nature = TIMID
-	Moves = SPECTRALSHRIEK,MOONBLAST,WEATHERBALL,PROTECT
-Pokemon = URSARING,40
-	Ability = STARSPRINT
-	Item = LIFEORB
-	Nature = ADAMANT
-	Moves = METEORMASH,BODYSLAM,HIGHHORSEPOWER,CRUNCH
-Pokemon = SHARPEDO2,40
-	Ability = MAGICGUARD
-	Item = EXPERTBELT
-	Nature = JOLLY
-	Moves = LIQUIDATION,FIRELASH,SHADOWCLAW,SHADOWSNEAK
-Pokemon = CHIMECHO,42
-	Ability = PRANKSTER
-	Item = CHIMECHONITE
-	Nature = MODEST
-	Moves = HYPERVOICE,EXPANDINGFORCE,CALMMIND,RECOVER
+	Moves = PROTECT,ICYWIND,MEGADRAIN,ICESHARD
+Pokemon = CUBCHOO,15
+	Ability = SLUSHRUSH
+	Item = ICICLEPLATE
+	Moves = ICEPUNCH,POWERUPPUNCH,AQUAJET,PROTECT
+Pokemon = DARUMAKA,15
+	Form = 1
+	Ability = INNERFOCUS
+	Item = BERRYJUICE
+	Moves = ICEPUNCH,FIREPUNCH,STOMPINGTANTRUM,UTURN
+Pokemon = SEEL,15
+	Ability = ICEBODY
+	Item = BERRYJUICE
+	Moves = FAKEOUT,FLIPTURN,CHILLINGWATER,ICYWIND
+Pokemon = SANDSHREW,15
+	Form = 1
+	Ability = SLUSHRUSH
+	Item = BERRYJUICE
+	Moves = ICICLESPEAR,CUT,RAPIDSPIN,STOMPINGTANTRUM
+Pokemon = TINKATINK2,15
+	Ability = GAVELPOWER
+	Item = MUSCLEBAND
+	Moves = ICEPUNCH,KNOCKOFF,SHADOWHAMMER,SHADOWSNEAK
 #-------------------------------
 [LEADER_Brock,Gordon]
 LoseText = "Your ability to hold up under the pressure. So impressive. Kudos to you, my friend."
@@ -8931,7 +8966,7 @@ Pokemon = CENTISKORCH,95
 	Moves = COIL,FIRELASH,LEECHLIFE,STOMPINGTANTRUM
 	Role = WINCON
 #-------------------------------
-[DOJO_Olaf,Olaf]
+[DOJO_Olaf,Olaf,1]
 LoseText = "Hmmph. Winter is early this year."
 Pokemon = GOGOAT2,98
 	Nature = CAREFUL

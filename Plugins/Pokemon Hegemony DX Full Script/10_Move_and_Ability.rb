@@ -121,6 +121,7 @@ class PokeBattle_Move
 
   def pbBeamMove?;            return beamMove?; end
   def pbSoundMove?;           return soundMove?; end
+  def pbHammerMove?;           return hammerMove?; end
 
   def pbNumHits(user,targets)
     if user.hasActiveAbility?(:PARENTALBOND) && pbDamagingMove? &&
@@ -3653,6 +3654,7 @@ class PokeBattle_Move
     def beamMove?;          return @flags[/p/]; end
     def slicingMove?;       return @flags[/q/]; end
     def windMove?;          return @flags[/r/]; end
+    def hammerMove?;        return @flags[/s/]; end
     def damageReducedByFreeze?;  return true;  end   # For Facade
     def pbHitEffectivenessMessages(user,target,numTargets=1)
       return if target.damageState.disguise
@@ -5028,6 +5030,24 @@ class PokeBattle_Move_193 < PokeBattle_Move_0C0
 end
 
 class PokeBattle_Move_520 < PokeBattle_Move_0C0
+  def hitsFlyingTargets?; return true; end
+
+  def pbCalcTypeModSingle(moveType,defType,user,target)
+    return Effectiveness::NORMAL_EFFECTIVE_ONE if moveType == :GROUND && defType == :FLYING
+    return super
+  end
+end
+
+class PokeBattle_Move_545 < PokeBattle_Move_00F
+  def hitsFlyingTargets?; return true; end
+
+  def pbCalcTypeModSingle(moveType,defType,user,target)
+    return Effectiveness::NORMAL_EFFECTIVE_ONE if moveType == :GROUND && defType == :FLYING
+    return super
+  end
+end
+
+class PokeBattle_Move_546 < PokeBattle_Move_0BD
   def hitsFlyingTargets?; return true; end
 
   def pbCalcTypeModSingle(moveType,defType,user,target)

@@ -7,8 +7,24 @@ module QuestModule
     :QuestDescription => "Make your way through Grand Parthenia and complete the Gym Challenge!",
     :Stage1 => "Head to the Lab.",
     :Stage2 => "Head to the Lab.",
+    :Stage3 => "Follow the scientist.",
+    :Stage4 => "Follow the scientist.",
+    :Stage5 => "Complete the Hidden Dungeon.",
+    :Stage6 => "Complete the Hidden Dungeon.",
+    :Stage7 => "Find the scientist.",
+    :Stage8 => "Find the scientist.",
+    :Stage9 => "Take on a Gym.",
+    :Stage10 => "Take on a Gym.",
     :Location1 => "Garon Town",
     :Location2 => "Wolfram City",
+    :Location3 => "Garon Woods",
+    :Location4 => "Route 28",
+    :Location5 => "Garon Woods",
+    :Location6 => "Duskbound Forest",
+    :Location7 => "Boro Town",
+    :Location8 => "Route 27",
+    :Location9 => "Wherever you please",
+    :Location10 => "Wherever you please"
   }
 
 #====================================

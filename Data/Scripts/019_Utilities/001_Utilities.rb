@@ -197,6 +197,7 @@ def pbNoticePlayer(event)
   if !pbFacingEachOther(event,$game_player)
     pbExclaim(event)
   end
+  $viewport_mission.dispose if $viewport_mission != nil
   pbTurnTowardEvent($game_player,event)
   pbMoveTowardPlayer(event)
 end

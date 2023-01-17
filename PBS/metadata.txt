@@ -8,8 +8,8 @@ WildVictoryME = Battle victory wild.ogg
 TrainerVictoryME = Battle victory trainer.ogg
 SurfBGM = HGSS-170-Surf.ogg
 BicycleBGM = Bicycle.mid
-PlayerA = POKEMONTRAINER_Red,trainer_POKEMONTRAINER_Red,boy_bike,boy_surf,boy_run,boy_surf,boy_fish_offset,boy_fish_offset
-PlayerB = POKEMONTRAINER_Leaf,trainer_POKEMONTRAINER_Leaf,girl_bike,girl_surf,girl_run,girl_surf,girl_fish_offset,girl_fish_offset
+PlayerA = POKEMONTRAINER_Brendan,trainer_POKEMONTRAINER_Brendan,boy_bike,boy_surf,boy_run,boy_surf,boy_fish_offset,boy_fish_offset
+PlayerB = POKEMONTRAINER_May,trainer_POKEMONTRAINER_May,girl_bike,girl_surf,girl_run,girl_surf,girl_fish_offset,girl_fish_offset
 #-------------------------------
 [001]
 # Intro
@@ -433,7 +433,7 @@ MapPosition = 0,18,2
 SnapEdges = true
 #-------------------------------
 [081]
-# Hidden Grotto - Woods 1
+# Dungeon Entrance
 Outdoor = true
 MapPosition = 0,18,2
 SnapEdges = true
@@ -1542,7 +1542,7 @@ MapPosition = 1,20,16
 SnapEdges = true
 #-------------------------------
 [321]
-# Hidden Grotto - Wolfram
+# Dungeon Entrance
 ShowArea = false
 MapPosition = 1,15,8
 SnapEdges = true
@@ -1734,7 +1734,7 @@ MapPosition = 1,14,14
 SnapEdges = true
 #-------------------------------
 [352]
-# Forest Cave
+# Dungeon Entrance
 Outdoor = false
 ShowArea = true
 MapPosition = 1,14,15
@@ -1814,3 +1814,74 @@ SnapEdges = true
 # Hidden Grotto - Route 36
 MapPosition = 1,6,17
 SnapEdges = true
+#-------------------------------
+[375]
+# Duskbound Dungeon B1F
+ShowArea = true
+MapPosition = 1,14,11
+Dungeon = true
+#-------------------------------
+[376]
+# Duskbound Dungeon B2F
+ShowArea = true
+MapPosition = 1,14,12
+Dungeon = true
+#-------------------------------
+[377]
+# Duskbound Dungeon B3F
+ShowArea = true
+MapPosition = 1,14,12
+SnapEdges = false
+Dungeon = true
+#-------------------------------
+[379]
+# Woods Dungeon B1F
+ShowArea = true
+MapPosition = 0,18,1
+Dungeon = true
+#-------------------------------
+[380]
+# Woods Dungeon B2F
+ShowArea = true
+MapPosition = 0,18,1
+Dungeon = true
+#-------------------------------
+[381]
+# Woods Dungeon B3F
+ShowArea = true
+MapPosition = 0,18,1
+Dungeon = true
+#-------------------------------
+[383]
+# Wolfram Dungeon B1F
+ShowArea = true
+Bicycle = false
+MapPosition = 1,15,8
+Dungeon = true
+#-------------------------------
+[384]
+# Wolfram Dungeon B2F
+ShowArea = true
+MapPosition = 1,15,8
+Dungeon = true
+#-------------------------------
+[385]
+# Wolfram Dungeon B3F
+ShowArea = true
+MapPosition = 1,15,8
+SnapEdges = false
+Dungeon = true
+#-------------------------------
+[386]
+# Wolfram Dungeon B4F
+ShowArea = true
+MapPosition = 1,15,8
+SnapEdges = false
+Dungeon = true
+#-------------------------------
+[387]
+# Wolfram Dungeon B5F
+Outdoor = false
+ShowArea = true
+MapPosition = 1,15,8
+Dungeon = true

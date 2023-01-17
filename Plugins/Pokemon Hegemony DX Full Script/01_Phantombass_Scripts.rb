@@ -51,13 +51,15 @@ def randomizer_on
   end
 end
 
-LEVEL_CAP = [9,13,18,22,27,29,37,40,43,48,55,59,65,68,71,72,76,79,80,83,85,88,90,93,95,98,100]
+LEVEL_CAP = [11,15,19,22,27,29,37,40,43,48,55,59,65,68,71,72,76,79,80,83,85,88,90,93,95,98,100]
 
 module Game
   def self.level_cap_update
-    $game_system.level_cap += 1
-    $game_system.level_cap = LEVEL_CAP.size-1 if $game_system.level_cap >= LEVEL_CAP.size
-    $game_variables[106] = LEVEL_CAP[$game_system.level_cap]
+    if $game_switches[LEVEL_CAP_SWITCH]
+      $game_system.level_cap += 1
+      $game_system.level_cap = LEVEL_CAP.size-1 if $game_system.level_cap >= LEVEL_CAP.size
+      $game_variables[106] = LEVEL_CAP[$game_system.level_cap]
+    end
   end
   def self.start_new
     pbMessage(_INTL("Welcome to Pokémon Hegemony DX, a complete, non-profit fan game made by Phantombass."))
@@ -550,9 +552,6 @@ end
 Events.onWildPokemonCreate+=proc {|sender,e|
   pokemon = e[0]
   levelcap = LEVEL_CAP[$game_system.level_cap]
-  if pokemon.level > $game_variables[106]
-    $game_switches[89] = true
-  end
   abilRand = rand(100)
   if abilRand > 80 && $game_map.map_id == 91 && $currentDexSearch == nil
     pokemon.ability_index = 2
@@ -574,8 +573,12 @@ Events.onWildPokemonCreate+=proc {|sender,e|
   level = mlv - 1 -rand(2)
   pokemon.species = Level_Scaling.evolve(pokemon,level,levelcap) if encounters_randomized? == false
   pokemon.level = level <= 0 ? 1 : level
+  if pokemon.level > LEVEL_CAP[$game_system.level_cap]
+    $game_switches[89] = true
+  end
   pokemon.calc_stats
   pokemon.reset_moves
+  $viewport_mission.dispose if $viewport_mission != nil
 }
 
 Events.onEndBattle += proc { |_sender,e|

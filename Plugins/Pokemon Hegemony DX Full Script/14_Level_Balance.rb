@@ -20,6 +20,7 @@ module LvlCap
   Ironmon = 905
   Kaizo = 906
   Randomizer = 907
+  NoChange   = 908
 end
 
 class Level_Scaling
@@ -53,23 +54,25 @@ class Level_Scaling
 
   def self.activate
     $game_switches[LvlCap::Trainers] = true
+    $game_switches[LvlCap::Switch] = true
   end
 
   def self.prevent_changes?
-    return true if ($game_switches[LvlCap::Kaizo] || $game_switches[LvlCap::Randomizer]) && (self.boss? == false && self.rival? == false && self.gym? == false)
+    return true if (($game_switches[LvlCap::Kaizo] || $game_switches[LvlCap::Randomizer]) && (self.boss? == false && self.rival? == false && self.gym? == false)) || $game_switches[LvlCap::NoChange]
     return false
   end
 
   def self.evolve(pokemon,level,levelcap)
     species = pokemon.species
     newspecies = GameData::Species.get(species).get_baby_species # revert to the first evolution
+    $newspecies = newspecies
       evoflag=0 #used to track multiple evos not done by lvl
       endevo=false
       loop do #beginning of loop to evolve species
+        level = 0
         level = levelcap if level > levelcap
-        pkmn = Pokemon.new(newspecies, level)
-        cevo = GameData::Species.get(newspecies).evolutions
-        evo = GameData::Species.get(newspecies).get_evolutions
+        cevo = GameData::Species.get($newspecies).evolutions
+        evo = GameData::Species.get($newspecies).get_evolutions
         if evo
           evo = evo[rand(evo.length - 1)]
           # here we evolve things that don't evolve through level
@@ -77,7 +80,7 @@ class Level_Scaling
           #notice that such species have cevo==-1 and wouldn't pass the last check
           #to avoid it we set evoflag to 1 (with some randomness) so that
           #pokemon may have its second evolution (Raichu, for example)
-          if evo && cevo < 1
+          if evo && cevo[0][1] != :Level
             if evo[0] != 4
             newspecies = evo[2]
                if evoflag == 0
@@ -91,7 +94,7 @@ class Level_Scaling
           end
         end
         if evoflag==0 || endevo
-          if  cevo == -1
+          if  cevo[1] == nil
             # Breaks if there no more evolutions or randomnly
             # Randomness applies only if the level is under 50
             break
@@ -104,11 +107,11 @@ class Level_Scaling
     #check if original species could evolve (Bellosom couldn't)
     couldevo=GameData::Species.get(species).get_evolutions
     #check if current species can evolve
-    evo = GameData::Species.get(newspecies).get_evolutions
+    evo = GameData::Species.get($newspecies).get_evolutions
       if evo.length<1 && couldevo.length<1
         return species
       else
-        return newspecies
+        return $newspecies
       end #end of evolving script 
   end
 end
@@ -123,40 +126,42 @@ Events.onTrainerPartyLoad+=proc {| sender, trainer |
       for i in 0...party.length
         level = 0
         level=1 if level<1
-      if mlv<=levelcap && mlv <= party[i].level && $game_switches[LvlCap::Gym] == true && $game_switches[LvlCap::Trainers] == true
-        if $game_switches[LvlCap::Hard] == true && $game_switches[LvlCap::Expert] == false
-          level = levelcap + rand(2)
-        elsif $game_switches[LvlCap::Hard] == true && $game_switches[LvlCap::Expert] == true
-          level = levelcap + rand(2) +1
+        if mlv<=levelcap && mlv <= party[i].level && $game_switches[LvlCap::Gym] == true && $game_switches[LvlCap::Trainers] == true
+          if $game_switches[LvlCap::Hard] == true && $game_switches[LvlCap::Expert] == false
+            level = levelcap + rand(2)
+          elsif $game_switches[LvlCap::Hard] == true && $game_switches[LvlCap::Expert] == true
+            level = levelcap + rand(2) +1
+          else
+            level = levelcap
+          end
+        elsif $game_switches[LvlCap::LvlTrainer] == true
+          level = levelcap - 5
+        elsif $game_switches[LvlCap::Trainers] == true && $game_switches[LvlCap::Gym] == false && $game_switches[LvlCap::Rival] == false
+          level = (mlv-1) - rand(1)
+          if $game_switches[LvlCap::Hard]
+            level += 1
+          elsif $game_switches[LvlCap::Expert]
+            level += 2
+          end
+        elsif $game_switches[LvlCap::Rival] == true && $game_switches[LvlCap::Hard] == false
+          level = party[i].level - rand(2)
+        elsif $game_switches[LvlCap::Hard] == true && $game_switches[LvlCap::Expert] == false && $game_switches[LvlCap::Rival] == true
+          level = party[i].level
+        elsif $game_switches[LvlCap::Hard] == true && $game_switches[LvlCap::Expert] == true && $game_switches[LvlCap::Rival] == true
+          level = party[i].level + 2
         else
           level = levelcap
         end
-      elsif $game_switches[LvlCap::LvlTrainer] == true
-        level = levelcap - 5
-      elsif $game_switches[LvlCap::Trainers] == true && $game_switches[LvlCap::Gym] == false && $game_switches[LvlCap::Rival] == false
-        level = (mlv-1) - rand(1)
-        if $game_switches[LvlCap::Hard]
-          level += 1
-        elsif $game_switches[LvlCap::Expert]
-          level += 2
+        party[i].level = level
+        #now we evolve the pokémon, if applicable
+        #unused
+        party[i].calc_stats
+        if Level_Scaling.prevent_changes? == false
+          party[i].species = Level_Scaling.evolve(party[i],level,levelcap)
+          party[i].item = nil if $Trainer.badge_count < 3
+          party[i].ability_index = rand(2) if $Trainer.badge_count < 3
+          party[i].reset_moves
         end
-      elsif $game_switches[LvlCap::Rival] == true && $game_switches[LvlCap::Hard] == false
-        level = party[i].level - rand(2)
-      elsif $game_switches[LvlCap::Hard] == true && $game_switches[LvlCap::Expert] == false && $game_switches[LvlCap::Rival] == true
-        level = party[i].level
-      elsif $game_switches[LvlCap::Hard] == true && $game_switches[LvlCap::Expert] == true && $game_switches[LvlCap::Rival] == true
-        level = party[i].level + 2
-      else
-        level = levelcap
-      end
-      party[i].level = level
-      #now we evolve the pokémon, if applicable
-      #unused
-      party[i].calc_stats
-      if Level_Scaling.prevent_changes? == false
-        party[i].species = Level_Scaling.evolve(party[i],level,levelcap)
-        party[i].reset_moves
-      end
       end #end of for
      end
    end
