@@ -63,8 +63,11 @@ class Level_Scaling
   end
 
   def self.evolve(pokemon,level,levelcap)
+    #maps = [32,77,80,83,88,97,98,106,124,147,160,161,174,184,187,218,264,265,271,284,289,300,307,310,]
     species = pokemon.species
     newspecies = GameData::Species.get(species).get_baby_species # revert to the first evolution
+    species_blacklist = [:EEVEE,:TYROGUE,:NINCADA,:WURMPLE,:SCYTHER,:APPLIN,]
+    return species if species_blacklist.include?(newspecies)
     $newspecies = newspecies
       evoflag=0 #used to track multiple evos not done by lvl
       endevo=false
