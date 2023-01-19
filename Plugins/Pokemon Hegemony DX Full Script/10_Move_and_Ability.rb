@@ -1010,11 +1010,13 @@ BattleHandlers::AbilityOnSwitchIn.add(:COMMANDER,
 # OnBattlerFainting
 BattleHandlers::AbilityOnBattlerFainting.add(:COMMANDER,
   proc { |ability, battler, fainted, battle|
-    next if fainted.species != :DONDOZO
-    next if fainted.effects[PBEffects::CommanderDondozo] == -1
-    next if battler.opposes?(fainted)
-    fainted.effects[PBEffects::CommanderDondozo] = -1
-    battler.effects[PBEffects::CommanderTatsugiri] = false
+   # next if fainted.species != :DONDOZO
+   # next if fainted.effects[PBEffects::CommanderDondozo] == -1
+   # next if battler.opposes?(fainted)
+    if (fainted.species == :DONDOZO && battler.opposes?(fainted) == false)
+      fainted.effects[PBEffects::CommanderDondozo] = -1
+      battler.effects[PBEffects::CommanderTatsugiri] = false
+    end
   }
 )
 
