@@ -456,7 +456,7 @@ Pokemon = SANDSLASH,25
 	Form = 1
 	Ability = SLUSHRUSH
 	Moves = ICICLECRASH,SWORDSDANCE,BULLDOZE,IRONHEAD
-	Item = TARFRUBERRY
+	Item = FOCUSSASH
 	Role = WINCON
 #-------------------------------
 [SCIENTIST,Grunt,2]

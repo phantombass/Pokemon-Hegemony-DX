@@ -24,32 +24,21 @@ module LvlCap
 end
 
 class Level_Scaling
-  attr_accessor :boss
-  attr_accessor :gym
-  attr_accessor :rival
-  attr_accessor :active
-
-  def initialize
-    @active = $game_switches[LvlCap::Trainers]
-    @boss = $game_switches[LvlCap::Boss]
-    @gym = $game_switches[LvlCap::Gym]
-    @rival = $game_switches[LvlCap::Rival]
-  end
 
   def self.boss?
-    return @boss
+    return $game_switches[LvlCap::Boss]
   end
 
   def self.gym?
-    return @gym
+    return $game_switches[LvlCap::Gym]
   end
 
   def self.rival?
-    return @rival
+    return $game_switches[LvlCap::Rival]
   end
 
   def self.active?
-    return @active
+    return $game_switches[LvlCap::Trainers]
   end
 
   def self.activate
@@ -58,7 +47,9 @@ class Level_Scaling
   end
 
   def self.prevent_changes?
-    return true if (($game_switches[LvlCap::Kaizo] || $game_switches[LvlCap::Randomizer]) && (self.boss? == false && self.rival? == false && self.gym? == false)) || $game_switches[LvlCap::NoChange]
+    return true if $game_switches[LvlCap::Kaizo] || $game_switches[LvlCap::Randomizer]
+    return true if (self.boss? == true || self.rival? == true || self.gym? == true) 
+    return true if $game_switches[LvlCap::NoChange]
     return false
   end
 
@@ -66,7 +57,7 @@ class Level_Scaling
     #maps = [32,77,80,83,88,97,98,106,124,147,160,161,174,184,187,218,264,265,271,284,289,300,307,310,]
     species = pokemon.species
     newspecies = GameData::Species.get(species).get_baby_species # revert to the first evolution
-    species_blacklist = [:EEVEE,:TYROGUE,:NINCADA,:WURMPLE,:SCYTHER,:APPLIN,]
+    species_blacklist = [:EEVEE,:TYROGUE,:NINCADA,:WURMPLE,:SCYTHER,:APPLIN]
     return species if species_blacklist.include?(newspecies)
     $newspecies = newspecies
       evoflag=0 #used to track multiple evos not done by lvl

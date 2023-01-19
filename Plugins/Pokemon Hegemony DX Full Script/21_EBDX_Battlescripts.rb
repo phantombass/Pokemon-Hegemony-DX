@@ -243,12 +243,12 @@ module BattleScripts
     "afterLastOpp" => "Huh. Not bad, kid.",
     "turnStart0" => proc do
       @scene.pbTrainerSpeak("I really do not care for battling, but here we go.")
-      @scene.pbAnimation(GameData::Move.get(:BLIZZARD).id,@battle.battlers[1],@battle.battlers[1])
-      @battle.field.weather = :Sleet
-      @battle.field.weatherDuration = -1
-      $gym_weather = true
-      @scene.pbDisplay("Olaf set up permanent Sleet!")
-      @battle.eachBattler { |b| b.pbCheckFormOnWeatherChange }
+      #@scene.pbAnimation(GameData::Move.get(:BLIZZARD).id,@battle.battlers[1],@battle.battlers[1])
+      #@battle.field.weather = :Sleet
+      #@battle.field.weatherDuration = -1
+      #$gym_weather = true
+      #@scene.pbDisplay("Olaf set up permanent Sleet!")
+      #@battle.eachBattler { |b| b.pbCheckFormOnWeatherChange }
     end
   }
   WENDY = {
