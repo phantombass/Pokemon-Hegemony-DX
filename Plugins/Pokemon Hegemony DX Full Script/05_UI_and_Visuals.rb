@@ -2172,6 +2172,14 @@ def pbEggMoveScreen(pkmn)
   return retval
 end
 
+class Pokemon
+  def has_egg_move?
+    return false if egg? || shadowPokemon?
+    getEggMovesList.each { |m| return true if !hasMove?(m[1]) }
+    return false
+  end
+end
+
 class PokemonPartyScreen
   def pbPokemonScreen
     @scene.pbStartScene(@party,

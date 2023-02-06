@@ -1,8 +1,7 @@
 class PBAI
   attr_reader :battle
   attr_reader :sides
-  #If this is true, the AI will know your moves, held items, and abilities
-  #before they are revealed.
+  #If this is true, the AI will know your moves and held items before they are revealed.
   OMNISCIENT_AI = false
   AI_KNOWS_ABILITY = true
 
@@ -160,6 +159,7 @@ class PBAI
     data = projection.choose_move
     if data.nil?
       # Struggle
+      data = []
       data[0] = :USE_MOVE
       @battle.pbAutoChooseMove(idxBattler)
     elsif data[0] == :SWITCH
@@ -552,8 +552,8 @@ class PBAI
             str += "\n"
           end
 
-        #elsif i == -1
-        #  str += "STRUGGLE: 100%"
+       # elsif i == -1
+          #str += "STRUGGLE: 100 percent"
         else
           move_index, score, target, target_name = e
           name = @battler.moves[move_index].name
@@ -937,8 +937,8 @@ class PBAI
           if eligible && hi_off_score >= 1.0
             # Better choice than the current battler, so let's switch to this pokemon
             score = (100 * hi_off_score).round
-            score += 30 if [:PHYSICALWALL,:SPECIALWALL,:CLERIC].include?(proj.pokemon.role)
-            score += 15 if [:OFFENSIVEPIVOT,:STALLBREAKER].include?(proj.pokemon.role)
+            score += 30 if [:OFFENSIVEPIVOT,:PHYSICALWALL,:SPECIALWALL,:CLERIC].include?(proj.pokemon.role)
+            score += 15 if [:STALLBREAKER].include?(proj.pokemon.role)
             index = party.index(proj.pokemon)
             return [score, index]
           end
@@ -1170,8 +1170,6 @@ class PBAI
         when :COSMIC
           return true if target.hasActiveAbility?(:DIMENSIONBLOCK)
           return true if target.hasActiveItem?(:DIMENSIONBLOCKORB)
-        when :SOUND
-          return true if target.hasActiveAbility?(:SOUNDPROOF)
         end
         return true if move.damagingMove? && Effectiveness.not_very_effective?(typeMod) &&
                        target.hasActiveAbility?(:WONDERGUARD)
@@ -1239,14 +1237,14 @@ class PBAI
     alias hasActiveAbility? has_ability?
 
     def has_item?(item)
-      return @battler.hasActiveItem?(item) && (OMNISCIENT_AI || @revealed_item)
+      return @battler.hasActiveItem?(item) && ($game_switches[LvlCap::Expert] || @revealed_item)
     end
     alias hasActiveItem? has_item?
 
     def moves
       if @battler.nil?
         return @pokemon.moves
-      elsif OMNISCIENT_AI || @side.index == 0
+      elsif $game_switches[LvlCap::Expert] || @side.index == 0
         return @battler.moves
       else
         return @used_moves
@@ -1474,8 +1472,14 @@ class PBAI
       return true if target.bad_against?(self)
       return false if self.bad_against?(target)
       kill = false
-      for t in target.used_moves
-        kill = true if target.get_move_damage(self,t) >= self.hp
+      if $game_switches[LvlCap::Expert] == true
+        for t in target.moves
+          kill = true if target.get_move_damage(self,t) >= self.hp
+        end
+      else
+        for t in target.used_moves
+          kill = true if target.get_move_damage(self,t) >= self.hp
+        end
       end
       if kill == true && target.faster_than?(self)
         return false
@@ -1484,7 +1488,7 @@ class PBAI
         return true if self.get_move_damage(target,i) >= target.hp
         return true if i.priority > 0 && i.damagingMove? && self.get_move_damage(target,i) >= target.hp
       end
-      return true if target.bad_against?(self) && self.faster_than?(target)
+      return true if target.bad_against?(self) && self.faster_than?(target) && kill == false
       return false
     end
 
@@ -1505,13 +1509,14 @@ class PBAI
 
     def discourage_making_contact_with?(target)
       return false if has_ability?(:LONGREACH)
+      return false if hasActiveItem?(:PROTECTIVEPADS)
       bad_abilities = [:WEAKARMOR, :STAMINA, :IRONBARBS, :ROUGHSKIN, :PERISHBODY]
       return true if bad_abilities.any? { |a| target.has_ability?(a) }
       return true if target.has_ability?(:CUTECHARM) && target.can_attract?(self)
       return true if (target.has_ability?(:GOOEY) || target.has_ability?(:TANGLINGHAIR)) && faster_than?(target)
       return true if target.has_item?(:ROCKYHELMET)
       return true if target.has_ability?(:EFFECTSPORE) && !has_type?(:GRASS) && !has_ability?(:OVERCOAT)
-      return true if (target.has_ability?(:STATIC) || target.has_ability?(:POISONPOINT) || target.has_ability?(:FLAMEBODY)) && !has_non_volatile_status?
+      return true if (target.has_ability?(:STATIC) || target.has_ability?(:POISONPOINT) || target.has_ability?(:FLAMEBODY) || target.has_ability?(:ICEBODY)) && !has_non_volatile_status?
     end
 
     def get_move_damage(target, move)
@@ -1678,7 +1683,7 @@ class PokeBattle_Battle
     @battleAI.sides[1].set_trainers(@opponent)
   end
 
-  def pbRecallAndReplace(idxBattler, idxParty, batonPass = false)
+  def pbRecallAndReplace(idxBattler, idxParty, randomReplacement = false, batonPass = false)
     if @battlers[idxBattler].fainted?
       $doubles_switch = nil
       $d_switch = 0

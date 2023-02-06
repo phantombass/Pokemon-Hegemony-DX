@@ -18,6 +18,7 @@ def reset_custom_variables
   $gym_weather = false
   $appliance = nil
   $currentDexSearch = nil
+  $gym_hazard = false
   $repel_toggle = false
   #$mega_flag = 0
 end
@@ -363,25 +364,29 @@ class PokeBattle_Battle
     return true
   end
   def removeAllHazards
-    if @battlers[0].pbOwnSide.effects[PBEffects::StealthRock] || @battlers[0].pbOpposingSide.effects[PBEffects::StealthRock]
-      @battlers[0].pbOwnSide.effects[PBEffects::StealthRock]      = false
-      @battlers[0].pbOpposingSide.effects[PBEffects::StealthRock] = false
-    end
-    if @battlers[0].pbOwnSide.effects[PBEffects::Spikes]>0 || @battlers[0].pbOpposingSide.effects[PBEffects::Spikes]>0
-      @battlers[0].pbOwnSide.effects[PBEffects::Spikes]      = 0
-      @battlers[0].pbOpposingSide.effects[PBEffects::Spikes] = 0
-    end
-    if @battlers[0].pbOwnSide.effects[PBEffects::ToxicSpikes]>0 || @battlers[0].pbOpposingSide.effects[PBEffects::ToxicSpikes]>0
-      @battlers[0].pbOwnSide.effects[PBEffects::ToxicSpikes]      = 0
-      @battlers[0].pbOpposingSide.effects[PBEffects::ToxicSpikes] = 0
-    end
-    if @battlers[0].pbOwnSide.effects[PBEffects::StickyWeb] || @battlers[0].pbOpposingSide.effects[PBEffects::StickyWeb]
-      @battlers[0].pbOwnSide.effects[PBEffects::StickyWeb]      = false
-      @battlers[0].pbOpposingSide.effects[PBEffects::StickyWeb] = false
-    end
-    if @battlers[0].pbOwnSide.effects[PBEffects::CometShards] || @battlers[0].pbOpposingSide.effects[PBEffects::CometShards]
-      @battlers[0].pbOwnSide.effects[PBEffects::CometShards]      = false
-      @battlers[0].pbOpposingSide.effects[PBEffects::CometShards] = false
+    if $gym_hazard == false
+      if @battlers[0].pbOwnSide.effects[PBEffects::StealthRock] || @battlers[0].pbOpposingSide.effects[PBEffects::StealthRock]
+        @battlers[0].pbOwnSide.effects[PBEffects::StealthRock]      = false
+        @battlers[0].pbOpposingSide.effects[PBEffects::StealthRock] = false
+      end
+      if @battlers[0].pbOwnSide.effects[PBEffects::Spikes]>0 || @battlers[0].pbOpposingSide.effects[PBEffects::Spikes]>0
+        @battlers[0].pbOwnSide.effects[PBEffects::Spikes]      = 0
+        @battlers[0].pbOpposingSide.effects[PBEffects::Spikes] = 0
+      end
+      if @battlers[0].pbOwnSide.effects[PBEffects::ToxicSpikes]>0 || @battlers[0].pbOpposingSide.effects[PBEffects::ToxicSpikes]>0
+        @battlers[0].pbOwnSide.effects[PBEffects::ToxicSpikes]      = 0
+        @battlers[0].pbOpposingSide.effects[PBEffects::ToxicSpikes] = 0
+      end
+      if @battlers[0].pbOwnSide.effects[PBEffects::StickyWeb] || @battlers[0].pbOpposingSide.effects[PBEffects::StickyWeb]
+        @battlers[0].pbOwnSide.effects[PBEffects::StickyWeb]      = false
+        @battlers[0].pbOpposingSide.effects[PBEffects::StickyWeb] = false
+      end
+      if @battlers[0].pbOwnSide.effects[PBEffects::CometShards] || @battlers[0].pbOpposingSide.effects[PBEffects::CometShards]
+        @battlers[0].pbOwnSide.effects[PBEffects::CometShards]      = false
+        @battlers[0].pbOpposingSide.effects[PBEffects::CometShards] = false
+      end
+    else
+      pbDisplay(_INTL("The mysterious force prevents hazard removal!"))
     end
   end
   def poisonAllPokemon

@@ -94,7 +94,7 @@ class PokeBattle_Battle
   end
 
 end
-class PokeBattle_Move_522 < PokeBattle_Move
+class PokeBattle_Move_552 < PokeBattle_Move
   def pbBaseDamage(baseDmg, user, target)
     rage_hit = @battle.getBattlerHit(user)
     dmg = [baseDmg + 50  * rage_hit,350].min
@@ -113,6 +113,7 @@ class PokeBattle_Move
   def pbChangeUsageCounters(user,specialUsage)
     user.effects[PBEffects::FuryCutter]   = 0
     user.effects[PBEffects::ParentalBond] = 0
+    user.effects[PBEffects::EchoChamber] = 0
     user.effects[PBEffects::Ambidextrous] = 0
     user.effects[PBEffects::ProtectRate]  = 1
     @battle.field.effects[PBEffects::FusionBolt]  = false
@@ -135,12 +136,18 @@ class PokeBattle_Move
       user.effects[PBEffects::Ambidextrous] = 3
       return 2
     end
+    if user.hasActiveAbility?(:ECHOCHAMBER) && pbDamagingMove? && soundMove? &&
+       !chargingTurnMove? && targets.length==1
+      # Record that Parental Bond applies, to weaken the second attack
+      user.effects[PBEffects::EchoChamber] = 3
+      return 2
+    end
     return 1
   end
 
   def pbShowAnimation(id,user,targets,hitNum=0,showAnimation=true)
     return if !showAnimation
-    if (user.effects[PBEffects::ParentalBond]==1 || user.effects[PBEffects::Ambidextrous]==1)
+    if (user.effects[PBEffects::ParentalBond]==1 || user.effects[PBEffects::Ambidextrous]==1 || user.effects[PBEffects::EchoChamber] == 1)
       @battle.pbCommonAnimation("ParentalBond",user,targets)
     else
       @battle.pbAnimation(id,user,targets,hitNum)
@@ -485,6 +492,9 @@ class PokeBattle_Move
     if user.effects[PBEffects::Ambidextrous]==1
       multipliers[:base_damage_multiplier] /= 4
     end
+    if user.effects[PBEffects::EchoChamber]==1
+      multipliers[:base_damage_multiplier] /= 4
+    end
     # Other
     if user.effects[PBEffects::MeFirst]
       multipliers[:base_damage_multiplier] *= 1.5
@@ -585,7 +595,7 @@ class PokeBattle_Move
       end
     when :Fog
       if type == :DRAGON
-	      multipliers[:final_damage_multiplier] /= 2
+        multipliers[:final_damage_multiplier] /= 2
       end
     when :Eclipse
       if type == :DARK
@@ -1693,7 +1703,7 @@ BattleHandlers::AbilityOnSwitchIn.add(:ZEROTOHERO,
 
 BattleHandlers::StatusImmunityAbility.add(:FAIRYBUBBLE,
   proc { |ability,battler,status|
-    next true if status =! :NONE
+    next true if status != :NONE
   }
 )
 
@@ -2120,6 +2130,7 @@ class PokeBattle_Battler
     @effects[PBEffects::Outrage]             = 0
     @effects[PBEffects::ParentalBond]        = 0
     @effects[PBEffects::Ambidextrous]        = 0
+    @effects[PBEffects::EchoChamber]         = 0
     @effects[PBEffects::PickupItem]          = nil
     @effects[PBEffects::PickupUse]           = 0
     @effects[PBEffects::Pinch]               = false
@@ -2831,6 +2842,7 @@ class PokeBattle_Battler
     # Count a hit for Parental Bond (if it applies)
     user.effects[PBEffects::ParentalBond] -= 1 if user.effects[PBEffects::ParentalBond] > 0
     user.effects[PBEffects::Ambidextrous] -= 1 if user.effects[PBEffects::Ambidextrous] > 0
+    user.effects[PBEffects::EchoChamber] -= 1 if user.effects[PBEffects::EchoChamber] > 0
     # Accuracy check (accuracy/evasion calc)
     if hitNum == 0 || move.successCheckPerHit?
       targets.each do |b|
@@ -3427,16 +3439,17 @@ class PokeBattle_Battler
         return false
       end
       # Silk Trap
-        if target.effects[PBEffects::SilkTrap] && move.damagingMove?
+        if target.effects[PBEffects::SilkTrap] && move.damagingMove? && !unseenfist
           if show_message
-            @battle.pbCommonAnimation("SilkTrap", target)
+            @battle.pbCommonAnimation("SpikyShield", target)
             @battle.pbDisplay(_INTL("{1} protected itself!", target.pbThis))
           end
           target.damageState.protected = true
           @battle.successStates[user.index].protected = true
-          if move.pbContactMove?(user) && user.affectedByContactEffect? &&
-            user.pbCanLowerStatStage?(:SPEED, target)
-             user.pbLowerStatStage(:SPEED, 1, target)
+          if move.pbContactMove?(user) && user.affectedByContactEffect?
+            if user.pbCanLowerStatStage?(:SPEED)
+              user.pbLowerStatStage(:SPEED, 1, nil)
+            end
           end
           return false
         end
@@ -3671,7 +3684,7 @@ class PokeBattle_Move
         end
       end
       # Effectiveness message, for moves with 1 hit
-      if !multiHitMove? && (user.effects[PBEffects::ParentalBond]==0 || user.effects[PBEffects::Ambidextrous]==0)
+      if !multiHitMove? && (user.effects[PBEffects::ParentalBond]==0 || user.effects[PBEffects::Ambidextrous]==0 || user.effects[PBEffects::EchoChamber]==0)
         pbEffectivenessMessage(user,target,numTargets)
       end
       if target.damageState.substitute && target.effects[PBEffects::Substitute]==0
@@ -3774,7 +3787,7 @@ class PokeBattle_Move_049 < PokeBattle_TargetStatDownMove
     if target.pbCanLowerStatStage?(@statDown[0],user,self)
       target.pbLowerStatStage(@statDown[0],@statDown[1],user)
     end
-    if target.pbOwnSide.effects[PBEffects::AuroraVeil]>0 && $gym_gimmick != true
+    if target.pbOwnSide.effects[PBEffects::AuroraVeil]>0
       target.pbOwnSide.effects[PBEffects::AuroraVeil] = 0
       @battle.pbDisplay(_INTL("{1}'s Aurora Veil wore off!",target.pbTeam))
     end
@@ -3794,40 +3807,44 @@ class PokeBattle_Move_049 < PokeBattle_TargetStatDownMove
       target.pbOwnSide.effects[PBEffects::Safeguard] = 0
       @battle.pbDisplay(_INTL("{1} is no longer protected by Safeguard!!",target.pbTeam))
     end
-    if target.pbOwnSide.effects[PBEffects::StealthRock] ||
-       (Settings::MECHANICS_GENERATION >= 6 &&
-       target.pbOpposingSide.effects[PBEffects::StealthRock])
-      target.pbOwnSide.effects[PBEffects::StealthRock]      = false
-      target.pbOpposingSide.effects[PBEffects::StealthRock] = false if Settings::MECHANICS_GENERATION >= 6
-      @battle.pbDisplay(_INTL("{1} blew away stealth rocks!",user.pbThis))
-    end
-    if target.pbOwnSide.effects[PBEffects::Spikes]>0 ||
-       (Settings::MECHANICS_GENERATION >= 6 &&
-       target.pbOpposingSide.effects[PBEffects::Spikes]>0)
-      target.pbOwnSide.effects[PBEffects::Spikes]      = 0
-      target.pbOpposingSide.effects[PBEffects::Spikes] = 0 if Settings::MECHANICS_GENERATION >= 6
-      @battle.pbDisplay(_INTL("{1} blew away spikes!",user.pbThis))
-    end
-    if target.pbOwnSide.effects[PBEffects::ToxicSpikes]>0 ||
-       (Settings::MECHANICS_GENERATION >= 6 &&
-       target.pbOpposingSide.effects[PBEffects::ToxicSpikes]>0)
-      target.pbOwnSide.effects[PBEffects::ToxicSpikes]      = 0
-      target.pbOpposingSide.effects[PBEffects::ToxicSpikes] = 0 if Settings::MECHANICS_GENERATION >= 6
-      @battle.pbDisplay(_INTL("{1} blew away poison spikes!",user.pbThis))
-    end
-    if target.pbOwnSide.effects[PBEffects::StickyWeb] ||
-       (Settings::MECHANICS_GENERATION >= 6 &&
-       target.pbOpposingSide.effects[PBEffects::StickyWeb])
-      target.pbOwnSide.effects[PBEffects::StickyWeb]      = false
-      target.pbOpposingSide.effects[PBEffects::StickyWeb] = false if Settings::MECHANICS_GENERATION >= 6
-      @battle.pbDisplay(_INTL("{1} blew away sticky webs!",user.pbThis))
-    end
-    if target.pbOwnSide.effects[PBEffects::CometShards] ||
-       (Settings::MECHANICS_GENERATION >= 6 &&
-       target.pbOpposingSide.effects[PBEffects::CometShards])
-      target.pbOwnSide.effects[PBEffects::CometShards]      = false
-      target.pbOpposingSide.effects[PBEffects::CometShards] = false if Settings::MECHANICS_GENERATION >= 6
-      @battle.pbDisplay(_INTL("{1} blew away stealth rocks!",user.pbThis))
+    if $gym_hazard == false
+      if target.pbOwnSide.effects[PBEffects::StealthRock] ||
+         (Settings::MECHANICS_GENERATION >= 6 &&
+         target.pbOpposingSide.effects[PBEffects::StealthRock])
+        target.pbOwnSide.effects[PBEffects::StealthRock]      = false
+        target.pbOpposingSide.effects[PBEffects::StealthRock] = false if Settings::MECHANICS_GENERATION >= 6
+        @battle.pbDisplay(_INTL("{1} blew away stealth rocks!",user.pbThis))
+      end
+      if target.pbOwnSide.effects[PBEffects::Spikes]>0 ||
+         (Settings::MECHANICS_GENERATION >= 6 &&
+         target.pbOpposingSide.effects[PBEffects::Spikes]>0)
+        target.pbOwnSide.effects[PBEffects::Spikes]      = 0
+        target.pbOpposingSide.effects[PBEffects::Spikes] = 0 if Settings::MECHANICS_GENERATION >= 6
+        @battle.pbDisplay(_INTL("{1} blew away spikes!",user.pbThis))
+      end
+      if target.pbOwnSide.effects[PBEffects::ToxicSpikes]>0 ||
+         (Settings::MECHANICS_GENERATION >= 6 &&
+         target.pbOpposingSide.effects[PBEffects::ToxicSpikes]>0)
+        target.pbOwnSide.effects[PBEffects::ToxicSpikes]      = 0
+        target.pbOpposingSide.effects[PBEffects::ToxicSpikes] = 0 if Settings::MECHANICS_GENERATION >= 6
+        @battle.pbDisplay(_INTL("{1} blew away poison spikes!",user.pbThis))
+      end
+      if target.pbOwnSide.effects[PBEffects::StickyWeb] ||
+         (Settings::MECHANICS_GENERATION >= 6 &&
+         target.pbOpposingSide.effects[PBEffects::StickyWeb])
+        target.pbOwnSide.effects[PBEffects::StickyWeb]      = false
+        target.pbOpposingSide.effects[PBEffects::StickyWeb] = false if Settings::MECHANICS_GENERATION >= 6
+        @battle.pbDisplay(_INTL("{1} blew away sticky webs!",user.pbThis))
+      end
+      if target.pbOwnSide.effects[PBEffects::CometShards] ||
+         (Settings::MECHANICS_GENERATION >= 6 &&
+         target.pbOpposingSide.effects[PBEffects::CometShards])
+        target.pbOwnSide.effects[PBEffects::CometShards]      = false
+        target.pbOpposingSide.effects[PBEffects::CometShards] = false if Settings::MECHANICS_GENERATION >= 6
+        @battle.pbDisplay(_INTL("{1} blew away stealth rocks!",user.pbThis))
+      end
+    else
+      @battle.pbDisplay(_INTL("The mysterious force prevents hazard removal!"))
     end
     if Settings::MECHANICS_GENERATION >= 8 && @battle.field.terrain != :None
       case @battle.field.terrain
@@ -4152,7 +4169,7 @@ class PokeBattle_Move_103 < PokeBattle_Move
       @battle.pbDisplay(_INTL("But it failed!"))
       return true
     end
-    if battle.field.weather==:Windy
+    if battle.field.weather==:Windy && $gym_hazard == false
       @battle.pbDisplay(_INTL("The Wind prevented the hazards from being set!"))
       return true
     end
@@ -4172,7 +4189,7 @@ class PokeBattle_Move_104 < PokeBattle_Move
       @battle.pbDisplay(_INTL("But it failed!"))
       return true
     end
-    if battle.field.weather==:Windy
+    if battle.field.weather==:Windy && $gym_hazard == false
       @battle.pbDisplay(_INTL("The Wind prevented the hazards from being set!"))
       return true
     end
@@ -4192,7 +4209,7 @@ class PokeBattle_Move_105 < PokeBattle_Move
       @battle.pbDisplay(_INTL("But it failed!"))
       return true
     end
-    if battle.field.weather==:Windy
+    if battle.field.weather==:Windy && $gym_hazard == false
       @battle.pbDisplay(_INTL("The Wind prevented the hazards from being set!"))
       return true
     end
@@ -4212,7 +4229,7 @@ class PokeBattle_Move_153 < PokeBattle_Move
       @battle.pbDisplay(_INTL("But it failed!"))
       return true
     end
-    if battle.field.weather==:Windy
+    if battle.field.weather==:Windy && $gym_hazard == false
       @battle.pbDisplay(_INTL("The Wind prevented the hazards from being set!"))
       return true
     end
@@ -4245,25 +4262,29 @@ class PokeBattle_Move_110 < PokeBattle_Move
       user.effects[PBEffects::StarSap] = -1
       @battle.pbDisplay(_INTL("{1} shed Star Sap!",user.pbThis))
     end
-    if user.pbOwnSide.effects[PBEffects::StealthRock]
-      user.pbOwnSide.effects[PBEffects::StealthRock] = false
-      @battle.pbDisplay(_INTL("{1} blew away stealth rocks!",user.pbThis))
-    end
-    if user.pbOwnSide.effects[PBEffects::Spikes]>0
-      user.pbOwnSide.effects[PBEffects::Spikes] = 0
-      @battle.pbDisplay(_INTL("{1} blew away spikes!",user.pbThis))
-    end
-    if user.pbOwnSide.effects[PBEffects::ToxicSpikes]>0
-      user.pbOwnSide.effects[PBEffects::ToxicSpikes] = 0
-      @battle.pbDisplay(_INTL("{1} blew away poison spikes!",user.pbThis))
-    end
-    if user.pbOwnSide.effects[PBEffects::StickyWeb]
-      user.pbOwnSide.effects[PBEffects::StickyWeb] = false
-      @battle.pbDisplay(_INTL("{1} blew away sticky webs!",user.pbThis))
-    end
-    if user.pbOwnSide.effects[PBEffects::CometShards]
-      user.pbOwnSide.effects[PBEffects::CometShards] = false
-      @battle.pbDisplay(_INTL("{1} blew away comet shards!",user.pbThis))
+    if $gym_hazard == false
+      if user.pbOwnSide.effects[PBEffects::StealthRock]
+        user.pbOwnSide.effects[PBEffects::StealthRock] = false
+        @battle.pbDisplay(_INTL("{1} blew away stealth rocks!",user.pbThis))
+      end
+      if user.pbOwnSide.effects[PBEffects::Spikes]>0
+        user.pbOwnSide.effects[PBEffects::Spikes] = 0
+        @battle.pbDisplay(_INTL("{1} blew away spikes!",user.pbThis))
+      end
+      if user.pbOwnSide.effects[PBEffects::ToxicSpikes]>0
+        user.pbOwnSide.effects[PBEffects::ToxicSpikes] = 0
+        @battle.pbDisplay(_INTL("{1} blew away poison spikes!",user.pbThis))
+      end
+      if user.pbOwnSide.effects[PBEffects::StickyWeb]
+        user.pbOwnSide.effects[PBEffects::StickyWeb] = false
+        @battle.pbDisplay(_INTL("{1} blew away sticky webs!",user.pbThis))
+      end
+      if user.pbOwnSide.effects[PBEffects::CometShards]
+        user.pbOwnSide.effects[PBEffects::CometShards] = false
+        @battle.pbDisplay(_INTL("{1} blew away comet shards!",user.pbThis))
+      end
+    else
+      @battle.pbDisplay(_INTL("The mysterious force prevents hazard removal!"))
     end
     user.pbRaiseStatStage(:SPEED,1,user)
   end
@@ -4321,59 +4342,67 @@ class PokeBattle_Move_534 < PokeBattle_Move
     return if user.fainted? || target.damageState.unaffected
     tidy = false
     # user side
-    if user.pbOwnSide.effects[PBEffects::StealthRock]
-      user.pbOwnSide.effects[PBEffects::StealthRock] = false
-      @battle.pbDisplay(_INTL("The pointed stones disappeared from around your team!"))
-      tidy = true if !tidy
-    end
-    if user.pbOwnSide.effects[PBEffects::CometShards]
-      user.pbOwnSide.effects[PBEffects::CometShards] = false
-      @battle.pbDisplay(_INTL("The comet shards blew away!"))
-      tidy = true if !tidy
-    end
-    if user.pbOwnSide.effects[PBEffects::Spikes] > 0
-      user.pbOwnSide.effects[PBEffects::Spikes] = 0
-      @battle.pbDisplay(_INTL("The spikes disappeared from the ground around your team!"))
-      tidy = true if !tidy
-    end
-    if user.pbOwnSide.effects[PBEffects::ToxicSpikes] > 0
-      user.pbOwnSide.effects[PBEffects::ToxicSpikes] = 0
-      @battle.pbDisplay(_INTL("The poison spikes disappeared from the ground around your team!"))
-      tidy = true if !tidy
-    end
-    if user.pbOwnSide.effects[PBEffects::StickyWeb]
-      user.pbOwnSide.effects[PBEffects::StickyWeb] = false
-      @battle.pbDisplay(_INTL("The sticky web has disappeared from the ground around you!"))
-      tidy = true if !tidy
+    if $gym_hazard == false
+      if user.pbOwnSide.effects[PBEffects::StealthRock]
+        user.pbOwnSide.effects[PBEffects::StealthRock] = false
+        @battle.pbDisplay(_INTL("The pointed stones disappeared from around your team!"))
+        tidy = true if !tidy
+      end
+      if user.pbOwnSide.effects[PBEffects::CometShards]
+        user.pbOwnSide.effects[PBEffects::CometShards] = false
+        @battle.pbDisplay(_INTL("The comet shards blew away!"))
+        tidy = true if !tidy
+      end
+      if user.pbOwnSide.effects[PBEffects::Spikes] > 0
+        user.pbOwnSide.effects[PBEffects::Spikes] = 0
+        @battle.pbDisplay(_INTL("The spikes disappeared from the ground around your team!"))
+        tidy = true if !tidy
+      end
+      if user.pbOwnSide.effects[PBEffects::ToxicSpikes] > 0
+        user.pbOwnSide.effects[PBEffects::ToxicSpikes] = 0
+        @battle.pbDisplay(_INTL("The poison spikes disappeared from the ground around your team!"))
+        tidy = true if !tidy
+      end
+      if user.pbOwnSide.effects[PBEffects::StickyWeb]
+        user.pbOwnSide.effects[PBEffects::StickyWeb] = false
+        @battle.pbDisplay(_INTL("The sticky web has disappeared from the ground around you!"))
+        tidy = true if !tidy
+      end
+    else
+      pbDisplay(_INTL("The mysterious force prevents hazard removal!"))
     end
     @battle.allSameSideBattlers(user).each do |b|
       b.effects[PBEffects::Substitute] = 0
       tidy = true if !tidy
     end
     # opp side
-    if user.pbOpposingSide.effects[PBEffects::StealthRock]
-      user.pbOpposingSide.effects[PBEffects::StealthRock] = false
-      @battle.pbDisplay(_INTL("The pointed stones disappeared from around the opposing team!"))
-      tidy = true if !tidy
-    end
-    if user.pbOpposingSide.effects[PBEffects::CometShards]
-      user.pbOpposingSide.effects[PBEffects::CometShards] = false
-      @battle.pbDisplay(_INTL("The comet shards blew away!"))
-      tidy = true if !tidy
-    end
-    if user.pbOpposingSide.effects[PBEffects::Spikes] > 0
-      user.pbOpposingSide.effects[PBEffects::Spikes] = 0
-      @battle.pbDisplay(_INTL("The spikes disappeared from the ground around the opposing team!"))
-      tidy = true if !tidy
-    end
-    if user.pbOpposingSide.effects[PBEffects::ToxicSpikes] > 0
-      user.pbOpposingSide.effects[PBEffects::ToxicSpikes] = 0
-      @battle.pbDisplay(_INTL("The poison spikes disappeared from the ground around the opposing team!"))
-      tidy = true if !tidy
-    end
-    if user.pbOpposingSide.effects[PBEffects::StickyWeb]
-      user.pbOpposingSide.effects[PBEffects::StickyWeb] = false
-      @battle.pbDisplay(_INTL("The sticky web has disappeared from the ground around the opposing team!"))
+    if $gym_hazard == false
+      if user.pbOpposingSide.effects[PBEffects::StealthRock]
+        user.pbOpposingSide.effects[PBEffects::StealthRock] = false
+        @battle.pbDisplay(_INTL("The pointed stones disappeared from around the opposing team!"))
+        tidy = true if !tidy
+      end
+      if user.pbOpposingSide.effects[PBEffects::CometShards]
+        user.pbOpposingSide.effects[PBEffects::CometShards] = false
+        @battle.pbDisplay(_INTL("The comet shards blew away!"))
+        tidy = true if !tidy
+      end
+      if user.pbOpposingSide.effects[PBEffects::Spikes] > 0
+        user.pbOpposingSide.effects[PBEffects::Spikes] = 0
+        @battle.pbDisplay(_INTL("The spikes disappeared from the ground around the opposing team!"))
+        tidy = true if !tidy
+      end
+      if user.pbOpposingSide.effects[PBEffects::ToxicSpikes] > 0
+        user.pbOpposingSide.effects[PBEffects::ToxicSpikes] = 0
+        @battle.pbDisplay(_INTL("The poison spikes disappeared from the ground around the opposing team!"))
+        tidy = true if !tidy
+      end
+      if user.pbOpposingSide.effects[PBEffects::StickyWeb]
+        user.pbOpposingSide.effects[PBEffects::StickyWeb] = false
+        @battle.pbDisplay(_INTL("The sticky web has disappeared from the ground around the opposing team!"))
+      end
+    else
+      pbDisplay(_INTL("The mysterious force prevents hazard removal!"))
     end
     @battle.eachOtherSideBattler(user.index) do |b|
       b.effects[PBEffects::Substitute] = 0
@@ -4525,7 +4554,6 @@ class PokeBattle_Move_17A < PokeBattle_Move
     @battle.pbDisplay(_INTL("{1} swapped the battle effects affecting each side of the field!",user.pbThis))
   end
 end
-
 
 
 #===============================================================================
@@ -5040,24 +5068,6 @@ class PokeBattle_Move_520 < PokeBattle_Move_0C0
   end
 end
 
-class PokeBattle_Move_545 < PokeBattle_Move_00F
-  def hitsFlyingTargets?; return true; end
-
-  def pbCalcTypeModSingle(moveType,defType,user,target)
-    return Effectiveness::NORMAL_EFFECTIVE_ONE if moveType == :GROUND && defType == :FLYING
-    return super
-  end
-end
-
-class PokeBattle_Move_546 < PokeBattle_Move_0BD
-  def hitsFlyingTargets?; return true; end
-
-  def pbCalcTypeModSingle(moveType,defType,user,target)
-    return Effectiveness::NORMAL_EFFECTIVE_ONE if moveType == :GROUND && defType == :FLYING
-    return super
-  end
-end
-
 class PokeBattle_Move_521 < PokeBattle_Move
   def pbBaseDamage(baseDmg,user,target)
     baseDmg *= 2 if @battle.field.terrain == :Misty && user.affectedByTerrain?
@@ -5186,7 +5196,7 @@ class PokeBattle_Move_500 < PokeBattle_Move
       @battle.pbDisplay(_INTL("But it failed!"))
       return true
     end
-    if @battle.field.weather==:Windy
+    if @battle.field.weather==:Windy && $gym_hazard == false
       @battle.pbDisplay(_INTL("The Wind prevented the hazards from being set!"))
       return true
     end
@@ -6028,9 +6038,9 @@ class PokeBattle_Battle
     end
     # Check for terrain seeds that boost stats in a terrain
     eachBattler { |b|
-	  b.pbCheckFormOnTerrainChange
-	  b.pbItemTerrainStatBoostCheck
-	}
+    b.pbCheckFormOnTerrainChange
+    b.pbItemTerrainStatBoostCheck
+  }
   end
 
   def pbEORTerrain
@@ -6703,4 +6713,5 @@ module PBEffects
   OctolockUser        = 428
   BlunderPolicy       = 429
   NeutralizingGas     = 430
+  EchoChamber         = 431
 end

@@ -50,6 +50,7 @@ class Level_Scaling
     return true if $game_switches[LvlCap::Kaizo] || $game_switches[LvlCap::Randomizer]
     return true if (self.boss? == true || self.rival? == true || self.gym? == true) 
     return true if $game_switches[LvlCap::NoChange]
+    return true if $Trainer.badge_count > 3
     return false
   end
 
