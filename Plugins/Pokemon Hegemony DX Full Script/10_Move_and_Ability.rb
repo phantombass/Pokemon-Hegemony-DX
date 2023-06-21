@@ -666,7 +666,7 @@ class PokeBattle_Move
      priority = @battle.pbPriority(true)
      msg = nil
      for fc in fe[:field_changers].keys
-      if @battle.field.field_effects != PBFieldEffects::None
+      if @battle.field.field_effects != :None
         if fe[:field_changers][fc].include?(self.id) && fe[:field_change_conditions][fc] != nil && fe[:field_change_conditions][fc] == true
           for message in fe[:change_message].keys
             msg = message if fe[:change_message][message].include?(self.id)
@@ -702,7 +702,7 @@ class PokeBattle_Move
    mesg = false
    if fe[:type_damage_change] != nil
      for key in fe[:type_damage_change].keys
-       if @battle.field.field_effects != PBFieldEffects::None
+       if @battle.field.field_effects != :None
         if if fe[:type_damage_change][key].include?(type)
           multipliers[FINAL_DMG_MULT] *= key
           mesg = true
@@ -6202,7 +6202,9 @@ class PokeBattle_Battle
     pbCalculatePriority           # recalculate speeds
     priority = pbPriority(true)   # in order of fastest -> slowest speeds only
     # Weather
-    pbEORField(priority)
+    priority.each do |battler|
+      pbEORField(battler)
+    end
     pbEORWeather(priority)
     # Future Sight/Doom Desire
     @positions.each_with_index do |pos,idxPos|

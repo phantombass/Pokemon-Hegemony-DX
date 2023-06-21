@@ -107,7 +107,7 @@ class PokemonTemp
     else
       raise _INTL("Battle rule \"{1}\" does not exist.", rule)
     end
-  	$game_screen.field_effects(rules["defaultfield"])
+  	$game_screen.field_effect(rules["defaultfield"])
   	$PokemonGlobal.nextBattleBack = FIELD_EFFECTS[rules["defaultField"]][:field_gfx]
   end
   def pbPrepareBattle(battle)
@@ -210,7 +210,7 @@ def setBattleRule(*args)
   r = nil
   args.each do |arg|
     if r
-      $game_temp.add_battle_rule(r, arg)
+      $PokemonTemp.recordBattleRule(r, arg)
       r = nil
     else
       case arg.downcase
@@ -219,7 +219,7 @@ def setBattleRule(*args)
         r = arg
         next
       end
-      $game_temp.add_battle_rule(arg)
+      $PokemonTemp.recordBattleRule(arg)
     end
   end
   raise _INTL("Argument {1} expected a variable after it but didn't have one.", r) if r
@@ -233,7 +233,7 @@ class Game_Screen
     @field_effects = :None
   end
   def field_effect(type)
-    @field_effects = GameData::FieldEffects.try_get(type).id
+    @field_effects = type
   end
 end
 
@@ -255,6 +255,199 @@ class PokeBattle_Battle
     return false if @field.nil?
   	return false if [:Rain,:HeavyRain,:AcidRain].include?(@field.pbWeather)
   	return true
+  end
+  def pbStartBattleCore
+    # Set up the battlers on each side
+    if $game_switches[899] && $game_switches[900]
+      pbHegemonyClauses
+    end
+    sendOuts = pbSetUpSides
+    olditems = []
+    pbParty(0).each_with_index do |pkmn,i|
+      item = pkmn.item_id
+      olditems.push(item)
+    end
+    $olditems = olditems
+    @field.field_effects = $PokemonTemp.battleRules["defaultField"]
+    $field_effect_bg = nil
+    # Create all the sprites and play the battle intro animation
+    @field.weather = $game_screen.weather_type
+    @scene.pbStartBattle(self)
+    # Show trainers on both sides sending out Pokémon
+    pbStartBattleSendOut(sendOuts)
+    # Weather announcement
+    weather_data = GameData::BattleWeather.try_get(@field.weather)
+    pbCommonAnimation(weather_data.animation) if weather_data
+    case @field.weather
+    when :Sun         then pbDisplay(_INTL("The sunlight is strong."))
+    when :Rain        then pbDisplay(_INTL("It is raining."))
+    when :Sandstorm   then pbDisplay(_INTL("A sandstorm is raging."))
+    when :Hail        then pbDisplay(_INTL("Snow is falling."))
+    when :HarshSun    then pbDisplay(_INTL("The sunlight is extremely harsh."))
+    when :HeavyRain   then pbDisplay(_INTL("It is raining heavily."))
+    when :StrongWinds then pbDisplay(_INTL("The wind is strong."))
+    when :ShadowSky   then pbDisplay(_INTL("The sky is shadowy."))
+    when :Starstorm  then pbDisplay(_INTL("Stars fill the sky."))
+    when :Thunder    then pbDisplay(_INTL("Lightning flashes in the sky."))
+    when :Storm      then pbDisplay(_INTL("A thunderstorm rages. The ground became electrified!"))
+    when :Humid      then pbDisplay(_INTL("The air is humid."))
+    #when :Overcast   then pbDisplay(_INTL("The sky is overcast."))
+    when :Eclipse    then pbDisplay(_INTL("The sky is dark."))
+    when :Fog        then pbDisplay(_INTL("The fog is deep."))
+    when :AcidRain   then pbDisplay(_INTL("Acid rain is falling."))
+    when :VolcanicAsh then pbDisplay(_INTL("Volcanic Ash sprinkles down."))
+    when :Rainbow    then pbDisplay(_INTL("A rainbow crosses the sky."))
+    when :Borealis   then pbDisplay(_INTL("The sky is ablaze with color."))
+    when :TimeWarp   then pbDisplay(_INTL("Time has stopped."))
+    when :Reverb     then pbDisplay(_INTL("A dull echo hums."))
+    when :DClear     then pbDisplay(_INTL("The sky is distorted."))
+    when :DRain      then pbDisplay(_INTL("Rain is falling upward."))
+    when :DWind      then pbDisplay(_INTL("The wind is haunting."))
+    when :DAshfall   then pbDisplay(_INTL("Ash floats in midair."))
+    when :Sleet      then pbDisplay(_INTL("Sleet began to fall."))
+    when :Windy      then pbDisplay(_INTL("There is a slight breeze."))
+    when :HeatLight  then pbDisplay(_INTL("Static fills the air."))
+    when :DustDevil  then pbDisplay(_INTL("A dust devil approaches."))
+    end
+    # Terrain announcement
+    terrain_data = GameData::BattleTerrain.try_get(@field.terrain)
+    pbCommonAnimation(terrain_data.animation) if terrain_data
+    case @field.terrain
+    when :Electric
+      pbDisplay(_INTL("An electric current runs across the battlefield!"))
+    when :Grassy
+      pbDisplay(_INTL("Grass is covering the battlefield!"))
+    when :Misty
+      pbDisplay(_INTL("Mist swirls about the battlefield!"))
+    when :Psychic
+      pbDisplay(_INTL("The battlefield is weird!"))
+    when :Poison
+      pbDisplay(_INTL("Toxic waste covers the ground!"))
+    end
+    fe = @field.field_effects == :None ? nil : FIELD_EFFECTS[@field.field_effects]
+    if fe[:intro_message] != nil
+      pbDisplay(_INTL(fe[:intro_message]))
+    end
+    #case fe[:intro_script]
+    #add your intro scripts here for certain gimmicks the field effect can start the battle with, like weather or terrain
+    #end
+    # Abilities upon entering battle
+    pbOnActiveAll
+    # Main battle loop
+    pbBattleLoop
+  end
+
+  def pbEndOfBattle
+    #$mega_flag = 0
+    oldDecision = @decision
+    @decision = 4 if @decision==1 && wildBattle? && @caughtPokemon.length>0
+    case oldDecision
+    ##### WIN #####
+    when 1
+      PBDebug.log("")
+      PBDebug.log("***Player won***")
+      if trainerBattle?
+        @scene.pbTrainerBattleSuccess
+        case @opponent.length
+        when 1
+          pbDisplayPaused(_INTL("You defeated {1}!",@opponent[0].full_name))
+        when 2
+          pbDisplayPaused(_INTL("You defeated {1} and {2}!",@opponent[0].full_name,
+             @opponent[1].full_name))
+        when 3
+          pbDisplayPaused(_INTL("You defeated {1}, {2} and {3}!",@opponent[0].full_name,
+             @opponent[1].full_name,@opponent[2].full_name))
+        end
+        @opponent.each_with_index do |_t,i|
+          @scene.pbShowOpponent(i)
+          msg = (@endSpeeches[i] && @endSpeeches[i]!="") ? @endSpeeches[i] : "..."
+          pbDisplayPaused(msg.gsub(/\\[Pp][Nn]/,pbPlayer.name))
+        end
+      end
+      # Gain money from winning a trainer battle, and from Pay Day
+      pbGainMoney if @decision!=4
+      # Hide remaining trainer
+      @scene.pbShowOpponent(@opponent.length) if trainerBattle? && @caughtPokemon.length>0
+    ##### LOSE, DRAW #####
+    when 2, 5
+      PBDebug.log("")
+      PBDebug.log("***Player lost***") if @decision==2
+      PBDebug.log("***Player drew with opponent***") if @decision==5
+      if @internalBattle
+        pbDisplayPaused(_INTL("You have no more Pokémon that can fight!"))
+        if trainerBattle?
+          case @opponent.length
+          when 1
+            pbDisplayPaused(_INTL("You lost against {1}!",@opponent[0].full_name))
+          when 2
+            pbDisplayPaused(_INTL("You lost against {1} and {2}!",
+               @opponent[0].full_name,@opponent[1].full_name))
+          when 3
+            pbDisplayPaused(_INTL("You lost against {1}, {2} and {3}!",
+               @opponent[0].full_name,@opponent[1].full_name,@opponent[2].full_name))
+          end
+        end
+        # Lose money from losing a battle
+        pbLoseMoney
+        pbDisplayPaused(_INTL("You blacked out!")) if !@canLose
+      elsif @decision==2
+        if @opponent
+          @opponent.each_with_index do |_t,i|
+            @scene.pbShowOpponent(i)
+            msg = (@endSpeechesWin[i] && @endSpeechesWin[i]!="") ? @endSpeechesWin[i] : "..."
+            pbDisplayPaused(msg.gsub(/\\[Pp][Nn]/,pbPlayer.name))
+          end
+        end
+      end
+    ##### CAUGHT WILD POKÉMON #####
+    when 4
+      @scene.pbWildBattleSuccess if !Settings::GAIN_EXP_FOR_CAPTURE
+    end
+    # Register captured Pokémon in the Pokédex, and store them
+    pbRecordAndStoreCaughtPokemon
+    # Collect Pay Day money in a wild battle that ended in a capture
+    pbGainMoney if @decision==4
+    # Pass on Pokérus within the party
+    if @internalBattle
+      infected = []
+      $Trainer.party.each_with_index do |pkmn,i|
+        infected.push(i) if pkmn.pokerusStage==1
+      end
+      infected.each do |idxParty|
+        strain = $Trainer.party[idxParty].pokerusStrain
+        if idxParty>0 && $Trainer.party[idxParty-1].pokerusStage==0
+          $Trainer.party[idxParty-1].givePokerus(strain) if rand(3)==0   # 33%
+        end
+        if idxParty<$Trainer.party.length-1 && $Trainer.party[idxParty+1].pokerusStage==0
+          $Trainer.party[idxParty+1].givePokerus(strain) if rand(3)==0   # 33%
+        end
+      end
+    end
+    # Clean up battle stuff
+    @scene.pbEndBattle(@decision)
+    @battlers.each do |b|
+      next if !b
+      pbCancelChoice(b.index)   # Restore unused items to Bag
+      BattleHandlers.triggerAbilityOnSwitchOut(b.ability,b,true) if b.abilityActive?
+    end
+    pbParty(0).each_with_index do |pkmn,i|
+      next if !pkmn
+      @peer.pbOnLeavingBattle(self,pkmn,@usedInBattle[0][i],true)   # Reset form
+      if pkmn.fainted? && $game_switches[902]
+        $PokemonBag.pbStoreItem(pkmn.item, 1) if pkmn.item
+        $Trainer.party.delete_at(pkmn.index)
+        $PokemonTemp.evolutionLevels.delete_at(pkmn.index)
+      end
+      if @opponent
+        pkmn.item = $olditems[i]
+      else
+        pkmn.item = @initialItems[0][i]
+      end
+    end
+    @scene.pbTrainerBattleSpeech("loss") if @decision == 2
+    $game_switches[89] = false
+    # return final output
+    return @decision
   end
   def pbSendOut(sendOuts, startBattle = false)
     sendOuts.each { |b| @peer.pbOnEnteringBattle(self, @battlers[b[0]], b[1]) }
@@ -299,7 +492,7 @@ class PokeBattle_Battle
   def pbEORField(battler)
     return if battler.fainted?
     amt = -1
-	fe = FIELD_EFFECTS[@field.field_effects]
+	  fe = FIELD_EFFECTS[@field.field_effects]
     #add damage done at the end of the field by field effects
     return if amt < 0
     @scene.pbDamageAnimation(battler)
@@ -363,7 +556,7 @@ class PokeBattle_Scene
     bg.z      = 0
     bg.mirror = true
     2.times do |side|
-      baseX, baseY = Battle::Scene.pbBattlerPosition(side)
+      baseX, baseY = PokeBattle_SceneConstants.pbBattlerPosition(side)
       base = pbAddSprite("base_#{side}", baseX, baseY,
                          (side == 0) ? playerBase : enemyBase, @viewport)
       base.z = 1

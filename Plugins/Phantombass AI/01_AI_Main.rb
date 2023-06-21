@@ -697,7 +697,7 @@ class PBAI
             $target_ind = target
             $chosen_move = @battler.moves[move_index]
           end
-          if !$DEBUG
+          if $DEBUG
             name = @battler.moves[move_index].name
             str += "\nMOVE(#{target_name}) #{name}: #{score} => #{finalPerc}" + " percent"
             str += " << CHOSEN" if i == idx

@@ -1,6 +1,7 @@
 class PokeBattle_Battler
   # Fundamental to this object
   attr_reader   :battle
+  attr_reader :personalID
   attr_accessor :index
   # The Pokémon and its properties
   attr_reader   :pokemon
@@ -17,7 +18,7 @@ class PokeBattle_Battler
   attr_accessor :spatk
   attr_accessor :speed
   attr_accessor :stages
-  attr_accessor :role
+  attr_accessor :roles
   attr_reader   :totalhp
   attr_reader   :fainted    # Boolean to mark whether self has fainted properly
   attr_accessor :captured   # Boolean to mark whether self was captured
@@ -68,14 +69,27 @@ class PokeBattle_Battler
     return GameData::Ability.try_get(@ability_id)
   end
 
-  def role
-    @role = :NONE if (@role == "" || @role == nil)
-    return GameData::Role.try_get(@role)
+  def roles
+    @roles.push(:NONE) if (@roles == "" || @roles == nil)
+    return @roles
+  end
+
+  def has_role?(role)
+    x = []
+    for i in @roles
+      x.push(i)
+      if role.is_a?(Array)
+        if role.include?(i)
+          return true
+        end
+      end
+    end
+    return x.include?(role) && !role.is_a?(Array)
   end
 
   def role=(value)
     new_role = GameData::Role.try_get(value)
-    @role = (new_role) ? new_role.id : nil
+    @roles.push(new_role) ? new_role.id : nil
   end
 
   def ability=(value)
@@ -355,6 +369,10 @@ class PokeBattle_Battler
     return activeTypes.include?(GameData::Type.get(type).id)
   end
 
+  def pbHasType(type)
+    return pbHasType?(type)
+  end
+
   def pbHasOtherType?(type)
     return false if !type
     activeTypes = pbTypes(true)
@@ -552,6 +570,12 @@ class PokeBattle_Battler
 
   def takesIndirectDamage?(showMsg=false)
     return false if fainted?
+    if hasActiveAbility?(:TOXICBOOST) && self.status == :POISON
+      return false
+    end
+    if hasActiveAbility?(:FLAREBOOST) && self.status == :BURN
+      return false
+    end
     if hasActiveAbility?(:MAGICGUARD)
       if showMsg
         @battle.pbShowAbilitySplash(self)
@@ -797,5 +821,9 @@ class PokeBattle_Battler
       return @battle.battlers[i] if @battle.battlers[i]
     end
     return @battle.battlers[(@index^1)]
+  end
+
+  def pbOppositeOpposing
+    return @battle.doublebattle ? @battle.battlers[(@index^3)] : @battle.battlers[(@index^1)]
   end
 end

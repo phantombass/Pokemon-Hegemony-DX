@@ -88,7 +88,7 @@ class Pokemon
   attr_accessor :candies_fed
   # @return [Boolean] whether the Pokemon is a Brilliant Pokemon or no
   attr_accessor :brilliant
-  attr_accessor :role
+  attr_accessor :roles
 
   # Max total IVs
   IV_STAT_LIMIT = 31
@@ -543,15 +543,15 @@ class Pokemon
     return @nature
   end
 
-  def role
-    @role = :NONE if (@role == "" || @role == nil)
-    return GameData::Role.try_get(@role)
+  def roles
+    @roles = [:NONE] if (@roles == [] || @roles == nil)
+    return @roles
   end
 
-  def role=(value)
+  def add_role(value)
     return if value && !GameData::Role.exists?(value)
-    @role = :NONE if !value
-    @role = (value) ? GameData::Role.get(value).id : value
+    @roles.push(:NONE) if !value
+    @roles.push(GameData::Role.get(value).id)
   end
 
   # Sets this Pokémon's nature to a particular nature.
@@ -666,7 +666,7 @@ class Pokemon
   # Returns the list of moves this Pokémon can learn by levelling up.
   # @return [Array<Array<Integer,Symbol>>] this Pokémon's move list, where every element is [level, move ID]
   def getMoveList
-    return species_data.moves
+    return $game_variables[973] != 0 ? getRandMoves(self.species) : species_data.moves
   end
 
   # Sets this Pokémon's movelist to the default movelist it originally had.
@@ -1183,6 +1183,7 @@ class Pokemon
     @shiny            = nil
     @ability_index    = nil
     @ability          = nil
+    @roles            = []
     @nature           = nil
     @nature_for_stats = nil
     @item             = nil
