@@ -118,8 +118,7 @@ end
 #-------------------------------------------------------------------------------
 
 def pbItemBall(item, quantity = 1)
-  random = randomizeItem(item)
-  item = EliteBattle.randomizer? ? GameData::Item.get(random).id_number : GameData::Item.get(item).id_number
+  item = GameData::Item.get(item).id_number
   return false if !item || item<=0 || quantity<1
   itemname = (quantity>1) ? GameData::Item.get(item).name_plural : GameData::Item.get(item).name
   pocket = pbGetPocket(item)

@@ -660,6 +660,119 @@ class PokeBattle_Move
         multipliers[:defense_multiplier] *= 1.5
       end
     end
+    # Field Effects
+    fe = FIELD_EFFECTS[@battle.field.field_effects]
+   if fe[:field_changers] != nil
+     priority = @battle.pbPriority(true)
+     msg = nil
+     for fc in fe[:field_changers].keys
+      if @battle.field.field_effects != PBFieldEffects::None
+        if fe[:field_changers][fc].include?(self.id) && fe[:field_change_conditions][fc] != nil && fe[:field_change_conditions][fc] == true
+          for message in fe[:change_message].keys
+            msg = message if fe[:change_message][message].include?(self.id)
+          end
+          @battle.pbDisplay(_INTL(msg)) if msg != nil
+                    @battle.field.field_effects = fc
+          fe = FIELD_EFFECTS[@battle.field.field_effects]
+          $field_effect_bg = fe[:field_gfx]
+          @battle.scene.pbRefreshEverything
+          @battle.field.weather == :None
+          priority.each do |pkmn|
+            if pkmn.hasActiveAbility?([fe[:abilities]])
+              for key in fe[:ability_effects].keys
+                if pkmn.ability != fc
+                  abil = nil
+                else
+                  abil = fe[:ability_effects][pkmn.ability]
+                end
+                if pkmn.ability == fc && abil.is_a?(Array)
+                  trigger = true
+                end
+              end
+              BattleHandlers.triggerAbilityOnSwitchIn(fc,pkmn,@battle) if trigger
+              pkmn.pbRaiseStatStage(abil[0],abil[1],user) if abil != nil && !trigger
+            end
+          end
+        end
+      end
+    end
+    end
+ #Field Effect Type Boosts
+   trigger = false
+   mesg = false
+   if fe[:type_damage_change] != nil
+     for key in fe[:type_damage_change].keys
+       if @battle.field.field_effects != PBFieldEffects::None
+        if if fe[:type_damage_change][key].include?(type)
+          multipliers[FINAL_DMG_MULT] *= key
+          mesg = true
+        end
+        if mesg == true
+          for mess in fe[:type_messages].keys
+            msg = mess if fe[:type_messages][mess].include?(type)
+          end
+          @battle.pbDisplay(_INTL(msg))
+        end
+       end
+     end
+   end
+   #Field Effect Specific Move Boost
+   if fe[:move_damage_boost] != nil
+     for dmg in fe[:move_damage_boost].keys
+       if @battle.field.field_effects != :None
+        if fe[:move_damage_boost][dmg].is_a?(Array)
+          if fe[:move_damage_boost][dmg].include?(self.id)
+            multipliers[FINAL_DMG_MULT] *= dmg 
+            mesg = true if j == type
+          end
+        elsif type == getConst(PBTypes,fe[:move_damage_boost][dmg])
+          multipliers[FINAL_DMG_MULT] *= dmg
+          mesg = true
+        end
+        if mesg == true
+          for mess in fe[:move_messages].keys
+            if fe[:move_messages][mess].is_a?(Array)
+              msg = mess if fe[move_messages][mess].include?(self.id)
+            else
+              msg = mess if GameData::Type.get(fe[:move_messages][mess]).id == type
+            end
+          end
+          @battle.pbDisplay(INTL(msg))
+        end
+       end
+     end
+   end
+
+  #Field Effect Defensive Modifiers
+   if fe[:defensive_modifiers] != nil
+    priority = @battle.pbPriority(true)
+    msg = nil
+    for d in fe[:defensive_modifiers].keys
+      if fe[:defensive_modifiers][d][1] == "fullhp"
+        multipliers[FINAL_DMG_MULT] /= d
+      elsif fe[:defensive_modifiers][d][1] == "physical"
+        multipliers[DEF_MULT] *= d if physicalMove?
+      elsif fe[:defensive_modifiers][d][1] == "special"
+        multipliers[DEF_MULT] *= d if specialMove?
+      elsif fe[:defensive_modifiers][d][1] == nil
+        multipliers[DEF_MULT] *= d
+      end
+    end
+  end
+  #Additional Effects of Field Effects
+   if fe[:side_effects] != nil
+    priority = @battle.pbPriority(true)
+    msg = nil
+    f = fe[:side_effects].keys
+    for eff in fe[:side_effects].keys
+      if (fe[:side_effects][eff].is_a?(Array) && fe[:side_effects][eff].include?(self.id)) || (!fe[:side_effects][eff].is_a?(Array) && type == GameData::Type.get(fe[:side_effects][eff]).id)
+        #case eff
+          #add side effects for fields here
+        #end
+      end
+    end
+  end
+   end
     # Critical hits
     if target.damageState.critical
       if Settings::NEW_CRITICAL_HIT_RATE_MECHANICS
@@ -6003,6 +6116,9 @@ class PokeBattle_Battle
     when :HeatLight   then pbDisplay(_INTL("Static fills the air."))
     when :DustDevil   then pbDisplay(_INTL("A dust devil approaches."))
     end
+    #case @field.field_effects
+    #add changes to fields when weather changes here
+    #end
     # Check for end of primordial weather, and weather-triggered form changes
     eachBattler { |b| b.pbCheckFormOnWeatherChange }
     pbEndPrimordialWeather if $gym_weather == false
@@ -6086,6 +6202,7 @@ class PokeBattle_Battle
     pbCalculatePriority           # recalculate speeds
     priority = pbPriority(true)   # in order of fastest -> slowest speeds only
     # Weather
+    pbEORField(priority)
     pbEORWeather(priority)
     # Future Sight/Doom Desire
     @positions.each_with_index do |pos,idxPos|

@@ -56,15 +56,15 @@ GameData::Role.register({
 })
 
 GameData::Role.register({
-  :id           => :SUICIDELEAD,
+  :id           => :TANK,
   :id_number    => 5,
-  :name         => _INTL("Suicide Lead")
+  :name         => _INTL("Tank")
 })
 
 GameData::Role.register({
-  :id           => :HAZARDLEAD,
-  :id_number    => 6,
-  :name         => _INTL("Hazard Lead")
+  :id           => :LEAD,
+  :id_number    => 5,
+  :name         => _INTL("Lead")
 })
 
 GameData::Role.register({
@@ -152,7 +152,25 @@ GameData::Role.register({
 })
 
 GameData::Role.register({
-  :id           => :STATPASS,
+  :id           => :STATUSABSORBER,
   :id_number    => 21,
-  :name         => _INTL("Stat Pass")
+  :name         => _INTL("Status Absorber")
+})
+
+GameData::Role.register({
+  :id           => :WEATHERTERRAIN,
+  :id_number    => 22,
+  :name         => _INTL("Weather/Terrain Setter")
+})
+
+GameData::Role.register({
+  :id           => :TRAPPER,
+  :id_number    => 23,
+  :name         => _INTL("Trapper")
+})
+
+GameData::Role.register({
+  :id           => :PHAZER,
+  :id_number    => 24,
+  :name         => _INTL("Phazer")
 })
