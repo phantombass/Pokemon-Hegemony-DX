@@ -70,6 +70,7 @@ class PokeBattle_Battle
   attr_accessor :rules
   attr_accessor :choices          # Choices made by each Pokémon this round
   attr_accessor :megaEvolution    # Battle index of each trainer's Pokémon to Mega Evolve
+  attr_accessor :doublebattle
   attr_reader   :initialItems
   attr_reader   :recycleItems
   attr_reader   :belch
@@ -129,6 +130,7 @@ class PokeBattle_Battle
     @party1starts      = [0]
     @party2starts      = [0]
     @internalBattle    = true
+    @doublebattle      = false
     @debug             = false
     @canRun            = true
     @canLose           = false

@@ -53,7 +53,6 @@ FIELD_EFFECTS = {
 			#major note: all things in brackets MUST stay in brackets when used in these sections, or the script
 			#will fail
 		},
-		#Example Field
 		:Forest => {
 			:field_name => "Forest",
 			:intro_message => "The forest is dark.",
@@ -63,7 +62,7 @@ FIELD_EFFECTS = {
 			:intro_script => nil,
 			:abilities => [:SWARM],
 			:ability_effects => {
-			:SWARM => [:ATTACK,1]
+			:SWARM => [[:ATTACK,1],[:SPECIAL_ATTACK,1]]
 			},
 			:move_damage_boost => {
 			1.2 => [Fields::WIND_MOVES]
@@ -85,5 +84,128 @@ FIELD_EFFECTS = {
 			:field_changers => {:None => [Fields::IGNITE_MOVES]},
 			:change_message => {"The forest burned down!" => [Fields::IGNITE_MOVES]},
 			:field_change_conditions => {:None => PokeBattle_Battle.ignite?} 
-		}
+		},
+		:Garden => {
+			:field_name => "Garden",
+			:intro_message => "What a pretty garden...",
+			:field_gfx => "field",
+			:nature_power => :ENERGYBALL,
+			:mimicry => :GRASS,
+			:intro_script => nil,
+			:abilities => [:GRASSPELT,:FLOWERVEIL,:SAPSIPPER,:AROMAVEIL,:SWEETVEIL,:LEAFGUARD],
+			:ability_effects => {
+			:FLOWERVEIL => [[:DEFENSE,1]],
+			:AROMAVEIL => [[:DEFENSE,1]],
+			:SWEETVEIL => [[:SPECIAL_DEFENSE,1]],
+			:LEAFGUARD => [[:DEFENSE,1],[:SPECIAL_DEFENSE,1]]
+			},
+			:move_damage_boost => {
+			1.2 => [Fields::WIND_MOVES]
+			},
+			:move_messages => {"The wind blew through the grass." => [Fields::WIND_MOVES]},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {
+				1.3 => [:GRASS,:FAIRY,:BUG]
+			},
+			:type_messages => {"The field boosted the attack!" => [:GRASS,:BUG,:FAIRY]},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:side_effects => {},
+			:field_changers => {:None => [Fields::IGNITE_MOVES]},
+			:change_message => {"The garden burned down!" => [Fields::IGNITE_MOVES]},
+			:field_change_conditions => {:None => PokeBattle_Battle.ignite?} 
+		},
+		:Grassy => {
+			:field_name => "Grassy",
+			:intro_message => "Grass covers the field.",
+			:field_gfx => "field",
+			:nature_power => :ENERGYBALL,
+			:mimicry => :GRASS,
+			:intro_script => nil,
+			:abilities => [:GRASSPELT,:SAPSIPPER,:LEAFGUARD],
+			:ability_effects => {
+			:LEAFGUARD => [[:DEFENSE,1],[:SPECIAL_DEFENSE,1]]
+			},
+			:move_damage_boost => {
+			1.2 => [Fields::WIND_MOVES]
+			},
+			:move_messages => {"The wind blew through the grass." => [Fields::WIND_MOVES]},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {
+				1.3 => [:GRASS]
+			},
+			:type_messages => {"The field boosted the attack!" => [:GRASS]},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:side_effects => {},
+			:field_changers => {:None => [Fields::IGNITE_MOVES]},
+			:change_message => {"The field caught fire!" => [Fields::IGNITE_MOVES]},
+			:field_change_conditions => {:None => PokeBattle_Battle.ignite?} 
+		},
+		:Electric => {
+			:field_name => "Electric",
+			:intro_message => "Electricity runs along the field.",
+			:field_gfx => "Electric",
+			:nature_power => :THUNDERBOLT,
+			:mimicry => :ELECTRIC,
+			:intro_script => nil,
+			:abilities => [:VOLTABSORB,:LIGHTNINGROD,:MOTORDRIVE,:PROTOSYNTHESIS],
+			:ability_effects => {},
+			:move_damage_boost => {},
+			:move_messages => {"The wind blew through the grass." => [Fields::WIND_MOVES]},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {
+				1.3 => [:ELECTRIC]
+			},
+			:type_messages => {"The field powered the attack!" => [:ELECTRIC]},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:side_effects => {},
+			:field_changers => {:None => [Fields::QUAKE_MOVES]},
+			:change_message => {"The field got stamped out!" => [Fields::QUAKE_MOVES]},
+			:field_change_conditions => {} 
+		},
+		:Wildfire => {
+			:field_name => "Wildfire",
+			:intro_message => "The field is ablaze.",
+			:field_gfx => "wildfire",
+			:nature_power => :FLAMETHROWER,
+			:mimicry => :FIRE,
+			:intro_script => nil,
+			:abilities => [:FLASHFIRE,:WELLBAKEDBODY,:THERMALEXCHANGE,:HEATPROOF,:MAGMAARMOR],
+			:ability_effects => {},
+			:move_damage_boost => {
+			1.2 => [Fields::WIND_MOVES]
+			},
+			:move_messages => {"The wind fueled the flames." => [Fields::WIND_MOVES]},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {},
+			:type_messages => {},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:side_effects => {"cinders" => Fields::WIND_MOVES},
+			:field_changers => {:None => [Fields::IGNITE_MOVES]},
+			:change_message => {"The forest burned down!" => [Fields::IGNITE_MOVES]},
+			:field_change_conditions => {:None => PokeBattle_Battle.ignite?} 
+		},
 	}

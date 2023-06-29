@@ -164,66 +164,9 @@ class PokeBattle_Move
     return ret
   end
 
-  def pbCalcType(user)
-    @powerBoost = false
-    ret = pbBaseType(user)
-    if ret && GameData::Type.exists?(:ELECTRIC)
-      if @battle.field.effects[PBEffects::IonDeluge] && ret == :NORMAL
-        ret = :ELECTRIC
-        @powerBoost = false
-      end
-      if user.effects[PBEffects::Electrify]
-        ret = :ELECTRIC
-        @powerBoost = false
-      end
-    end
-    return ret
-  end
-
   #=============================================================================
   # Type effectiveness calculation
   #=============================================================================
-  def pbCalcTypeModSingle(moveType,defType,user,target)
-    ret = Effectiveness.calculate_one(moveType, defType)
-    # Ring Target
-    if target.hasActiveItem?(:RINGTARGET)
-      ret = Effectiveness::NORMAL_EFFECTIVE_ONE if Effectiveness.ineffective_type?(moveType, defType)
-    end
-    # Foresight
-    if user.hasActiveAbility?(:SCRAPPY) || target.effects[PBEffects::Foresight]
-      ret = Effectiveness::NORMAL_EFFECTIVE_ONE if defType == :GHOST &&
-                                                   Effectiveness.ineffective_type?(moveType, defType)
-    end
-    if user.hasActiveAbility?(:NITRIC)
-      ret = Effectiveness::NORMAL_EFFECTIVE_ONE if defType == :STEEL &&
-                                                   Effectiveness.ineffective_type?(moveType, defType)
-    end
-    # Miracle Eye
-    if target.effects[PBEffects::MiracleEye]
-      ret = Effectiveness::NORMAL_EFFECTIVE_ONE if defType == :DARK &&
-                                                   Effectiveness.ineffective_type?(moveType, defType)
-    end
-    # Delta Stream's weather
-    if @battle.pbWeather == :StrongWinds
-      ret = Effectiveness::NORMAL_EFFECTIVE_ONE if defType == :FLYING &&
-                                                   Effectiveness.super_effective_type?(moveType, defType)
-    end
-    if @battle.pbWeather == :StrongWinds
-      ret = Effectiveness::NORMAL_EFFECTIVE_ONE if defType == :DRAGON &&
-                                                   Effectiveness.super_effective_type?(moveType, defType)
-    end
-    # Volcanic Ash's weather
-    if @battle.pbWeather == :VolcanicAsh
-      ret = Effectiveness::NORMAL_EFFECTIVE_ONE if defType == :STEEL &&
-                                                   Effectiveness.super_effective_type?(moveType, defType)
-    end
-    # Grounded Flying-type Pokémon become susceptible to Ground moves
-    if !target.airborne?
-      ret = Effectiveness::NORMAL_EFFECTIVE_ONE if defType == :FLYING && moveType == :GROUND
-    end
-    return ret
-  end
-
   def pbCalcTypeMod(moveType,user,target)
     return Effectiveness::NORMAL_EFFECTIVE if !moveType
     return Effectiveness::NORMAL_EFFECTIVE if moveType == :GROUND &&
@@ -671,7 +614,7 @@ class PokeBattle_Move
           for message in fe[:change_message].keys
             msg = message if fe[:change_message][message].include?(self.id)
           end
-          @battle.pbDisplay(_INTL(msg)) if msg != nil
+          @battle.pbDisplay(_INTL("#{msg}")) if msg != nil
                     @battle.field.field_effects = fc
           fe = FIELD_EFFECTS[@battle.field.field_effects]
           $field_effect_bg = fe[:field_gfx]
@@ -704,14 +647,14 @@ class PokeBattle_Move
      for key in fe[:type_damage_change].keys
        if @battle.field.field_effects != :None
         if if fe[:type_damage_change][key].include?(type)
-          multipliers[FINAL_DMG_MULT] *= key
+          multipliers[:final_damage_multiplier] *= key
           mesg = true
         end
         if mesg == true
           for mess in fe[:type_messages].keys
             msg = mess if fe[:type_messages][mess].include?(type)
           end
-          @battle.pbDisplay(_INTL(msg))
+          @battle.pbDisplay(_INTL("#{msg}"))
         end
        end
      end
@@ -722,11 +665,11 @@ class PokeBattle_Move
        if @battle.field.field_effects != :None
         if fe[:move_damage_boost][dmg].is_a?(Array)
           if fe[:move_damage_boost][dmg].include?(self.id)
-            multipliers[FINAL_DMG_MULT] *= dmg 
+            multipliers[:final_damage_multiplier] *= dmg 
             mesg = true if j == type
           end
         elsif type == getConst(PBTypes,fe[:move_damage_boost][dmg])
-          multipliers[FINAL_DMG_MULT] *= dmg
+          multipliers[:final_damage_multiplier] *= dmg
           mesg = true
         end
         if mesg == true
@@ -737,7 +680,7 @@ class PokeBattle_Move
               msg = mess if GameData::Type.get(fe[:move_messages][mess]).id == type
             end
           end
-          @battle.pbDisplay(INTL(msg))
+          @battle.pbDisplay(INTL("#{msg}"))
         end
        end
      end
@@ -749,7 +692,7 @@ class PokeBattle_Move
     msg = nil
     for d in fe[:defensive_modifiers].keys
       if fe[:defensive_modifiers][d][1] == "fullhp"
-        multipliers[FINAL_DMG_MULT] /= d
+        multipliers[:final_damage_multiplier] /= d
       elsif fe[:defensive_modifiers][d][1] == "physical"
         multipliers[DEF_MULT] *= d if physicalMove?
       elsif fe[:defensive_modifiers][d][1] == "special"
@@ -3260,7 +3203,7 @@ class PokeBattle_Battler
     end
     # Terrains immunity
     if affectedByTerrain?
-      case @battle.field.terrain
+      case @battle.field.field_effects
       when :Electric
         if newStatus == :SLEEP
           @battle.pbDisplay(_INTL("{1} surrounds itself with electrified terrain!",
@@ -3470,7 +3413,7 @@ class PokeBattle_Battler
     # Move-specific failures
     return false if move.pbFailsAgainstTarget?(user,target)
     # Immunity to priority moves because of Psychic Terrain
-    if @battle.field.terrain == :Psychic && target.affectedByTerrain? && target.opposes?(user) &&
+    if @battle.field.field_effects == :Psychic && target.affectedByTerrain? && target.opposes?(user) &&
        @battle.choices[user.index][4]>0   # Move priority saved from pbCalculatePriority
       @battle.pbDisplay(_INTL("{1} surrounds itself with psychic terrain!",target.pbThis))
       return false
@@ -5049,6 +4992,7 @@ end
 class PokeBattle_Move_18C < PokeBattle_Move
   def pbChangePriority(user)
     return 1 if @battle.field.terrain == :Grassy && !user.airborne?
+    return 1 if [:Grassy,:Garden].include?(@battle.field.field_effects)
     return 0
   end
 end
@@ -5060,7 +5004,7 @@ end
 #===============================================================================
 class PokeBattle_Move_18D < PokeBattle_Move
   def pbBaseDamage(baseDmg,user,target)
-    baseDmg *= 2 if @battle.field.terrain == :Electric &&
+    baseDmg *= 2 if @battle.field.field_effects == :Electric &&
                     !target.airborne?
     return baseDmg
   end
@@ -5103,7 +5047,7 @@ end
 #===============================================================================
 class PokeBattle_Move_190 < PokeBattle_Move
   def pbBaseDamage(baseDmg,user,target)
-    baseDmg *= 1.5 if @battle.field.terrain == :Psychic
+    baseDmg *= 1.5 if @battle.field.field_effects == :Psychic
     return baseDmg
   end
 end
@@ -5183,7 +5127,7 @@ end
 
 class PokeBattle_Move_521 < PokeBattle_Move
   def pbBaseDamage(baseDmg,user,target)
-    baseDmg *= 2 if @battle.field.terrain == :Misty && user.affectedByTerrain?
+    baseDmg *= 2 if @battle.field.field_effects == :Misty && user.affectedByTerrain?
     return baseDmg
   end
 end
@@ -5236,7 +5180,7 @@ end
 #===============================================================================
 class PokeBattle_Move_196 < PokeBattle_Move_0E0
   def pbBaseDamage(baseDmg,user,target)
-    baseDmg *= 1.5 if @battle.field.terrain == :Misty &&
+    baseDmg *= 1.5 if @battle.field.field_effects == :Misty &&
                         !user.airborne?
     return baseDmg
   end
@@ -6126,10 +6070,6 @@ class PokeBattle_Battle
 
   def pbStartTerrain(user,newTerrain,fixedDuration=true)
     return if @field.terrain==newTerrain
-    if $gym_gimmick == true && @field.terrain != newTerrain
-      pbDisplay(_INTL("The terrain could not be changed!"))
-      return
-    end
     @field.terrain = newTerrain
     duration = (fixedDuration) ? 5 : -1
     if duration>0 && user && user.itemActive?
@@ -6834,3 +6774,38 @@ module PBEffects
   NeutralizingGas     = 430
   EchoChamber         = 431
 end
+
+BattleHandlers::DamageCalcTargetAbility.add(:GRASSPELT,
+  proc { |ability,user,target,move,mults,baseDmg,type|
+    if user.battle.field.field_effects == :Grassy || user.battle.field.field_effects == :Garden
+      mults[:defense_multiplier] *= 1.5
+    end
+  }
+)
+
+BattleHandlers::AbilityOnSwitchIn.add(:GRASSYSURGE,
+  proc { |ability,battler,battle|
+    next if battle.field.field_effects == :Grassy
+    battle.pbShowAbilitySplash(battler)
+    battle.scene.pbAnimation(GameData::Move.get(:GRASSYTERRAIN).id,battler,battler)
+    battle.pbStartFieldEffect(battler, :Grassy)
+    # NOTE: The ability splash is hidden again in def pbStartTerrain.
+  }
+)
+
+BattleHandlers::AbilityOnSwitchIn.add(:ELECTRICSURGE,
+  proc { |ability,battler,battle|
+    next if battle.field.field_effects == :Electric
+    battle.pbShowAbilitySplash(battler)
+    battle.scene.pbAnimation(GameData::Move.get(:ELECTRICTERRAIN).id,battler,battler)
+    battle.pbStartFieldEffect(battler, :Electric)
+    # NOTE: The ability splash is hidden again in def pbStartTerrain.
+  }
+)
+
+BattleHandlers::SpeedCalcAbility.add(:SURGESURFER,
+  proc { |ability,battler,mult|
+    next mult*2 if battler.battle.field.field_effects == :Electric
+    next mult*2 if battler.battle.pbWeather == :Storm
+  }
+)

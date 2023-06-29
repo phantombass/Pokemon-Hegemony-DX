@@ -1,0 +1,8 @@
+Name         = Stat Change Overlay
+Version      = 1.0.1
+Website      = https://reliccastle.com/members/7217/
+Credits      = Phantombass
+
+#Changelog
+#1.0.1
+#Fix the HP bar glitching when recovering HP

@@ -40,6 +40,21 @@ GameData::FieldEffects.register({
 })
 
 GameData::FieldEffects.register({
+  :id   => :Garden,
+  :name => _INTL("Garden")
+})
+
+GameData::FieldEffects.register({
+  :id   => :Grassy,
+  :name => _INTL("Grassy")
+})
+
+GameData::FieldEffects.register({
+  :id   => :Electric,
+  :name => _INTL("Electric")
+})
+
+GameData::FieldEffects.register({
   :id   => :Cave,
   :name => _INTL("Cave")
 })
@@ -50,6 +65,12 @@ GameData::Environment.register({
   :id          => :None,
   :name        => _INTL("None"),
   :battle_base => "grass_night"
+})
+
+GameData::Environment.register({
+  :id          => :Garden,
+  :name        => _INTL("Garden"),
+  :battle_base => "field"
 })
 
 module Fields
@@ -64,6 +85,7 @@ module Fields
   SOUND_MOVES = sound
   WIND_MOVES = [:AIRCUTTER,:HURRICANE,:AIRSLASH,:OMINOUSWIND,:HEATWAVE,:SILVERWIND,:AEROBLAST,:ICYWIND]
   IGNITE_MOVES = [:FLAMEBURST,:INCINERATE,:LAVAPLUME,:FLAMETHROWER,:MAGMATREK,:FLAREBLITZ,:FLAMEWHEEL,:ERUPTION]
+  QUAKE_MOVES = [:EARTHQUAKE,:BULLDOZE,:STOMPINGTANTRUM,:FISSURE]
   #These are examples of arrays you can make for moves that will affect or be affected by a field effect
 end
 
@@ -337,6 +359,132 @@ class PokeBattle_Battle
     pbBattleLoop
   end
 
+  def pbOnActiveOne(battler)
+    return false if battler.fainted?
+    # Introduce Shadow Pokémon
+    if battler.opposes? && battler.shadowPokemon?
+      pbCommonAnimation("Shadow",battler)
+      pbDisplay(_INTL("Oh!\nA Shadow Pokémon!"))
+    end
+    # Record money-doubling effect of Amulet Coin/Luck Incense
+    if !battler.opposes? && [:AMULETCOIN, :LUCKINCENSE].include?(battler.item_id)
+      @field.effects[PBEffects::AmuletCoin] = true
+    end
+    # Update battlers' participants (who will gain Exp/EVs when a battler faints)
+    eachBattler { |b| b.pbUpdateParticipants }
+    # Healing Wish
+    if @positions[battler.index].effects[PBEffects::HealingWish]
+      pbCommonAnimation("HealingWish",battler)
+      pbDisplay(_INTL("The healing wish came true for {1}!",battler.pbThis(true)))
+      battler.pbRecoverHP(battler.totalhp)
+      battler.pbCureStatus(false)
+      @positions[battler.index].effects[PBEffects::HealingWish] = false
+    end
+    # Lunar Dance
+    if @positions[battler.index].effects[PBEffects::LunarDance]
+      pbCommonAnimation("LunarDance",battler)
+      pbDisplay(_INTL("{1} became cloaked in mystical moonlight!",battler.pbThis))
+      battler.pbRecoverHP(battler.totalhp)
+      battler.pbCureStatus(false)
+      battler.eachMove { |m| m.pp = m.total_pp }
+      @positions[battler.index].effects[PBEffects::LunarDance] = false
+    end
+    # Entry hazards
+    # Stealth Rock
+    if battler.pbOwnSide.effects[PBEffects::StealthRock] && battler.takesIndirectDamage? &&
+       GameData::Type.exists?(:ROCK) && battler.takesEntryHazardDamage? && !battler.hasActiveAbility?(:SCALER)
+      bTypes = battler.pbTypes(true)
+      eff = Effectiveness.calculate(:ROCK, bTypes[0], bTypes[1], bTypes[2])
+      if !Effectiveness.ineffective?(eff)
+        eff = eff.to_f / Effectiveness::NORMAL_EFFECTIVE
+        oldHP = battler.hp
+        battler.pbReduceHP(battler.totalhp*eff/8,false)
+        pbDisplay(_INTL("Pointed stones dug into {1}!",battler.pbThis))
+        battler.pbItemHPHealCheck
+        if battler.pbAbilitiesOnDamageTaken(oldHP)   # Switched out
+          return pbOnActiveOne(battler)   # For replacement battler
+        end
+      end
+    end
+    #Comet Shards
+    if battler.pbOwnSide.effects[PBEffects::CometShards] && battler.takesIndirectDamage? &&
+       GameData::Type.exists?(:COSMIC) && battler.takesEntryHazardDamage?
+      bTypes = battler.pbTypes(true)
+      eff = Effectiveness.calculate(:COSMIC, bTypes[0], bTypes[1], bTypes[2])
+      if battler.pbHasType?(:COSMIC)
+        battler.pbOwnSide.effects[PBEffects::CometShards] = false
+        pbDisplay(_INTL("{1} absorbed the Comet Shards!",battler.pbThis))
+      elsif !Effectiveness.ineffective?(eff)
+        eff = eff.to_f / Effectiveness::NORMAL_EFFECTIVE
+        oldHP = battler.hp
+        battler.pbReduceHP(battler.totalhp*eff/8,false)
+        pbDisplay(_INTL("Pointed stones dug into {1}!",battler.pbThis))
+        battler.pbItemHPHealCheck
+        if battler.pbAbilitiesOnDamageTaken(oldHP)   # Switched out
+          return pbOnActiveOne(battler)   # For replacement battler
+        end
+      end
+    end
+    # Spikes
+    if battler.pbOwnSide.effects[PBEffects::Spikes]>0 && battler.takesIndirectDamage? &&
+       !battler.airborne? && battler.takesEntryHazardDamage?
+      spikesDiv = [8,6,4][battler.pbOwnSide.effects[PBEffects::Spikes]-1]
+      oldHP = battler.hp
+      battler.pbReduceHP(battler.totalhp/spikesDiv,false)
+      pbDisplay(_INTL("{1} is hurt by the spikes!",battler.pbThis))
+      battler.pbItemHPHealCheck
+      if battler.pbAbilitiesOnDamageTaken(oldHP)   # Switched out
+        return pbOnActiveOne(battler)   # For replacement battler
+      end
+    end
+    # Toxic Spikes
+    if battler.pbOwnSide.effects[PBEffects::ToxicSpikes]>0 && !battler.fainted? &&
+       !battler.airborne?
+      if battler.pbHasType?(:POISON)
+        battler.pbOwnSide.effects[PBEffects::ToxicSpikes] = 0
+        pbDisplay(_INTL("{1} absorbed the poison spikes!",battler.pbThis))
+      elsif battler.pbCanPoison?(nil,false) && battler.takesEntryHazardDamage?
+        if battler.pbOwnSide.effects[PBEffects::ToxicSpikes]==2
+          battler.pbPoison(nil,_INTL("{1} was badly poisoned by the poison spikes!",battler.pbThis),true)
+        else
+          battler.pbPoison(nil,_INTL("{1} was poisoned by the poison spikes!",battler.pbThis))
+        end
+      end
+    end
+    # Sticky Web
+    if battler.pbOwnSide.effects[PBEffects::StickyWeb] && !battler.fainted? &&
+       !battler.airborne? && battler.takesEntryHazardDamage?
+      pbDisplay(_INTL("{1} was caught in a sticky web!",battler.pbThis))
+      if battler.pbCanLowerStatStage?(:SPEED)
+        stickyuser = (battler.pbOwnSide.effects[PBEffects::StickyWebUser] > -1 ?
+          battlers[battler.pbOwnSide.effects[PBEffects::StickyWebUser]] : nil)
+        battler.pbLowerStatStage(:SPEED,1,stickyuser)
+        battler.pbItemStatRestoreCheck
+      end
+    end
+    # Battler faints if it is knocked out because of an entry hazard above
+    if battler.fainted?
+      battler.pbFaint
+      pbGainExp
+      pbJudge
+      return false
+    end
+    battler.pbCheckForm
+    fe = FIELD_EFFECTS[@field.field_effects]
+    if fe[:ability_effects] != nil
+      for key in fe[:ability_effects].keys
+        if battler.hasActiveAbility?(key)
+          pbShowAbilitySplash(battler)
+          for i in fe[:ability_effects][key]
+            battler.pbRaiseStatStage(i[0],i[1],battler)
+          end
+          pbHideAbilitySplash(battler)
+        end
+      end
+    end
+    return true
+  end
+
   def pbEndOfBattle
     #$mega_flag = 0
     oldDecision = @decision
@@ -444,7 +592,6 @@ class PokeBattle_Battle
         pkmn.item = @initialItems[0][i]
       end
     end
-    @scene.pbTrainerBattleSpeech("loss") if @decision == 2
     $game_switches[89] = false
     # return final output
     return @decision
@@ -632,6 +779,7 @@ class PokeBattle_Move
           @powerBoost = false
         end
       end
+      fe = FIELD_EFFECTS[@battle.field.field_effects]
       #New Field Effect Modifier Method
   	if fe[:type_type_mod].keys != nil
   		for type_mod in fe[:type_type_mod].keys
@@ -642,7 +790,7 @@ class PokeBattle_Move
   						msg = message
   					end
   				end
-  				@battle.pbDisplay(_INTL(msg))
+  				@battle.pbDisplay(_INTL("#{msg}"))
   				@powerBoost = false
   			end
   		end
@@ -661,15 +809,24 @@ class PokeBattle_Move
          defType == :GHOST
         ret = Effectiveness::NORMAL_EFFECTIVE_ONE
       end
+      if user.hasActiveAbility?(:NITRIC)
+      ret = Effectiveness::NORMAL_EFFECTIVE_ONE if defType == :STEEL &&
+                                                   Effectiveness.ineffective_type?(moveType, defType)
+      end
       # Miracle Eye
       if target.effects[PBEffects::MiracleEye] && defType == :DARK
         ret = Effectiveness::NORMAL_EFFECTIVE_ONE
       end
     elsif Effectiveness.super_effective_type?(moveType, defType)
       # Delta Stream's weather
-      if target.effectiveWeather == :StrongWinds && defType == :FLYING
-        ret = Effectiveness::NORMAL_EFFECTIVE_ONE
-      end
+      if @battle.pbWeather == :StrongWinds
+      ret = Effectiveness::NORMAL_EFFECTIVE_ONE if defType == :FLYING &&
+                                                   Effectiveness.super_effective_type?(moveType, defType)
+    end
+    if @battle.pbWeather == :StrongWinds
+      ret = Effectiveness::NORMAL_EFFECTIVE_ONE if defType == :DRAGON &&
+                                                   Effectiveness.super_effective_type?(moveType, defType)
+    end
     end
     # Grounded Flying-type Pokémon become susceptible to Ground moves
     if !target.airborne? && defType == :FLYING && moveType == :GROUND
@@ -682,7 +839,7 @@ class PokeBattle_Move
   				eff = Effectiveness.calculate_one(key,defType)
   				ret *= eff.to_f / Effectiveness::NORMAL_EFFECTIVE_ONE
   				for mess in fe[:type_mod_message].keys
-  					pbDisplay(_INTL(mess)) if fe[:type_mod_message][mess] == moveType
+  					pbDisplay(_INTL("#{mess}")) if fe[:type_mod_message][mess] == moveType
   				end
   			end
   		end
@@ -693,7 +850,7 @@ class PokeBattle_Move
   				eff = Effectiveness.calculate_one(mv,defType)
   				ret *= eff.to_f / Effectiveness::NORMAL_EFFECTIVE_ONE
   				for msg in fe[:type_mod_message].keys
-  					pbDisplay(_INTL(msg)) if fe[:type_mod_message][msg].include?(self.id)
+  					pbDisplay(_INTL("#{msg}")) if fe[:type_mod_message][msg].include?(self.id)
   				end
   			end
   		end
