@@ -6100,11 +6100,12 @@ class PokeBattle_Battle
   end
 
   def pbEORTerrain
+    return if ![:Electric,:Grassy,:Psychic,:Misty,:Poison].include?(@field.field_effects)
     # Count down terrain duration
     @field.terrainDuration -= 1 if @field.terrainDuration>0
     # Terrain wears off
-    if @field.terrain != :None && @field.terrainDuration == 0
-      case @field.terrain
+    if @field.field_effects != :None && @field.terrainDuration == 0
+      case @field.field_effects
       when :Electric
         pbDisplay(_INTL("The electric current disappeared from the battlefield!"))
       when :Grassy
@@ -6116,21 +6117,11 @@ class PokeBattle_Battle
       when :Poison
         pbDisplay(_INTL("The toxic waste disappeared from the battlefield!"))
       end
-      @field.terrain = :None
+      @field.field_effects = :None
       $terrain = 0
       # Start up the default terrain
-      pbStartTerrain(nil, @field.defaultTerrain, false) if @field.defaultTerrain != :None
-      return if @field.terrain == :None
-    end
-    # Terrain continues
-    terrain_data = GameData::BattleTerrain.try_get(@field.terrain)
-    pbCommonAnimation(terrain_data.animation) if terrain_data
-    case @field.terrain
-    when :Electric then pbDisplay(_INTL("An electric current is running across the battlefield."))
-    when :Grassy   then pbDisplay(_INTL("Grass is covering the battlefield."))
-    when :Misty    then pbDisplay(_INTL("Mist is swirling about the battlefield."))
-    when :Psychic  then pbDisplay(_INTL("The battlefield is weird."))
-    when :Poison  then pbDisplay(_INTL("Toxic waste covers the battlefield."))
+      pbStartFieldEffect(nil, @field.defaultField) if @field.defaultField != :None
+      return if @field.field_effects == :None
     end
   end
 

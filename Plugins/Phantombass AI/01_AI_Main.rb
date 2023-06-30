@@ -197,25 +197,25 @@ class PBAI
     data = projection.choose_move
     if data.nil? && !@battle.wildBattle?
       # Struggle
-      data = []
-      data[0] = :USE_MOVE
       @battle.pbAutoChooseMove(idxBattler)
-    elsif @battle.wildBattle?
-      data = []
-      data[0] = :USE_MOVE
+    elsif data.nil? && @battle.wildBattle?
       move = []
-      for i in projection.moves
-        move.push(i) if i.pp > 0
+      idx = -1
+      for i in projection.battler.moves
+        idx += 1
+        move.push(idx) if i.pp > 0
       end
       if move.length == 0
         @battle.pbAutoChooseMove(idxBattler)
       else
-        move_index = rand(move.length)
+        move_index = move[rand(move.length)]
         move_target = 0
-        # Register our move
-        @battle.pbRegisterMove(idxBattler, move_index, false)
-        # Register the move's target
-        @battle.pbRegisterTarget(idxBattler, move_target)
+        data = [move_index,move_target]
+        @battle.pbRegisterMegaEvolution(idxBattler) if projection.should_mega_evolve?(idxBattler)
+      # Register our move
+      @battle.pbRegisterMove(idxBattler, move_index, false)
+      # Register the move's target
+      @battle.pbRegisterTarget(idxBattler, move_target)
       end
     elsif data[0] == :SWITCH
       # [:SWITCH, pokemon_index]
@@ -229,11 +229,25 @@ class PBAI
     else
       # [move_index, move_target]
       if data[0] == :ITEM
-        data[0] = rand(projection.moves.length)
+        move = []
+        idx = -1
+        for i in projection.battler.moves
+          idx += 1
+          move.push(idx) if i.pp > 0
+        end
+        if move.length == 0
+          @battle.pbAutoChooseMove(idxBattler)
+        else
+        move_index = move[rand(move.length)]
+        move_target = 0
+        data = [move_index,move_target]
+        end
       end
-      move_index, move_target = data
+      if move_index.nil?
+        move_index,move_target = data
+      end
       # Mega evolve if we determine that we should
-      @battle.pbRegisterMegaEvolution(idxBattler) if projection.should_mega_evolve?(idxBattler)
+          @battle.pbRegisterMegaEvolution(idxBattler) if projection.should_mega_evolve?(idxBattler)
       # Register our move
       @battle.pbRegisterMove(idxBattler, move_index, false)
       # Register the move's target
@@ -638,10 +652,11 @@ class PBAI
             move.push(i) if m.pp > 0 && !m.nil? && @battler.effects[PBEffects::DisableMove] != m.id && !m.statusMove? && m.id != :FAKEOUT && !immune.include?(i)
           end
           if sts == 4 || move == []
-            move.push(@battler.moves[rand(@battler.moves.length)])
+            move.push(rand(@battler.moves.length))
           end
         end
-        scores << [move[rand(move.length)] , 1, 0, "random"]
+        $rand_move = move[rand(move.length)]
+        scores << [$rand_move , 1, 0, "random"]
         PBAI.log("Random offensive move because of all low scores")
       end
 
@@ -684,24 +699,28 @@ class PBAI
          # end
 
         elsif i == -1
-          for move in @battler.moves
-            if move.pp > 0
-              i = 3
-            else
-              str += "STRUGGLE: 100 percent"
+          if !@battle.wildBattle?
+            for move in @battler.moves
+              if move.pp > 0
+                i = 2
+              else
+                str += "STRUGGLE: 100 percent"
+              end
             end
           end
         else
           move_index, score, target, target_name = e
           if i == idx
             $target_ind = target
-            $chosen_move = @battler.moves[move_index]
+            if @battle.doublebattle
+                $chosen_move = @battler.moves[move_index]
+            end
           end
           if $DEBUG
-            name = @battler.moves[move_index].name
-            str += "\nMOVE(#{target_name}) #{name}: #{score} => #{finalPerc}" + " percent"
-            str += " << CHOSEN" if i == idx
-            str += "\n"
+              name = @battler.moves[move_index].name
+              str += "\nMOVE(#{target_name}) #{name}: #{score} => #{finalPerc}" + " percent"
+              str += " << CHOSEN" if i == idx
+              str += "\n"
           end
         end
       end
@@ -1343,6 +1362,7 @@ class PBAI
         when :ELECTRIC
           return true if target.hasActiveAbility?([:LIGHTNINGROD, :MOTORDRIVE, :VOLTABSORB])
           return true if target.hasActiveItem?(:LIGHTNINGRODORB)
+          return true if move.is_a?(PokeBattle_ParalysisMove) && move.statusMove? && (target.pbHasType?(:GROUND) || !target.pbCanParalyze?(@battler,false,move))
         when :DRAGON
           return true if target.hasActiveAbility?(:LEGENDARMOR)
         when :DARK
@@ -1503,25 +1523,17 @@ class PBAI
 
     def register_damage_dealt(move, target, damage)
       move = move.id if move.is_a?(GameData::Move)
-      if target.nil?
         self.opposing_side.battlers.each do |targ|
           @damage_dealt << [targ, move, damage, damage / targ.totalhp.to_f]
         end
-      else
-        @damage_dealt << [target, move, damage, damage / target.totalhp.to_f]
-      end
     end
 
     def register_damage_taken(move, user, damage)
       user.used_moves << move if !user.used_moves.any? { |m| m.id == move.id }
       move = move.id
-      if self.nil?
         user.opposing_side.battlers.each do |battler|
           @damage_taken << [user, move, damage, damage / battler.totalhp.to_f]
         end
-      else
-        @damage_taken << [user, move, damage, damage / self.totalhp.to_f]
-      end
     end
 
     def get_damage_by_user(user)
@@ -2057,4 +2069,3 @@ BattleHandlers::AbilityOnSwitchIn.add(:FRISK,
     end
   }
 )
-

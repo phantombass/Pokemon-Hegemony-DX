@@ -174,3 +174,9 @@ GameData::Role.register({
   :id_number    => 24,
   :name         => _INTL("Phazer")
 })
+
+GameData::Role.register({
+  :id           => :SUPPORT,
+  :id_number    => 25,
+  :name         => _INTL("Support")
+})

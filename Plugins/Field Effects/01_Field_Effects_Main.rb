@@ -291,6 +291,7 @@ class PokeBattle_Battle
     end
     $olditems = olditems
     @field.field_effects = $PokemonTemp.battleRules["defaultField"]
+    @field.defaultField = $PokemonTemp.battleRules["defaultField"]
     $field_effect_bg = nil
     # Create all the sprites and play the battle intro animation
     @field.weather = $game_screen.weather_type
@@ -627,6 +628,12 @@ class PokeBattle_Battle
     return if @field.field_effects == newField
     @field.field_effects = newField
     field_data = GameData::FieldEffects.try_get(@field.field_effects)
+    duration = 5
+    if duration>0 && user && user.itemActive?
+      duration = BattleHandlers.triggerTerrainExtenderItem(user.item,
+         newField,duration,user,self)
+    end
+    @field.terrainDuration = duration if [:Electric,:Grassy,:Misty,:Psychic,:Poison].include?(@field.field_effects)
 	  msg = FIELD_EFFECTS[newField][:intro_message]
   	bg = FIELD_EFFECTS[newField][:field_gfx]
     pbDisplay(_INTL(msg)) if msg != nil
@@ -640,6 +647,26 @@ class PokeBattle_Battle
     return if battler.fainted?
     amt = -1
 	  fe = FIELD_EFFECTS[@field.field_effects]
+    case @field.field_effects
+    when :Electric
+      if battler.affectedByTerrain? && battler.canHeal? && battler.hasActiveAbility?(:VOLTABSORB)
+        PBDebug.log("[Lingering effect] Electric Terrain heals #{battler.pbThis(true)}")
+        battler.pbRecoverHP(battler.totalhp / 16)
+        pbDisplay(_INTL("{1}'s HP was restored.", battler.pbThis))
+      end
+    when :Grassy
+      if battler.affectedByTerrain? && battler.canHeal?
+        PBDebug.log("[Lingering effect] Grassy Terrain heals #{battler.pbThis(true)}")
+        battler.pbRecoverHP(battler.totalhp / 16)
+        pbDisplay(_INTL("{1}'s HP was restored.", battler.pbThis))
+      end
+    when :Garden
+      if battler.affectedByTerrain? && battler.canHeal? && battler.affectedByGarden?
+        PBDebug.log("[Lingering effect] Garden Field heals #{battler.pbThis(true)}")
+        battler.pbRecoverHP(battler.totalhp / 16)
+        pbDisplay(_INTL("{1}'s HP was restored.", battler.pbThis))
+      end
+    end
     #add damage done at the end of the field by field effects
     return if amt < 0
     @scene.pbDamageAnimation(battler)
@@ -651,6 +678,9 @@ end
 
 class PokeBattle_Battler
  #Save this class here in case you want to use these for modifying certain methods for the field
+  def affectedByGarden?
+    return pbHasType?([:BUG,:FAIRY,:GRASS])
+  end
 end
 
 #Field Changes due to Move Usage

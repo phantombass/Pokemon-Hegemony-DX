@@ -365,8 +365,16 @@ class PokeBattle_Battler
 
   def pbHasType?(type)
     return false if !type
+    t = 0
     activeTypes = pbTypes(true)
-    return activeTypes.include?(GameData::Type.get(type).id)
+    if type.is_a?(Array)
+      for i in type
+        t += 1 if activeTypes.include?(GameData::Type.get(i).id)
+      end
+      return t > 0
+    else      
+      return activeTypes.include?(GameData::Type.get(type).id)
+    end
   end
 
   def pbHasType(type)
