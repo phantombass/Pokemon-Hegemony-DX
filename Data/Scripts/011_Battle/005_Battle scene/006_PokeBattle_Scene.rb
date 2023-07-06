@@ -71,15 +71,6 @@ class PokeBattle_Scene
   def pbRefreshOne(idxBattler)
     @sprites["dataBox_#{idxBattler}"].refresh if @sprites["dataBox_#{idxBattler}"]
   end
-  def pbRefreshEverything
-    pbCreateBackdropSprites
-    @battle.battlers.each_with_index do |battler, i|
-      next if !battler
-      pbChangePokemon(i, @sprites["pokemon_#{i}"].pkmn)
-      @sprites["dataBox_#{i}"].initializeDataBoxGraphic(@battle.pbSideSize(i))
-      @sprites["dataBox_#{i}"].refresh
-    end
-  end
 
   #=============================================================================
   # Party lineup
@@ -309,12 +300,8 @@ class PokeBattle_Scene
     pbShowWindow(BLANK)
     # Fade out all sprites
     pbBGMFade(1.0)
-    @battle.backdrop = nil
-    @battle.backdropBase = nil
-    @viewport.visible = false
     pbFadeOutAndHide(@sprites)
     pbDisposeSprites
-    @viewport.dispose
   end
 
   #=============================================================================

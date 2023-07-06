@@ -2004,10 +2004,14 @@ class PokeBattle_Move_0C1 < PokeBattle_Move
   end
 
   def pbBaseDamage(baseDmg,user,target)
-    i = @beatUpList.shift if @beatUpList != nil  # First element in array, and removes it from array
-    i = 0 if @beatUpList == nil
-    atk = @battle.pbParty(user.index)[i].baseStats[:ATTACK]
-    return 5+(atk/10)
+    if user.opposes? && user.has_role?(:TARGETALLY)
+      return 5
+    else
+      i = @beatUpList.shift if @beatUpList != nil  # First element in array, and removes it from array
+      i = 0 if @beatUpList == nil
+      atk = (user.opposes? && @battle.wildBattle?) ? user.pokemon.baseStats[:ATTACK] : @battle.pbParty(user.index)[i].baseStats[:ATTACK]
+      return 5+(atk/10)
+    end
   end
 end
 
@@ -2553,9 +2557,9 @@ class PokeBattle_Move_0D8 < PokeBattle_HealingMove
     case @battle.pbWeather
     when :Sun, :HarshSun
       if !user.hasUtilityUmbrella
-        @healAmount = (user.totalhp*2/3.0).round
+        @healAmount = @type == :FAIRY ? (user.totalhp/2.0).round : (user.totalhp*2/3.0).round
       else
-        @healAmount = (user.totalhp/2.0).round
+        @healAmount = @type == :FAIRY ? (user.totalhp/4.0).round : (user.totalhp/2.0).round
       end
     when :Rain, :HeavyRain
       if !user.hasUtilityUmbrella?

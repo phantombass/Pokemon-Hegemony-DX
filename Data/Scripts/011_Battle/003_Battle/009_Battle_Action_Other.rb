@@ -151,6 +151,7 @@ class PokeBattle_Battle
     return if !battler || !battler.pokemon
     return if !battler.hasMega? || battler.mega?
     trainerName = pbGetOwnerName(idxBattler)
+    return if $mega_flag == 1 && trainerName == $Trainer.name
     # Break Illusion
     if battler.hasActiveAbility?(:ILLUSION)
       BattleHandlers.triggerTargetAbilityOnHit(battler.ability,nil,battler,nil,self)
@@ -166,6 +167,8 @@ class PokeBattle_Battle
     pbCommonAnimation("MegaEvolution",battler)
     battler.pokemon.makeMega
     battler.form = battler.pokemon.form
+    $mega_flag = 1 if trainerName == $Trainer.name
+    #p $mega_flag
     battler.pbUpdate(true)
     @scene.pbChangePokemon(battler,battler.pokemon)
     @scene.pbRefreshOne(idxBattler)

@@ -602,6 +602,8 @@ class PokeBattle_Battler
     numTargets = 0   # Number of targets that are affected by this hit
     # Count a hit for Parental Bond (if it applies)
     user.effects[PBEffects::ParentalBond] -= 1 if user.effects[PBEffects::ParentalBond] > 0
+    user.effects[PBEffects::Ambidextrous] -= 1 if user.effects[PBEffects::Ambidextrous] > 0
+    user.effects[PBEffects::EchoChamber] -= 1 if user.effects[PBEffects::EchoChamber] > 0
     # Accuracy check (accuracy/evasion calc)
     if hitNum == 0 || move.successCheckPerHit?
       targets.each do |b|
@@ -753,16 +755,6 @@ class PokeBattle_Battler
       @battle.pbDisplay(_INTL("The {1} weakened the damage to {2}!", b.itemName, b.pbThis(true)))
       b.pbConsumeItem
     end
-    # Steam Engine (goes here because it should be after stat changes caused by
-    # the move)
-#    if [:FIRE, :WATER].include?(move.calcType)
-#      targets.each do |b|
-#        next if b.damageState.unaffected
-#        next if b.damageState.calcDamage == 0 || b.damageState.substitute
-#        next if !b.hasActiveAbility?(:STEAMENGINE)
-#        b.pbRaiseStatStageByAbility(:SPEED, 6, b) if b.pbCanRaiseStatStage?(:SPEED, b)
-#      end
-#    end
     # Fainting
     targets.each { |b| b.pbFaint if b&.fainted? }
     user.pbFaint if user.fainted?

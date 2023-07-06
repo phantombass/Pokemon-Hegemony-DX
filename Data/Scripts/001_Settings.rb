@@ -3,7 +3,6 @@
 #                                 Version 19.1                                 #
 #                https://github.com/Maruno17/pokemon-essentials                #
 #==============================================================================#
-
 module Settings
   # The version of your game. It has to adhere to the MAJOR.MINOR.PATCH format.
   #GAME_VERSION = '1.0.0'
@@ -182,7 +181,7 @@ module Settings
     return _INTL("Bill")
   end
   # The number of boxes in Pokémon storage.
-  NUM_STORAGE_BOXES   = 30
+  NUM_STORAGE_BOXES   = 50
   # Whether putting a Pokémon into Pokémon storage will heal it. IF false, they
   # are healed by the Recover All: Entire Party event command (at Poké Centers).
   HEAL_STORED_POKEMON = (MECHANICS_GENERATION < 8)
@@ -449,4 +448,5 @@ end
 module Essentials
   VERSION = "19.1"
   ERROR_TEXT = ""
+  MKXPZ_VERSION = "2.4"
 end

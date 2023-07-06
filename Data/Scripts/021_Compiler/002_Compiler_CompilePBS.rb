@@ -1174,6 +1174,15 @@ module Compiler
           property_value = [property_value] if !property_value.is_a?(Array)
           property_value.uniq!
           property_value.compact!
+        when "Roles"
+            property_value = [property_value] if !property_value.is_a?(Array)
+            property_value.uniq!
+            property_value.compact!
+            property_value.each do |role|
+              if !GameData::Role.exists?(role.to_sym)
+                raise _INTL("Value {1} isn't a defined Role.\r\n{2}", role, FileLineData.linereport)
+              end
+            end
         when "IV"
           property_value = [property_value] if !property_value.is_a?(Array)
           property_value.compact!
@@ -1222,14 +1231,6 @@ module Compiler
               current_pkmn[:ability_index] = property_value.to_i
             elsif !GameData::Ability.exists?(property_value.to_sym)
               raise _INTL("Value {1} isn't a defined Ability.\r\n{2}", property_value, FileLineData.linereport)
-            else
-              current_pkmn[line_schema[0]] = property_value.to_sym
-            end
-          when "Role"
-            if property_value[/^\d+$/]
-              current_pkmn[:role] = property_value.to_i
-            elsif !GameData::Role.exists?(property_value.to_sym)
-              raise _INTL("Value {1} isn't a defined Role.\r\n{2}", property_value, FileLineData.linereport)
             else
               current_pkmn[line_schema[0]] = property_value.to_sym
             end

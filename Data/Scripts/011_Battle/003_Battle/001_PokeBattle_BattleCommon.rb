@@ -4,10 +4,14 @@ module PokeBattle_BattleCommon
   #=============================================================================
   def pbStorePokemon(pkmn)
     # Nickname the Pokémon (unless it's a Shadow Pokémon)
-    if !pkmn.shadowPokemon?
-      if pbDisplayConfirm(_INTL("Would you like to give a nickname to {1}?", pkmn.name))
-        nickname = @scene.pbNameEntry(_INTL("{1}'s nickname?", pkmn.speciesName), pkmn)
-        pkmn.name = nickname
+    if $game_switches[916]
+      pkmn = egglocke_generator
+    else
+      if !pkmn.shadowPokemon?
+        if pbDisplayConfirm(_INTL("Would you like to give a nickname to {1}?", pkmn.name))
+          nickname = @scene.pbNameEntry(_INTL("{1}'s nickname?", pkmn.speciesName), pkmn)
+          pkmn.name = nickname
+        end
       end
     end
     # Store the Pokémon
@@ -18,6 +22,9 @@ module PokeBattle_BattleCommon
         $PokemonBag.pbStoreItem($Trainer.party[0].item, 1) if $Trainer.party[0].item
         $Trainer.remove_pokemon_at_index(0)
         pbDisplayPaused(_INTL("{1} has replaced your former Pokémon.",pkmn.name))
+        return
+      elsif $game_switches[916]
+        pbDisplayPaused(_INTL("An Egg has taken its place!"))
         return
       else
         pbDisplayPaused(_INTL("{1} has been added to your party.",pkmn.name))
@@ -30,19 +37,27 @@ module PokeBattle_BattleCommon
     curBoxName = @peer.pbBoxName(currentBox)
     boxName    = @peer.pbBoxName(storedBox)
     if storedBox!=currentBox
-      if creator
-        pbDisplayPaused(_INTL("Box \"{1}\" on {2}'s PC was full.",curBoxName,creator))
+      if $game_switches[916]
+        pbDisplayPaused(_INTL("An Egg was sent to Box {1}",boxName))
       else
-        pbDisplayPaused(_INTL("Box \"{1}\" on someone's PC was full.",curBoxName))
+        if creator
+          pbDisplayPaused(_INTL("Box \"{1}\" on {2}'s PC was full.",curBoxName,creator))
+        else
+          pbDisplayPaused(_INTL("Box \"{1}\" on someone's PC was full.",curBoxName))
+        end
+        pbDisplayPaused(_INTL("{1} was transferred to box \"{2}\".",pkmn.name,boxName))
       end
-      pbDisplayPaused(_INTL("{1} was transferred to box \"{2}\".",pkmn.name,boxName))
     else
-      if creator
-        pbDisplayPaused(_INTL("{1} was transferred to {2}'s PC.",pkmn.name,creator))
+      if $game_switches[916]
+        pbDisplayPaused(_INTL("An Egg was sent to Box {1}",boxName))
       else
-        pbDisplayPaused(_INTL("{1} was transferred to someone's PC.",pkmn.name))
+        if creator
+          pbDisplayPaused(_INTL("{1} was transferred to {2}'s PC.",pkmn.name,creator))
+        else
+          pbDisplayPaused(_INTL("{1} was transferred to someone's PC.",pkmn.name))
+        end
+        pbDisplayPaused(_INTL("It was stored in box \"{1}\".",boxName))
       end
-      pbDisplayPaused(_INTL("It was stored in box \"{1}\".",boxName))
     end
   end
 

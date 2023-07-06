@@ -28,6 +28,11 @@ Events.onWildPokemonCreate += proc { |_sender, e|
   end
 }
 
+Events.onMapUpdate+=proc {|sender,e|
+  if $game_switches[197] && $game_variables[13] <= 5
+    $game_switches[210] = false
+  end
+}
 # This is the basis of a trainer modifier. It works both for trainers loaded
 # when you battle them, and for partner trainers when they are registered.
 # Note that you can only modify a partner trainer's Pokémon, and not the trainer

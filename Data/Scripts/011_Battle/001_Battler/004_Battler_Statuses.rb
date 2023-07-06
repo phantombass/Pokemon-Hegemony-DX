@@ -188,6 +188,8 @@ class PokeBattle_Battler
       hasImmuneType |= pbHasType?(:FIRE)
     when :PARALYSIS
       hasImmuneType |= pbHasType?(:ELECTRIC) && Settings::MORE_TYPE_EFFECTS
+    when :FROZEN
+      hasImmuneType |= pbHasType?(:ICE)
     end
     return false if hasImmuneType
     # Ability immunity
@@ -381,7 +383,7 @@ class PokeBattle_Battler
   end
 
   #=============================================================================
-  # Freeze
+  # Frostbite
   #=============================================================================
   def frozen?
     return pbHasStatus?(:FROZEN)
@@ -393,6 +395,10 @@ class PokeBattle_Battler
 
   def pbFreeze(msg = nil)
     pbInflictStatus(:FROZEN, 0, msg)
+  end
+
+  def pbCanFrostbiteSynchronize(target)
+    return pbCanSynchronizeStatus?(:FROZEN, target)
   end
 
   def pbFreezeIceBody(user = nil, msg = nil)

@@ -55,6 +55,7 @@ class PokeBattle_Battle
   attr_reader   :opponent         # Opponent trainer (or array of trainers)
   attr_accessor :items            # Items held by opponents
   attr_accessor :endSpeeches
+  attr_accessor :doublebattle
   attr_accessor :endSpeechesWin
   attr_accessor :party1starts     # Array of start indexes for each player-side trainer's party
   attr_accessor :party2starts     # Array of start indexes for each opponent-side trainer's party
@@ -70,7 +71,6 @@ class PokeBattle_Battle
   attr_accessor :rules
   attr_accessor :choices          # Choices made by each Pokémon this round
   attr_accessor :megaEvolution    # Battle index of each trainer's Pokémon to Mega Evolve
-  attr_accessor :doublebattle
   attr_reader   :initialItems
   attr_reader   :recycleItems
   attr_reader   :belch
@@ -109,6 +109,7 @@ class PokeBattle_Battle
     @positions         = []                            # Battler positions
     @battlers          = []
     @sideSizes         = [1,1]   # Single battle, 1v1
+    @doublebattle      = false
     @backdrop          = ""
     @backdropBase      = nil
     @time              = 0
@@ -116,8 +117,12 @@ class PokeBattle_Battle
     @turnCount         = 0
     @decision          = 0
     @caughtPokemon     = []
-    player   = [player] if !player.nil? && !player.is_a?(Array)
-    opponent = [opponent] if !opponent.nil? && !opponent.is_a?(Array)
+    if player && player.is_a?(Array) && player.length==0
+      player = player[0]
+    end
+    if opponent && opponent.is_a?(Array) && opponent.length==0
+      opponent = opponent[0]
+    end
     @player            = player     # Array of Player/NPCTrainer objects, or nil
     @opponent          = opponent   # Array of NPCTrainer objects, or nil
     @items             = nil
@@ -130,7 +135,6 @@ class PokeBattle_Battle
     @party1starts      = [0]
     @party2starts      = [0]
     @internalBattle    = true
-    @doublebattle      = false
     @debug             = false
     @canRun            = true
     @canLose           = false
@@ -143,6 +147,7 @@ class PokeBattle_Battle
     @priority          = []
     @priorityTrickRoom = false
     @choices           = []
+    @rage_hit          = []
     @megaEvolution     = [
        [-1] * (@player ? @player.length : 1),
        [-1] * (@opponent ? @opponent.length : 1)
@@ -306,6 +311,15 @@ class PokeBattle_Battle
 
   def pbPartyOrder(idxBattler)
     return (opposes?(idxBattler)) ? @party2order : @party1order
+  end
+
+  def pbPartySingleOwner(battlerIndex)
+    party = pbParty(battlerIndex)
+    ownerparty = []
+    for i in 0...party.length
+      ownerparty.push(party[i]) if pbIsOwner?(battlerIndex,i) && !party[i].nil?
+    end
+    return ownerparty
   end
 
   def pbPartyStarts(idxBattler)
@@ -473,6 +487,17 @@ class PokeBattle_Battle
     eachOtherSideBattler(idxBattler) do |b|
       next if nearOnly && !b.near?(idxBattler)
       return b if b.hasActiveAbility?(abil)
+    end
+    return nil
+  end
+
+  def pbCheckSideAbility(a,pkmn) #checks to see if your side has a pokemon with a certain ability.
+    for i in 0...4 # in order from own first, opposing first, own second, opposing second
+      if @battlers[i].hasActiveAbility?(a)
+        if @battlers[i]==pkmn || @battlers[i]==pkmn.pbPartner
+          return @battlers[i]
+        end
+      end
     end
     return nil
   end

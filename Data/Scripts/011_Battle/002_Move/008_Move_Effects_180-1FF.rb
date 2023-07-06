@@ -182,26 +182,28 @@ class PokeBattle_Move_187 < PokeBattle_Move_005
 
   def pbOnStartUse(user, targets)
     target = targets[0]
-    stageMul = [2,2,2,2,2,2, 2, 3,4,5,6,7,8]
-    stageDiv = [8,7,6,5,4,3, 2, 2,2,2,2,2,2]
-    # Calculate user's effective attacking values
-    attack_stage         = user.stages[:ATTACK] + 6
-    real_attack          = (user.attack.to_f * stageMul[attack_stage] / stageDiv[attack_stage]).floor
-    special_attack_stage = user.stages[:SPECIAL_ATTACK] + 6
-    real_special_attack  = (user.spatk.to_f * stageMul[special_attack_stage] / stageDiv[special_attack_stage]).floor
-    # Calculate target's effective defending values
-    defense_stage         = target.stages[:DEFENSE] + 6
-    real_defense          = (target.defense.to_f * stageMul[defense_stage] / stageDiv[defense_stage]).floor
-    special_defense_stage = target.stages[:SPECIAL_DEFENSE] + 6
-    real_special_defense  = (target.spdef.to_f * stageMul[special_defense_stage] / stageDiv[special_defense_stage]).floor
-    # Perform simple damage calculation
-    physical_damage = real_attack.to_f / real_defense
-    special_damage = real_special_attack.to_f / real_special_defense
-    # Determine move's category
-    if physical_damage == special_damage
-      @calcCategry = @battle.pbRandom(2)
-    else
-      @calcCategory = (physical_damage > special_damage) ? 0 : 1
+    if !target.nil?
+      stageMul = [2,2,2,2,2,2, 2, 3,4,5,6,7,8]
+      stageDiv = [8,7,6,5,4,3, 2, 2,2,2,2,2,2]
+      # Calculate user's effective attacking values
+      attack_stage         = user.stages[:ATTACK] + 6
+      real_attack          = (user.attack.to_f * stageMul[attack_stage] / stageDiv[attack_stage]).floor
+      special_attack_stage = user.stages[:SPECIAL_ATTACK] + 6
+      real_special_attack  = (user.spatk.to_f * stageMul[special_attack_stage] / stageDiv[special_attack_stage]).floor
+      # Calculate target's effective defending values
+      defense_stage         = target.stages[:DEFENSE] + 6
+      real_defense          = (target.defense.to_f * stageMul[defense_stage] / stageDiv[defense_stage]).floor
+      special_defense_stage = target.stages[:SPECIAL_DEFENSE] + 6
+      real_special_defense  = (target.spdef.to_f * stageMul[special_defense_stage] / stageDiv[special_defense_stage]).floor
+      # Perform simple damage calculation
+      physical_damage = real_attack.to_f / real_defense
+      special_damage = real_special_attack.to_f / real_special_defense
+      # Determine move's category
+      if physical_damage == special_damage
+        @calcCategory = @battle.pbRandom(2)
+      else
+        @calcCategory = (physical_damage > special_damage) ? 0 : 1
+      end
     end
   end
 

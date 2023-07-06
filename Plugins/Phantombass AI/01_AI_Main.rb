@@ -745,6 +745,14 @@ class PBAI
       # Return [move_index, move_target]
       if idx && !@battle.wildBattle?
         choice = scores[idx]
+        if choice[0].is_a?(Symbol)
+            ind = -1
+            loop do
+                ind += 1
+                break if @battler.moves[ind] == choice[0]
+            end
+            choice[0] = ind
+        end
         move = @battler.moves[choice[0]]
         target = $target[$target_ind%2]
         if ["15B", "0D5", "0D6", "0D7", "0D8", "0D9"].include?(move.function)
@@ -1039,6 +1047,7 @@ class PBAI
       end
       return score
     end
+
     def ai_should_switch?
       switch = nil
       self.opposing_side.battlers.each do |target|

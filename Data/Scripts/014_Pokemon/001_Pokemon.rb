@@ -481,11 +481,11 @@ class Pokemon
       sp_data = species_data
       abil_index = ability_index
       if abil_index >= 2   # Hidden ability
-        @ability = $game_variables[969] == 0 ? sp_data.hidden_abilities[abil_index - 2] : getRandAbilities(species,2)
+        @ability = Randomizer.abilites.nil? ? sp_data.hidden_abilities[abil_index - 2] : getRandAbilities(species,2)
         abil_index = (@personalID & 1) if !@ability
       end
       if !@ability   # Natural ability or no hidden ability defined
-        @ability = $game_variables[969] == 0 ? (sp_data.abilities[abil_index] || sp_data.abilities[0]) : (getRandAbilities(species,abil_index) || getRandAbilities(species,0))
+        @ability = Randomizer.abilites.nil? ? (sp_data.abilities[abil_index] || sp_data.abilities[0]) : (getRandAbilities(species,abil_index) || getRandAbilities(species,0))
       end
     end
     return @ability
@@ -504,7 +504,7 @@ class Pokemon
   def hasAbility?(check_ability = nil)
     current_ability = self.ability
     return !current_ability.nil? if check_ability.nil?
-    return current_ability == check_ability
+    return current_ability.is_a?(Array) ? current_ability.include?(check_ability) : current_ability == check_ability
   end
 
   # @return [Boolean] whether this Pokémon has a hidden ability
@@ -517,8 +517,8 @@ class Pokemon
   def getAbilityList
     ret = []
     sp_data = species_data
-    if $game_variables[969] != 0
-      array = $game_variables[969]
+    if Randomizer.active?(:ABILITIES)
+      array = Randomizer.abilities
       ability = array[:abilities][sp_data.id_number - 1]
       ability.uniq!
       ability.each_with_index { |a, i| ret.push([a, i]) if a }
@@ -666,7 +666,7 @@ class Pokemon
   # Returns the list of moves this Pokémon can learn by levelling up.
   # @return [Array<Array<Integer,Symbol>>] this Pokémon's move list, where every element is [level, move ID]
   def getMoveList
-    return $game_variables[973] != 0 ? getRandMoves(self.species) : species_data.moves
+    return !Randomizer.movesets.nil? ? getRandMoves(self.species) : species_data.moves
   end
 
   # Sets this Pokémon's movelist to the default movelist it originally had.
@@ -1080,7 +1080,7 @@ class Pokemon
 
   # @return [Hash<Integer>] this Pokémon's base stats, a hash with six key/value pairs
   def baseStats
-    this_base_stats =  $game_variables[970] != 0 ? getRandStats(species_data) : species_data.base_stats
+    this_base_stats = !Randomizer.base_stats.nil? ? getRandStats(species_data) : species_data.base_stats
     ret = {}
     GameData::Stat.each_main { |s| ret[s.id] = this_base_stats[s.id] }
     return ret
@@ -1171,7 +1171,7 @@ class Pokemon
   # @param withMoves [TrueClass, FalseClass] whether the Pokémon should have moves
   # @param rechech_form [TrueClass, FalseClass] whether to auto-check the form
   def initialize(species, level, owner = $Trainer, withMoves = true, recheck_form = true)
-    species_data = GameData::Species.get(species)
+    species_data = Randomizer.active?(:GIFT) ? Randomizer.gift(species) : GameData::Species.get(species)
     @species          = species_data.species
     @form             = species_data.form
     @forced_form      = nil

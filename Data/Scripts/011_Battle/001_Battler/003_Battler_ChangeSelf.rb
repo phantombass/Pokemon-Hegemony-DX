@@ -149,8 +149,10 @@ class PokeBattle_Battler
     pbUpdate(true)
     @hp = @totalhp-oldDmg
     @effects[PBEffects::WeightChange] = 0 if Settings::MECHANICS_GENERATION >= 6
-    @battle.scene.pbChangePokemon(self,@pokemon)
-    @battle.scene.pbRefreshOne(@index)
+    if !hasActiveAbility?(:ZEROTOHERO)
+      @battle.scene.pbChangePokemon(self,@pokemon)
+      @battle.scene.pbRefreshOne(@index)
+    end
     @battle.pbDisplay(msg) if msg && msg!=""
     PBDebug.log("[Form changed] #{pbThis} changed from form #{oldForm} to form #{newForm}")
     @battle.pbSetSeen(self)
@@ -218,6 +220,21 @@ class PokeBattle_Battler
         @battle.pbHideAbilitySplash(self)
       end
     end
+    if isSpecies?(:DARMANITAN) && hasActiveAbility?(:ZENMODE)
+      if @form == 0 && @battle.pbWeather == (:Sun || :HarshSun)
+        newForm = 2
+        $weather_form = true
+      end
+      if @form == 1 && [:Hail,:Sleet].include?(@battle.pbWeather)
+        newForm = 3
+        $weather_form = true
+      end
+      if newForm != @form
+        @battle.pbShowAbilitySplash(self,true)
+        @battle.pbHideAbilitySplash(self)
+        pbChangeForm(newForm,_INTL("{1} triggered!",abilityName))
+      end
+    end
   end
 
   def pbCheckFormOnTerrainChange
@@ -261,13 +278,13 @@ class PokeBattle_Battler
     # Form changes upon entering battle and when the terrain changes
     pbCheckFormOnTerrainChange if !endOfRound
     # Darmanitan - Zen Mode
-    if isSpecies?(:DARMANITAN) && self.ability == :ZENMODE
+    if isSpecies?(:DARMANITAN) && self.ability == :ZENMODE && $weather_form == false
       newForm = @form
-      if @hp <= @totalhp/2 && newForm < 2
-        newForm += 2
-      elsif @hp > @totalhp/2 && newForm >= 2
-        newForm -= 2
-      end
+        if @hp <= @totalhp/2 && newForm < 2
+          newForm += 2
+        elsif @hp > @totalhp/2 && newForm >= 2
+          newForm -= 2
+        end
       if newForm != @form
         @battle.pbShowAbilitySplash(self,true)
         pbChangeForm(newForm,_INTL("{1} triggered!",abilityName))

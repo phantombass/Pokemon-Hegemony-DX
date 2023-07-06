@@ -115,8 +115,9 @@ module GameData
       trainer.items     = @items.clone
       trainer.lose_text = self.lose_text
       # Create each Pokémon owned by the trainer
-      randPkmn = $game_variables[971]
-      if $game_variables[971] == 0
+      randPkmn = Randomizer.trainers
+      trainer_exclusions = $game_switches[906] ? nil : [:RIVAL1,:RIVAL2,:LEADER_Brock,:LEADER_Misty,:LEADER_Surge,:LEADER_Erika,:LEADER_Sabrina,:LEADER_Blaine,:LEADER_Winslow,:LEADER_Jackson,:OFFCORP,:DEFCORP,:PSYCORP,:ROCKETBOSS,:CHAMPION,:ARMYBOSS,:NAVYBOSS,:AIRFORCEBOSS,:GUARDBOSS,:CHANCELLOR,:DOJO_Luna,:DOJO_Apollo,:DOJO_Jasper,:DOJO_Maloki,:DOJO_Juliet,:DOJO_Adam,:DOJO_Wendy,:LEAGUE_Astrid,:LEAGUE_Winslow,:LEAGUE_Eugene,:LEAGUE_Armand,:LEAGUE_Winston,:LEAGUE_Vincent]
+      if randPkmn.nil? || randPkmn == 0 || trainer_exclusions.include?(@trainer_type) || @version == 4 || @version > 99
         @pokemon.each do |pkmn_data|
           species = GameData::Species.get(pkmn_data[:species]).species
           pkmn = Pokemon.new(species, pkmn_data[:level], trainer, false)
@@ -176,18 +177,18 @@ module GameData
         idx = -1
         for i in randPkmn[:trainer]
           idx += 1
-          break if i[0] == @trainer_type && i[2] == @version
+          break if i[0] == @trainer_type && i[1] == tr_name && i[2] == @version
         end
         randSpec = randPkmn[:pokemon][:species][idx]
         randLvl = randPkmn[:pokemon][:level][idx]
-        idLvl = -1
+        lvl = -1
         randSpec.each do |pkmn_data|
-          idLvl += 1
+          lvl += 1
           species = GameData::Species.get(pkmn_data).species
-          pkmn = Pokemon.new(species, randLvl[idLvl], trainer, false)
-          trainer.party.push(pkmn)
-          pkmn.reset_moves
-          pkmn.calc_stats
+            pkmn = Pokemon.new(species, randLvl[lvl], trainer, false)
+            trainer.party.push(pkmn)
+            pkmn.reset_moves
+            pkmn.calc_stats
         end
       end
       return trainer

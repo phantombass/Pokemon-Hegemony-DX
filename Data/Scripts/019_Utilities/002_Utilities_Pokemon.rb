@@ -55,7 +55,7 @@ def pbNicknameAndStore(pkmn)
   end
   $Trainer.pokedex.set_seen(pkmn.species)
   $Trainer.pokedex.set_owned(pkmn.species)
-  pbNickname(pkmn)
+  pbNickname(pkmn) if !$game_switches[916]
   pbStorePokemon(pkmn)
 end
 
@@ -71,7 +71,7 @@ def pbAddPokemon(pkmn, level = 1, see_form = true)
   end
   pkmn = Pokemon.new(pkmn, level) if !pkmn.is_a?(Pokemon)
   species_name = pkmn.speciesName
-  pbMessage(_INTL("{1} obtained {2}!\\me[Pkmn get]\\wtnp[80]\1", $Trainer.name, species_name))
+  !$game_switches[916] ? pbMessage(_INTL("{1} obtained {2}!\\me[Pkmn get]\\wtnp[80]\1", $Trainer.name, species_name)) : pbMessage(_INTL("{1} obtained an Egg!\\me[Egg get]\\wtnp[80]\1",$Trainer.name))
   pbNicknameAndStore(pkmn)
   $Trainer.pokedex.register(pkmn) if see_form
   return true

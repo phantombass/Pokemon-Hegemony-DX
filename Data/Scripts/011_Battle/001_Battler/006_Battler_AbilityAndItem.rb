@@ -54,7 +54,7 @@ class PokeBattle_Battler
       BattleHandlers.triggerAbilityOnBattlerFainting(b.ability,b,self,@battle)
     end
     if ability_orb_held?(self.item) && hasActiveAbility?(:NEUTRALIZINGGAS)
-      Battle::ItemEffects.triggerOnSwitchIn(self.item,self,false)
+      BattleHandlers.triggerItemOnSwitchIn(self.item,self,false)
     end
   end
 
@@ -62,7 +62,7 @@ class PokeBattle_Battler
   def pbAbilitiesOnDamageTaken(move_user = nil)
     return false if !@droppedBelowHalfHP
     return false if !abilityActive?
-    return Battle::AbilityEffects.triggerOnHPDroppedBelowHalf(self.ability, self, move_user, @battle)
+    return BattleHandlers.triggerAbilityOnHPDroppedBelowHalf(self.ability, self, move_user, @battle)
   end
 
   # Called when a Pokémon (self) enters battle, at the end of each move used,

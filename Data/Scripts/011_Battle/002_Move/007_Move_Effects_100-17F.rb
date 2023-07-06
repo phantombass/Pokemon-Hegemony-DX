@@ -2028,7 +2028,7 @@ end
 class PokeBattle_Move_15D < PokeBattle_Move
   def ignoresSubstitute?(user); return true; end
 
-  def pbCalcDamage(user,target,numTargets=1)
+  def pbStealStats(user,target,numTargets=1)
     if target.hasRaisedStatStages?
       pbShowAnimation(@id,user,target,1)   # Stat stage-draining animation
       @battle.pbDisplay(_INTL("{1} stole the target's boosted stats!",user.pbThis))
@@ -2036,15 +2036,12 @@ class PokeBattle_Move_15D < PokeBattle_Move
       GameData::Stat.each_battle do |s|
         next if target.stages[s.id] <= 0
         if user.pbCanRaiseStatStage?(s.id,user,self)
-          if user.pbRaiseStatStage(s.id,target.stages[s.id],user,showAnim)
-            showAnim = false
-          end
+          showAnim = false if user.pbRaiseStatStage(s.id,target.stages[s.id],user,showAnim)
         end
         target.statsLowered = true
         target.stages[s.id] = 0
       end
     end
-    super
   end
 end
 

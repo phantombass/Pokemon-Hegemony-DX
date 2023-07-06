@@ -155,7 +155,6 @@ class Interpreter
   # * Show Text
   #-----------------------------------------------------------------------------
   def command_101
-    $viewport_mission.dispose if $viewport_mission != nil
     return false if $game_temp.message_window_showing
     message     = @list[@index].parameters[0]
     message_end = ""
@@ -272,7 +271,7 @@ class Interpreter
       Input.update
       pbUpdateSceneMap
       # Check for input and break if there is one
-      for i in 1..18
+      for i in 1..99
         ret = i if Input.trigger?(i)
       end
       break if ret != 0

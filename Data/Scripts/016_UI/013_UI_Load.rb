@@ -308,8 +308,6 @@ class PokemonLoadScreen
         @scene.pbEndScene
         Game.load(@save_data)
         $repel_toggle = true
-        scene = Mission_Overlay.new
-        scene.pbShow
         return
       when cmd_new_game
         @scene.pbEndScene

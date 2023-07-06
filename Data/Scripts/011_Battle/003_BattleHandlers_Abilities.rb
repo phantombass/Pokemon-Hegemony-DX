@@ -257,6 +257,16 @@ BattleHandlers::AbilityOnStatusInflicted.add(:SYNCHRONIZE,
         user.pbParalyze(nil,msg)
         battler.battle.pbHideAbilitySplash(battler)
       end
+    when :FROZEN
+      if user.pbCanFrostbiteSynchronize?(battler)
+        battler.battle.pbShowAbilitySplash(battler)
+        msg = nil
+        if !PokeBattle_SceneConstants::USE_ABILITY_SPLASH
+          msg = _INTL("{1}'s {2} gave {3} frostbite!",battler.pbThis,battler.abilityName,user.pbThis(true))
+        end
+        user.pbFreeze(nil,msg)
+        battler.battle.pbHideAbilitySplash(battler)
+      end
     end
   }
 )
