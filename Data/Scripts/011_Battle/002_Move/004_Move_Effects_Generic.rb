@@ -230,6 +230,7 @@ end
 # Generic user's stat increase/decrease classes.
 #===============================================================================
 class PokeBattle_StatUpMove < PokeBattle_Move
+  attr_reader :statUp
   def pbMoveFailed?(user,targets)
     return false if damagingMove?
     return !user.pbCanRaiseStatStage?(@statUp[0],user,self,true)
@@ -237,10 +238,12 @@ class PokeBattle_StatUpMove < PokeBattle_Move
 
   def pbEffectGeneral(user)
     return if damagingMove?
+    return if Restrictions.active? && user.index == 0
     user.pbRaiseStatStage(@statUp[0],@statUp[1],user)
   end
 
   def pbAdditionalEffect(user,target)
+    return if Restrictions.active? && user.index == 0
     if user.pbCanRaiseStatStage?(@statUp[0],user,self)
       user.pbRaiseStatStage(@statUp[0],@statUp[1],user)
     end
@@ -250,6 +253,7 @@ end
 
 
 class PokeBattle_MultiStatUpMove < PokeBattle_Move
+  attr_reader :statUp
   def pbMoveFailed?(user,targets)
     return false if damagingMove?
     failed = true
@@ -267,6 +271,7 @@ class PokeBattle_MultiStatUpMove < PokeBattle_Move
 
   def pbEffectGeneral(user)
     return if damagingMove?
+    return if Restrictions.active? && user.index == 0
     showAnim = true
     for i in 0...@statUp.length/2
       next if !user.pbCanRaiseStatStage?(@statUp[i*2],user,self)
@@ -278,6 +283,7 @@ class PokeBattle_MultiStatUpMove < PokeBattle_Move
 
   def pbAdditionalEffect(user,target)
     showAnim = true
+    return if Restrictions.active? && user.index == 0
     for i in 0...@statUp.length/2
       next if !user.pbCanRaiseStatStage?(@statUp[i*2],user,self)
       if user.pbRaiseStatStage(@statUp[i*2],@statUp[i*2+1],user,showAnim)
@@ -290,6 +296,7 @@ end
 
 
 class PokeBattle_StatDownMove < PokeBattle_Move
+  attr_reader :statDown
   def pbEffectWhenDealingDamage(user,target)
     return if @battle.pbAllFainted?(target.idxOwnSide)
     showAnim = true
@@ -308,6 +315,7 @@ end
 # Generic target's stat increase/decrease classes.
 #===============================================================================
 class PokeBattle_TargetStatUpMove < PokeBattle_Move
+  attr_reader :statUp
   def pbFailsAgainstTarget?(user,target)
     return false if damagingMove?
     return !target.pbCanRaiseStatStage?(@statUp[0],user,self,true)
@@ -328,6 +336,7 @@ end
 
 
 class PokeBattle_TargetMultiStatUpMove < PokeBattle_Move
+  attr_reader :statUp
   def pbFailsAgainstTarget?(user,target)
     return false if damagingMove?
     failed = true
@@ -340,7 +349,7 @@ class PokeBattle_TargetMultiStatUpMove < PokeBattle_Move
       # NOTE: It's a bit of a faff to make sure the appropriate failure message
       #       is shown here, I know.
       canRaise = false
-      if target.hasActiveAbility?(:CONTRARY) && !@battle.moldBreaker
+      if target.hasActiveAbility?(:CONTRARY) && !target.affectedByMoldBreaker?
         for i in 0...@statUp.length/2
           next if target.statStageAtMin?(@statUp[i*2])
           canRaise = true
@@ -387,6 +396,7 @@ class PokeBattle_TargetMultiStatUpMove < PokeBattle_Move
 end
 
 class PokeBattle_TargetStatDownMove < PokeBattle_Move
+  attr_reader :statDown
   def pbFailsAgainstTarget?(user,target)
     return false if damagingMove?
     return !target.pbCanLowerStatStage?(@statDown[0],user,self,true)
@@ -407,6 +417,7 @@ end
 
 
 class PokeBattle_TargetMultiStatDownMove < PokeBattle_Move
+  attr_reader :statDown
   def pbFailsAgainstTarget?(user,target)
     return false if damagingMove?
     failed = true
@@ -419,7 +430,7 @@ class PokeBattle_TargetMultiStatDownMove < PokeBattle_Move
       # NOTE: It's a bit of a faff to make sure the appropriate failure message
       #       is shown here, I know.
       canLower = false
-      if target.hasActiveAbility?(:CONTRARY) && !@battle.moldBreaker
+      if target.hasActiveAbility?(:CONTRARY) && !target.affectedByMoldBreaker?
         for i in 0...@statDown.length/2
           next if target.statStageAtMax?(@statDown[i*2])
           canLower = true
@@ -497,7 +508,7 @@ class PokeBattle_TwoTurnMove < PokeBattle_Move
     @damagingTurn = true
     # 0 at start of charging turn, move's ID at start of damaging turn
     if !user.effects[PBEffects::TwoTurnAttack]
-      @powerHerb = user.hasActiveItem?(:POWERHERB)
+      @powerHerb = user.hasActiveItem?(:POWERHERB) || user.hasActiveAbility?(:IMPATIENT)
       @chargingTurn = true
       @damagingTurn = @powerHerb
     end

@@ -123,7 +123,7 @@ FIELD_EFFECTS = {
 		:Grassy => {
 			:field_name => "Grassy",
 			:intro_message => "Grass covers the field.",
-			:field_gfx => "field",
+			:field_gfx => "Grassy",
 			:nature_power => :ENERGYBALL,
 			:mimicry => :GRASS,
 			:intro_script => nil,
@@ -148,9 +148,15 @@ FIELD_EFFECTS = {
 			:type_type_change => {},
 			:type_change_message => {},
 			:side_effects => {},
-			:field_changers => {:None => [Fields::IGNITE_MOVES]},
-			:change_message => {"The field caught fire!" => [Fields::IGNITE_MOVES]},
-			:field_change_conditions => {:None => PokeBattle_Battle.ignite?} 
+			:field_changers => {
+				:Wildfire => [Fields::IGNITE_MOVES],
+				:None => [Fields::REMOVAL]
+			},
+			:change_message => {
+				"The field caught fire!" => [Fields::IGNITE_MOVES],
+				"The grass got blown away!" => [Fields::REMOVAL]
+			},
+			:field_change_conditions => {:Wildfire => PokeBattle_Battle.ignite?} 
 		},
 		:Electric => {
 			:field_name => "Electric",
@@ -162,7 +168,7 @@ FIELD_EFFECTS = {
 			:abilities => [:VOLTABSORB,:LIGHTNINGROD,:MOTORDRIVE,:PROTOSYNTHESIS],
 			:ability_effects => {},
 			:move_damage_boost => {},
-			:move_messages => {"The wind blew through the grass." => [Fields::WIND_MOVES]},
+			:move_messages => {},
 			:move_type_change => {},
 			:move_type_mod => {},
 			:move_accuracy_change => {},
@@ -176,8 +182,14 @@ FIELD_EFFECTS = {
 			:type_type_change => {},
 			:type_change_message => {},
 			:side_effects => {},
-			:field_changers => {:None => [Fields::QUAKE_MOVES]},
-			:change_message => {"The field got stamped out!" => [Fields::QUAKE_MOVES]},
+			:field_changers => {
+				:None => [Fields::QUAKE_MOVES],
+				:None => [Fields::REMOVAL]
+			},
+			:change_message => {
+				"The field got stamped out!" => [Fields::QUAKE_MOVES],
+				"The electricity got blown away!" => [Fields::REMOVAL]
+			},
 			:field_change_conditions => {} 
 		},
 		:Wildfire => {
@@ -188,7 +200,11 @@ FIELD_EFFECTS = {
 			:mimicry => :FIRE,
 			:intro_script => nil,
 			:abilities => [:FLASHFIRE,:WELLBAKEDBODY,:THERMALEXCHANGE,:HEATPROOF,:MAGMAARMOR],
-			:ability_effects => {},
+			:ability_effects => {
+				:THERMALEXHCANGE => [[:ATTACK,1]],
+				:HEATPROOF => [[:DEFENSE,1],[:SPECIAL_DEFENSE,1]],
+				:MAGMAARMOR => [[:DEFENSE,1],[:SPECIAL_DEFENSE,1]]
+			},
 			:move_damage_boost => {
 			1.2 => [Fields::WIND_MOVES]
 			},
@@ -201,11 +217,145 @@ FIELD_EFFECTS = {
 			:type_messages => {},
 			:type_type_mod => {},
 			:type_mod_message => {},
+			:type_type_change => {
+				:FIRE => [:GRASS]
+			},
+			:type_change_message => {
+				"The grass caught fire!" => [:GRASS]
+			},
+			:side_effects => {"cinders" => Fields::WIND_MOVES},
+			:field_changers => {:None => [Fields::DOUSERS]},
+			:change_message => {"The wildfire was doused!" => [Fields::DOUSERS]},
+			:field_change_conditions => {} 
+		},
+		:Misty => {
+			:field_name => "Misty",
+			:intro_message => "Mist swirled about the battlefield.",
+			:field_gfx => "Misty",
+			:nature_power => :MOONBLAST,
+			:mimicry => :FAIRY,
+			:intro_script => nil,
+			:abilities => [:FAIRYBUBBLE,:ILLUSION,:CLOUDNINE],
+			:ability_effects => {
+				:FAIRYBUBBLE => [[:DEFENSE,1]],
+				:ILLUSION => [[:DEFENSE,1],[:SPECIAL_DEFENSE,1]],
+				:CLOUDNINE => [[:DEFENSE,1],[:SPECIAL_DEFENSE,1]]
+			},
+			:move_damage_boost => {},
+			:move_messages => {},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {
+				0.5 => [:DRAGON]
+			},
+			:type_messages => {"The mist weakened the attack!" => [:DRAGON]},
+			:type_type_mod => {},
+			:type_mod_message => {},
 			:type_type_change => {},
 			:type_change_message => {},
-			:side_effects => {"cinders" => Fields::WIND_MOVES},
-			:field_changers => {:None => [Fields::IGNITE_MOVES]},
-			:change_message => {"The forest burned down!" => [Fields::IGNITE_MOVES]},
-			:field_change_conditions => {:None => PokeBattle_Battle.ignite?} 
+			:side_effects => {},
+			:field_changers => {:None => [Fields::REMOVAL]},
+			:change_message => {"The mist got blown away!" => [Fields::REMOVAL]},
+			:field_change_conditions => {} 
+		},
+		:Psychic => {
+			:field_name => "Psychic",
+			:intro_message => "The field got weird.",
+			:field_gfx => "Psychic",
+			:nature_power => :PSYCHIC,
+			:mimicry => :PSYCHIC,
+			:intro_script => nil,
+			:abilities => [],
+			:ability_effects => {},
+			:move_damage_boost => {},
+			:move_messages => {},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {
+				1.3 => [:PSYCHIC]
+			},
+			:type_messages => {"The terrain boosted the attack!" => [:PSYCHIC]},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:side_effects => {},
+			:field_changers => {:None => [Fields::REMOVAL]},
+			:change_message => {"The weird terrain got blown away!" => [Fields::REMOVAL]},
+			:field_change_conditions => {} 
+		},
+		:Poison => {
+			:field_name => "Poison",
+			:intro_message => "The field is covered with toxic waste.",
+			:field_gfx => "Poison",
+			:nature_power => :DEATHTOLL,
+			:mimicry => :POISON,
+			:intro_script => nil,
+			:abilities => [:POISONPOINT,:POISONTOUCH,:FEVERPITCH,:CORROSION,:NITRIC],
+			:ability_effects => {
+				:POISONPOINT => [[:DEFENSE,1]],
+				:POISONTOUCH => [[:ATTACK,1]],
+				:FEVERPITCH => [[:SPECIAL_ATTACK,1],[:SPECIAL_DEFENSE,1]],
+				:CORROSION => [[:SPECIAL_ATTACK,1]],
+				:NITRIC => [[:ATTACK,1],[:SPECIAL_ATTACK,1]]
+			},
+			:move_damage_boost => {},
+			:move_messages => {},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {
+				1.3 => [:POISON]
+			},
+			:type_messages => {"The toxic waste boosted the attack!" => [:POISON]},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:side_effects => {},
+			:field_changers => {
+				:Wildfire => [Fields::IGNITE_MOVES],
+				:None => [Fields::REMOVAL]},
+			:change_message => {
+				"The toxic waste caught fire!" => [Fields::IGNITE_MOVES],
+				"The toxic waste got blown away!" => [Fields::REMOVAL]},
+			:field_change_conditions => {:Wildfire => PokeBattle_Battle.ignite?} 
+		},
+		:EchoChamber => {
+			:field_name => "Cave",
+			:intro_message => "A dull echo hums...",
+			:field_gfx => "cave1",
+			:nature_power => :HYPERVOICE,
+			:mimicry => :NORMAL,
+			:intro_script => nil,
+			:abilities => [:SOUNDPROOF,:CACOPHONY,:PUNKROCK],
+			:ability_effects => {
+				:SOUNDPROOF => [[:SPECIAL_DEFENSE,1]],
+				:CACOPHONY => [[:DEFENSE,1],[:SPECIAL_DEFENSE,1]],
+				:PUNKROCK => [[:SPECIAL_ATTACK,1]]
+			},
+			:move_damage_boost => {
+			1.2 => [Fields::ECHO_MOVES]
+			},
+			:move_messages => {"The cave echoed loudly!" => [Fields::ECHO_MOVES]},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {},
+			:type_messages => {},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:side_effects => {"echo" => Fields::ECHO_MOVES},
+			:field_changers => {},
+			:change_message => {},
+			:field_change_conditions => {} 
 		},
 	}

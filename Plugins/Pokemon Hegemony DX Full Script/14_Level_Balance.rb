@@ -1,12 +1,3 @@
-################################################################################
-# Advanced Pokemon Level Balancing
-# By Joltik
-#Inspired by Umbreon's code
-#Tweaked by Phantombass for use in Pokémon Promenade
-################################################################################
-################################################################################
-
-
 module LvlCap
   Switch = 111               #Switch that turns on Trainer Difficulty Control
   LevelCap = 106             #Variable for the Level Cap
@@ -16,6 +7,7 @@ module LvlCap
   Trainers = 72              #Switch for Trainers
   Boss = 908                  #Switch for Ace Trainer Battles
   Hard = 900
+  Insane = 902
   Expert = 903
   Ironmon = 905
   Kaizo = 906

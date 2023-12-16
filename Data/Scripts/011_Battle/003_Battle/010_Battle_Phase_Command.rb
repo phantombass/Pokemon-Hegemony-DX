@@ -255,5 +255,6 @@ class PokeBattle_Battle
       end
       break if commandsEnd
     end
+    
   end
 end

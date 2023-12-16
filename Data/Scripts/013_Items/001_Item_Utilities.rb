@@ -307,6 +307,10 @@ def pbRaiseEffortValues(pkmn, stat, evGain = 10, ev_limit = true)
 end
 
 def pbItemRaiseEV(pkmn, stat, scene, evGain = 10, item = nil, happiness = "")
+    if $game_switches[Settings::DISABLE_EVS]
+        scene.pbDisplay(_INTL("It won't have any effect."))
+        return false
+    end
   qty = 1
   if Settings::NO_VITAMIN_EV_CAP && pkmn.ev[stat] >= 100
     scene.pbDisplay(_INTL("It won't have any effect."))

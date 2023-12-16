@@ -11,6 +11,7 @@ def pbNickname(pkmn)
     pkmn.name = pbEnterPokemonName(_INTL("{1}'s nickname?", species_name),
                                    0, Pokemon::MAX_NAME_SIZE, "", pkmn)
   end
+  $repel_toggle = true
 end
 
 def pbStorePokemon(pkmn)

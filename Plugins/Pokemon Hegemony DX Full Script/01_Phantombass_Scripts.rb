@@ -5,6 +5,7 @@ module Settings
   LEVEL_CAP_SWITCH = 904
   FISHING_AUTO_HOOK     = true
   GAME_VERSION = "0.1"
+  DISABLE_EVS = 917
 end
 
 Essentials::ERROR_TEXT += "[Pokémon Hegemony DX v#{Settings::GAME_VERSION}]\r\n"
@@ -41,366 +42,30 @@ class Game_System
     return @reputation
   end
 end
-class Dungeon_Missions
-  attr_accessor :locations
-  attr_accessor :name
-  attr_accessor :target
-  attr_accessor :stars
-  attr_accessor :mission_data
-
-  def initialize
-    @locations = []
-    @name = []
-    @target = []
-    @stars = []
-    @mission_data = []
-  end
-
-  def self.stars
-    return @stars
-  end
-  def self.locations
-    return @locations
-  end
-  def self.target
-    return @target
-  end
-  def self.name
-    return @name
-  end
-  def self.mission_data
-    return @mission_data
-  end
-
-  def self.setup
-    @locations = self.locations
-    @name = self.name
-    @target = self.target
-    @stars = self.stars
-    @mission_data = self.mission_data
-  end
-
-  def randomize(location)
-    @locations.push(location)
-    dungeon = rand(100)
-    rep_wartime = $game_system.reputation > 300 ? 10 : 5
-    rep_learning = rep_wartime + 10
-    rep_support = rep_learning + 10
-    if dungeon < rep_wartime
-      name = "Dungeon of Experiments"
-    elsif dungeon >= rep_wartime && dungeon < rep_learning
-      name = "Dungeon of Learning"
-    elsif dungeon >= rep_learning && dungeon < rep_support
-      name = "Dungeon of Support"
-    elsif dungeon >= rep_support
-      name = "Dungeon of Life"
-    end
-    target = randomize_target
-    stars = randomize_stars
-    @target.push(target)
-    @stars.push(stars)
-    @name.push(name)
-  end
-
-  def dungeon_reward(location)
-    loc = 0
-    for i in @locations
-      break if i == location
-      loc += 1
-    end
-    case @name[loc]
-    when "Dungeon of Experiments"
-      list = []
-      del = []
-      case @stars[loc]
-      when 1
-        common = [:FINNEON2,:REMORAID2,:SPEAROW2,:DRIFLOON2,:ARON2,:IMPIDIMP2,:BIDOOF2,:COTTONEE2]
-        rare = [:BULBASAUR2,:CHARMANDER2,:SQUIRTLE2,:TURTWIG2,:CHIMCHAR2,:PIPLUP2]
-        rarerand = rand(rare.length)
-        for i in common
-          list.push(i)
-        end
-        list.push(rare[rarerand])
-      when 2
-        common = [:BLITZLE2,:GIBLE2,:DREEPY2,:GROWLITHE2,:BOUFFALANT2,:TAUROS2,:MILTANK2,:CHARCADET2]
-        rare = [:TREECKO2,:TORCHIC2,:MUDKIP2,:GROOKEY2,:SCORBUNNY2,:SOBBLE2]
-        rarerand = rand(rare.length)
-        for i in common
-          list.push(i)
-        end
-        list.push(rare[rarerand])
-      when 3
-        common = [:SKIDDO2,:SPOINK2,:TRAPINCH2,:BONSLY2,:VULPIX2,:TINKATINK2,:SNORUNT2,:TOGEDEMARU2]
-        rare = [:CHIKORITA2,:CYNDAQUIL2,:TOTODILE2,:ROWLET2,:LITTEN2,:POPPLIO2]
-        rarerand = rand(rare.length)
-        for i in common
-          list.push(i)
-        end
-        list.push(rare[rarerand])
-      when 4
-        common = [:CHINGLING2,:QWILFISH2,:SWABLU2,:LARVITAR2,:PORYGON1,:MANKEY2,:FERROSEED2,:MAGNEMITE2,:SPIRITOMB2,:PIKACHU2]
-        rare = [:SNIVY2,:TEPIG2,:OSHAWOTT2,:CHESPIN2,:FENNEKIN2,:FROAKIE2]
-        rarerand = rand(rare.length)
-        for i in common
-          list.push(i)
-        end
-        list.push(rare[rarerand])
-      when 5
-        common = [:DEINO2,:LARVESTA2,:PETILIL2,:DUNSPARCE2,:SNEASEL2,:TEDDIURSA2,:RUFFLET2,:BASCULIN2,:STANTLER2]
-        rare = [:SPRIGATITO2,:FUECOCO2,:QUAXLY2,:SCYTHER2,:PAWNIARD2,:GIRAFARIG2]
-        rarerand = rand(rare.length)
-        for i in common
-          list.push(i)
-        end
-        list.push(rare[rarerand])
-      end
-      pbEachPokemon { |poke,_box|
-        mon = poke.species
-        evo = GameData::Species.get(mon).get_baby_species
-        evos = GameData::Species.get(evo).get_family_evolutions
-        del.push(evos)
-      }
-      del.flatten!
-      del.uniq!
-      del.each do |e|
-        if list.include?(e)
-          list.delete(e)
-        end
-      end
-    when "Dungeon of Life"
-      list = []
-      del = []
-      case @stars[loc]
-      when 1
-        common = [:SCRAGGY,:SKORUPI,:VOLTORB,:MAGNEMITE,:HOUNDOUR,:EXEGGCUTE,:FLABEBE,:PUMPKABOO,:PHANTUMP,:BUNNELBY,:SANDILE,:SNUBBULL]
-        rare = [:ELEKID,:MAGBY,:SMOOCHUM,:RIOLU,:ABRA,:GASTLY]
-        rarerand = rand(rare.length)
-        for i in common
-          list.push(i)
-        end
-        list.push(rare[rarerand])
-      when 2
-        common = [:TEDDIURSA,:GIRAFARIG,:MANKEY,:DUNSPARCE,:PETILIL_1,:MIMEJR_1,:YAMASK_1,:BERGMITE_1,:RUFFLET_1,:FARFETCHD_1,:GROWLITHE_1,:BASCULIN_2]
-        rare = [:GIMMIGHOUL,:SCYTHER,:PAWNIARD,:MUNCHLAX,:SNEASEL_1,:STANTLER]
-        rarerand = rand(rare.length)
-        for i in common
-          list.push(i)
-        end
-        list.push(rare[rarerand])
-      when 3
-        common = [:HATTREM,:MORGREM,:CHINGLING,:CHATOT,:CARKOL,:CUFANT,:KIRLIA,:FURFROU,:TRUBBISH,:KRABBY,:INKAY,:SIZZLIPEDE]
-        rare = [:MELTAN,:WYNAUT,:FEEBAS,:TOXEL,:DURALUDON,:VIBRAVA]
-        rarerand = rand(rare.length)
-        for i in common
-          list.push(i)
-        end
-        list.push(rare[rarerand])
-      when 4
-        common = [:GIGALITH,:SIGILYPH,:NIDOQUEEN,:LANTURN,:TORKOAL,:VULPIX_1,:EXCADRILL,:BRAVIARY_1,:NIDOKING,:LUDICOLO,:SCOVILLAIN,:BEARTIC]
-        rare = [:DRACOVISH,:DRACOZOLT,:ARCTOVISH,:ARCTOZOLT,:AURORUS,:TYRANTRUM]
-        rarerand = rand(rare.length)
-        for i in common
-          list.push(i)
-        end
-        list.push(rare[rarerand])
-      when 5
-        common = [:DEINO2,:LARVESTA2,:PETILIL2,:DUNSPARCE2,:SNEASEL2,:TEDDIURSA2,:RUFFLET2,:BASCULIN2,:STANTLER2]
-        rare = [:SPRIGATITO2,:FUECOCO2,:QUAXLY2,:SCYTHER2,:PAWNIARD2,:GIRAFARIG2]
-        rarerand = rand(rare.length)
-        for i in common
-          list.push(i)
-        end
-        list.push(rare[rarerand])
-      end
-      pbEachPokemon { |poke,_box|
-        mon = poke.species
-        evo = GameData::Species.get(mon).get_baby_species
-        evos = GameData::Species.get(evo).get_family_evolutions
-        del.push(evos)
-      }
-      del.flatten!
-      del.uniq!
-      del.each do |e|
-        if list.include?(e)
-          list.delete(e)
-        end
-      end
-    end
-  end
-
-
-  def valid_locations
-    loc = [32,77,80,83,88,91,97,98,99,101,108,113,119,128,129,130,133,136,139,147,160,167,169,172,174,184,187,212,214,218,225,227,241,264,265,271,284,
-    288,289,310,311,351,317,323,324,337,339,340,345]
-    return loc
-  end
-
-  def randomize_stars
-    rep = ($game_system.reputation/30).floor
-    rep = 1 if $game_system.reputation < 30
-    rep = 5 if $game_system.reputation >= 150
-    star = rand(rep) + 1
-    return star
-  end
-
-  def stars(location)
-    loc = 0
-    for i in @locations
-      break if i == location
-      loc += 1
-    end
-    return @stars[loc]
-  end
-
-  def add_reputation(star)
-    rep = $game_system.reputation
-    add = ((((15/((rep/45)*1.75))).floor)*((0.4)*(2/star))).floor
-    add = 0 if (add < 2 && rep >= 150)
-    $game_system.reputation += add
-  end
-
-  def add_reputation_manual(add)
-    $game_system.reputation += add
-  end
-
-  def lose_reputation(star)
-    rep = $game_system.reputation
-    add = (((((15/((rep/45)*1.75))).floor)*((0.4)*(2/star)))*(star^2)).round
-    add = 1 if add < 1
-    $game_system.reputation -= add
-  end
-
-  def lose_reputation_manual(lose)
-    $game_system.reputation -= lose
-  end
-
-  def sign(location)
-    loc = 0
-    if @locations.nil? || ![location].include?(@locations)
-      name = "Dungeon Closed"
-    else
-      for i in @locations
-        break if i == location
-        loc += 1
-      end
-      name = @name[loc]
-    end
-    return name
-  end
-
-  def start
-    data = []
-    location = rand(self.valid_locations.length)
-    self.randomize(location)
-    map = pbLoadMapInfos
-    map_name = map[location].name
-    stars = self.stars(location)
-    target = self.target(location)
-    target_name = $game_variables[212] != 0 ? target[1] : GameData::Species.get(target).name
-    reward = ((stars * 1000) * ($game_system.reputation/30)).floor
-    data.push(target_name)
-    data.push(map_name)
-    data.push(reward)
-  end
-
-  def randomize_target
-    target = nil
-    mons = [:MILCERY,:SKITTY,:GULPIN,:FLABEBE,:AZURILL,:MAREANIE,:SNEASEL,:TEDDIURSA,:TOXEL,:CUBONE,:DARUMAKA,:MIMEJR,:MEOWTH,:PONYTA,:CORSOLA,:FARFETCHD,:GEODUDE,:ROLYCOLY,:SKIDDO,:KLINK,:STANTLER,:PICHU,:MAGBY,:ELEKID,:SMOOCHUM,:HAPPINY,:MUNCHLAX,:POIPOLE,:COSMOG,:PHIONE,:KUBFU,:LARVESTA,:SIZZLIPEDE,:SILICOBRA,:MAGNEMITE,:CARBINK,:AUDINO,:RALTS,:ABRA,:GASTLY,:DROWZEE,:ELGYEM,:BRONZOR,:MUNNA,:IMPIDIMP,:INDEEDEE,:PINCURCHIN,:PYUKUMUKU,:WYNAUT,:SCRAGGY,:SEEL,:HORSEA,:JIGGLYPUFF,:MANKEY,:SEVIPER,
-  :ZANGOOSE,:SNUBBULL,:MAREEP,:GIRAFARIG,:DUNSPARCE,:CHINGLING,:SNORUNT,:SPHEAL,:BUIZEL,:FINNEON,:ARROKUDA,:MORELULL,:FOMANTIS,:INKAY,:COTTONEE,:MISDREAVUS,:MURKROW,:FEEBAS,:GOTHITA,:SOLOSIS,:STUNFISK,:PIKIPEK,:EMOLGA,:PLUSLE,:MINUN,:TOGEDEMARU,:MORPEKO,:VOLBEAT,:ILLUMISE,:ODDISH,:BELLSPROUT,:IGGLYBUFF,:CLEFFA,:PICHU,:STARYU,:GRIMER,:KOFFING,:LAPRAS,:ZUBAT,:NATU,:BONSLY,:WEEDLE,:CATERPIE,:WAILMER,:SHELMET,:KARRABLAST,:SCYTHER,:BARBOACH,:LUVDISC,:DEDENNE,:MINIOR,:CLOBBOPUS,:CRABRAWLER,:KRABBY,
-  :SKORUPI,:FOMANTIS,:DEWPIDER,:BUNEARY,:TYNAMO,:DELIBIRD,:REMORAID,:WOOLOO,:NICKIT,:SKWOVET,:DHELMISE,:EKANS,:CRYOGONAL,:CUBCHOO,:WISHIWASHI,:DEINO,:TRAPINCH,:BELDUM,:BAGON,:LARVITAR,:DRATINI,:EEVEE,:GIBLE,:NOIBAT,:JANGMOO,:DREEPY,:RIOLU,:TYROGUE,:CROAGUNK,:GLIGAR,:HATENNA,:ZIGZAGOON,:ROOKIDEE,:JOLTIK,:WOOPER,
-  :TAROUNTULA,:LECHONK,:FIDOUGH,:GIMMIGHOUL,:TAUROS,:MILTANK,:BOUFFALANT,:FRIGIBAX,:FLITTLE,:TOEDSCOOL,:WIGLETT,:DONDOZO,:TATSUGIRI,:VELUZA,:TADBULB,:PAWMI,:FLAMIGO,:MASCHIFF,:GREAVARD,:PAWNIARD,:SMOLIV,:NYMBLE,:BOMBIRDIER,:KLAWF,:ORTHWORM,:CAPSAKID,:GLIMMET,:VAROOM,:BRAMBLIN,:WATTREL,:SHROODLE,:CYCLIZAR,:TINKATINK,:TANDEMAUS,:RELLOR,:FINIZEN,:NACLI,:CETODDLE]
-    people = [["trainer_BUGCATCHER","Bug Catcher"],["trainer_GAMBLER","Grandpa"],["trainer_SAILOR","Sailor"],["trainer_SCIENTIST","Scientist"],["trainer_TUBER_F","little girl"],["trainer_TUBER_M","little boy"]]
-    item = ["lost item","Lost Item"]
-    r = rand(3)
-    randMon = rand(mons.length)
-    randPeople = rand(people.length)
-    case r
-    when 0; target = mons[randMon]
-    when 1; target = people[randPeople]
-    when 2; target = item
-    end
-    $game_variables[212] = r
-    return target
-  end
-
-  def target(location)
-    loc = 0
-    for i in @locations
-      break if i == location
-      loc += 1
-    end
-    return @target[loc]
-  end
-
-  def refresh_sprite
-    first_pkmn = GameData::Species.get(self.target($game_map.map_id))
-    $game_map.events.each_with_index do |event,i|
-      next if !event[8][/MissionTarget/]
-      next if !event[8][/DungeonReward/]
-      change_sprite([first_pkmn.species, first_pkmn.form,
-          first_pkmn.gender, first_pkmn.shiny?,
-          first_pkmn.shadowPokemon?])
-    end
-  end
-
-  def change_sprite(params)
-    $game_map.events.each_with_index do |event,i|
-      next if !event[8][/MissionTarget/]
-      next if !event[8][/DungeonReward/]
-      fname = GameData::Species.ow_sprite_filename(params[0], params[1],
-                                                   params[2], params[3],
-                                                   params[4])
-      fname.gsub!("Graphics/Characters/","")
-      event[6] = fname
-      @realEvents[i].character_name = fname
-    end
-  end
-end
-
-$dungeon = Dungeon_Missions.mission_data == nil ? Dungeon_Missions.new : Dungeon_Missions.setup
-
-module GameData
-  class Species
-    def self.ow_sprite_filename(species, form = 0, gender = 0, shiny = false, shadow = false)
-      ret = self.check_graphic_file("Graphics/Characters/", species, form,
-                                    gender, shiny, shadow, nil)
-      ret = "Graphics/Characters/Followers/000" if nil_or_empty?(ret)
-      return ret
-    end
-  end
-end
 
 module RandBoss
   Var = 990
 end
 
-def dungeon_randomizer(location)
-  dungeon = rand(100)
-  rep_wartime = $game_system.reputation > 300 ? 10 : 5
-  rep_learning = rep_wartime + 10
-  rep_support = rep_learning + 10
-  rep_norm = $game_system.reputation > 300 ? 70 : 75
-  if dungeon < rep_wartime
-    name = "Dungeon of Experiments"
-  elsif dungeon >= rep_wartime && dungeon < rep_learning
-    name = "Dungeon of Learning"
-  elsif dungeon >= rep_learning && dungeon < rep_support
-    name = "Dungeon of Support"
-  elsif dungeon >= rep_support
-    name = "Dungeon of Life"
+class TrainerBattle
+  def self.start(trainerID, trainerName, endSpeech=nil,doubleBattle=false, trainerPartyID=0, canLose=false, outcomeVar=1)
+    return pbTrainerBattle(trainerID, trainerName, endSpeech=nil,doubleBattle=false, trainerPartyID=0, canLose=false, outcomeVar=1)
   end
-  return name
 end
 
-LEVEL_CAP = [11,15,19,22,27,29,37,40,43,48,55,59,65,68,71,72,76,79,80,83,85,88,90,93,95,98,100]
+class WildBattle
+  def self.start(species, level, outcomeVar=1, canRun=true, canLose=false)
+    return pbWildBattle(species, level, outcomeVar=1, canRun=true, canLose=false)
+  end
+end
+
+LEVEL_CAP = [15,25,35,45,55,65,75,85,95,100,110,120]
 
 module Game
   def self.level_cap_update
-    if $game_switches[LEVEL_CAP_SWITCH]
-      $game_system.level_cap += 1
-      $game_system.level_cap = LEVEL_CAP.size-1 if $game_system.level_cap >= LEVEL_CAP.size
-      $game_variables[106] = LEVEL_CAP[$game_system.level_cap]
-    end
+    $game_system.level_cap += 1
+    $game_system.level_cap = LEVEL_CAP.size-1 if $game_system.level_cap >= LEVEL_CAP.size
+    $game_variables[106] = $game_switches[LvlCap::Insane] ? INSANE_LEVEL_CAP[$game_system.level_cap] : LEVEL_CAP[$game_system.level_cap]
   end
   def self.start_new
     pbMessage(_INTL("Welcome to Pokémon Hegemony DX, a complete, non-profit fan game made by Phantombass."))
@@ -465,9 +130,11 @@ Events.onMapChange += proc {| sender, e |
     if $game_variables[DailyE4::TimeNow] > $game_variables[DailyE4::LastTime] || $game_variables[DailyE4::TimeNow]<$game_variables[DailyE4::LastTime]
       $game_variables[DailyE4::Variable] = 1+rand(100)
       $game_variables[DailyE4::TimeNow] = $game_variables[DailyE4::LastTime]
+      $dungeon.randomize_all_dungeons
     end
     pbResetAllRoamers
     scene = Mission_Overlay.new
+    scene.pbShow
     scene.pbEndScene if scene != nil
 }
 
@@ -476,6 +143,16 @@ Events.onStepTaken += proc {
     $mission_steps -= 1
     $viewport_mission.dispose if $mission_steps == 0
   end
+  if $dungeon.steps > 0
+    $dungeon.steps -= 1 if (!$dungeon.valid_locations.include?($game_map.map_id) && $game_map.map_id < 375 )
+  else
+    $dungeon.randomize_all_dungeons
+  end
+  #PBAI.log("#{$dungeon.steps}")
+}
+
+Events.onAction += proc {| sender, e |
+  $mission.pbEndScene if $mission != nil
 }
 
 class PokemonLoadScreen
@@ -514,13 +191,18 @@ class PokemonLoadScreen
         write_version
         Game.load(@save_data)
         reset_custom_variables
+        $PokemonGlobal.repel = 0
         $repel_toggle = true
+        $mission_show = true
+        #$dungeon.randomize_all_dungeons
+        $dungeon.setup
         return
       when cmd_new_game
         @scene.pbEndScene
         write_version
         Game.start_new
         reset_custom_variables
+        $PokemonGlobal.repel = 0
         repel_toggle = true
         return
       when cmd_mystery_gift
@@ -852,10 +534,14 @@ end
 
 Events.onWildPokemonCreate+=proc {|sender,e|
   pokemon = e[0]
-  levelcap = LEVEL_CAP[$game_system.level_cap]
+  level_cap = $game_switches[LvlCap::Insane] ? INSANE_LEVEL_CAP[$game_system.level_cap] : LEVEL_CAP[$game_system.level_cap]
+  if pokemon.level > level_cap
+    $game_switches[89] = true
+  end
   abilRand = rand(100)
   if abilRand > 80 && $game_map.map_id == 91 && $currentDexSearch == nil
     pokemon.ability_index = 2
+    pokemon.level = 15
   end
   if $game_map.map_id == 78 || $game_map.map_id == 223 || $game_map.map_id == 226
     pokemon.form = 1
@@ -870,23 +556,14 @@ Events.onWildPokemonCreate+=proc {|sender,e|
   if pokemon.shiny_locked?
     pokemon.shiny = false
   end
-  mlv = $Trainer.party.map { |e| e.level  }.max
-  level = mlv - 1 -rand(2)
-  pokemon.species = Level_Scaling.evolve(pokemon,level,levelcap) if encounters_randomized? == false
-  pokemon.level = level <= 0 ? 1 : level
-  if pokemon.level > LEVEL_CAP[$game_system.level_cap]
-    $game_switches[89] = true
-  end
-  pokemon.calc_stats
-  pokemon.reset_moves
-  $viewport_mission.dispose if $viewport_mission != nil
+  $mission.pbEndScene if $mission != nil
 }
 
 Events.onEndBattle += proc { |_sender,e|
   $game_switches[89] = false
   $CanToggle = true
   $repel_toggle = true
-  if $game_switches[LvlCap::Ironmon] || $game_switches[902] == true
+  if $game_switches[LvlCap::Ironmon]
     for i in 0...$Trainer.party.length
       k = $Trainer.party.length - 1 - i
       if $Trainer.party[k].hp <= 0
@@ -894,9 +571,6 @@ Events.onEndBattle += proc { |_sender,e|
         $Trainer.remove_pokemon_at_index(k)
       end
     end
-  end
-  if $viewport != nil
-    $viewport.dispose
   end
 }
 
@@ -1011,6 +685,41 @@ end
 
 class PokeBattle_Battle
 
+  def pbGainEVsOne(idxParty,defeatedBattler)
+    if !$game_switches[Settings::DISABLE_EVS]
+      pkmn = pbParty(0)[idxParty]   # The Pokémon gaining EVs from defeatedBattler
+      evYield = defeatedBattler.pokemon.evYield
+      # Num of effort points pkmn already has
+      evTotal = 0
+      GameData::Stat.each_main { |s| evTotal += pkmn.ev[s.id] }
+      # Modify EV yield based on pkmn's held item
+      if !BattleHandlers.triggerEVGainModifierItem(pkmn.item,pkmn,evYield)
+        BattleHandlers.triggerEVGainModifierItem(@initialItems[0][idxParty],pkmn,evYield)
+      end
+      # Double EV gain because of Pokérus
+      if pkmn.pokerusStage>=1   # Infected or cured
+        evYield.each_key { |stat| evYield[stat] *= 2 }
+      end
+      # Gain EVs for each stat in turn
+      if pkmn.shadowPokemon? && pkmn.saved_ev
+        pkmn.saved_ev.each_value { |e| evTotal += e }
+        GameData::Stat.each_main do |s|
+          evGain = evYield[s.id].clamp(0, Pokemon::EV_STAT_LIMIT - pkmn.ev[s.id] - pkmn.saved_ev[s.id])
+          evGain = evGain.clamp(0, Pokemon::EV_LIMIT - evTotal)
+          pkmn.saved_ev[s.id] += evGain
+          evTotal += evGain
+        end
+      else
+        GameData::Stat.each_main do |s|
+          evGain = evYield[s.id].clamp(0, Pokemon::EV_STAT_LIMIT - pkmn.ev[s.id])
+          evGain = evGain.clamp(0, Pokemon::EV_LIMIT - evTotal)
+          pkmn.ev[s.id] += evGain
+          evTotal += evGain
+        end
+      end
+    end
+  end
+
   def pbGainExpOne(idxParty,defeatedBattler,numPartic,expShare,expAll,showMessages=true)
     pkmn = pbParty(0)[idxParty]   # The Pokémon gaining EVs from defeatedBattler
     growth_rate = pkmn.growth_rate
@@ -1022,7 +731,11 @@ class PokeBattle_Battle
     isPartic    = defeatedBattler.participants.include?(idxParty)
     hasExpShare = expShare.include?(idxParty)
     level = defeatedBattler.level
-    level_cap = $game_switches[Settings::LEVEL_CAP_SWITCH] ? LEVEL_CAP[$game_system.level_cap] : Settings::MAXIMUM_LEVEL
+    if $game_switches[LvlCap::Insane]
+      level_cap = $game_switches[Settings::LEVEL_CAP_SWITCH] ? INSANE_LEVEL_CAP[$game_system.level_cap] : Settings::MAXIMUM_LEVEL
+    else
+      level_cap = $game_switches[Settings::LEVEL_CAP_SWITCH] ? LEVEL_CAP[$game_system.level_cap] : Settings::MAXIMUM_LEVEL
+    end
     if $game_switches[Settings::LEVEL_CAP_SWITCH]
       level_cap_gap = growth_rate.exp_values[level_cap] - pkmn.exp
     end
@@ -1308,6 +1021,9 @@ class PokeBattle_Battle
   end
 end
 class PokeBattle_Battler
+  def affectedByMoldBreaker?
+    return @battle.moldBreaker && !hasActiveItem?(:ABILITYSHIELD)
+  end
   def pbFaint(showMessage=true)
     if !fainted?
       PBDebug.log("!!!***Can't faint with HP greater than 0")

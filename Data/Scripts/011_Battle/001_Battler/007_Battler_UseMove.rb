@@ -416,7 +416,7 @@ class PokeBattle_Battler
             magicCoater = b.index
             b.effects[PBEffects::MagicCoat] = false
             break
-          elsif b.hasActiveAbility?(:MAGICBOUNCE) && !@battle.moldBreaker &&
+          elsif b.hasActiveAbility?(:MAGICBOUNCE) && !affectedByMoldBreaker? &&
              !b.effects[PBEffects::MagicBounce]
             magicBouncer = b.index
             b.effects[PBEffects::MagicBounce] = true

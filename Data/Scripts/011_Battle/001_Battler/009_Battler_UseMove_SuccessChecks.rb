@@ -44,7 +44,7 @@ class PokeBattle_Battler
     if @effects[PBEffects::ChoiceBand]
       if hasActiveItem?([:CHOICEBAND,:CHOICESPECS,:CHOICESCARF]) &&
          pbHasMove?(@effects[PBEffects::ChoiceBand])
-        if move.id != @effects[PBEffects::ChoiceBand]
+        if move.id != @effects[PBEffects::ChoiceBand] && move.id != @battle.struggle.id
           if showMessages
             msg = _INTL("{1} allows the use of only {2}!",itemName,
                GameData::Move.get(@effects[PBEffects::ChoiceBand]).name)
@@ -59,7 +59,7 @@ class PokeBattle_Battler
     # Gorilla Tactics
     if @effects[PBEffects::GorillaTactics]
       if hasActiveAbility?(:GORILLATACTICS)
-        if move.id != @effects[PBEffects::GorillaTactics]
+        if move.id != @effects[PBEffects::GorillaTactics] && move.id != @battle.struggle.id
           if showMessages
             msg = _INTL("{1} allows the use of only {2} !",abilityName,GameData::Move.get(@effects[PBEffects::GorillaTactics]).name)
             (commandPhase) ? @battle.pbDisplayPaused(msg) : @battle.pbDisplay(msg)
@@ -243,6 +243,9 @@ class PokeBattle_Battler
       @battle.pbDisplay(_INTL("{1} flinched and couldn't move!",pbThis))
       if abilityActive?
         BattleHandlers.triggerAbilityOnFlinch(self.ability,self,@battle)
+      end
+      if hasActiveItem?(:FOCUSPOLICY)
+        BattleHandlers.triggerItemOnFlinch(self.item,self,@battle)
       end
       @lastMoveFailed = true
       return false
@@ -463,9 +466,9 @@ class PokeBattle_Battler
         @battle.pbShowAbilitySplash(target)
         if target.pbCanRaiseStatStage?(:ATTACK,target)
           target.pbRaiseStatStage(:ATTACK,1,target)
-          battle.pbDisplay(_INTL("{1}'s {2} Orb boosted its Attack!",target.pbThis,target.abilityName))
+          @battle.pbDisplay(_INTL("{1}'s {2} Orb boosted its Attack!",target.pbThis,target.abilityName))
         else
-          battle.pbDisplay(_INTL("{1}'s {2} Orb made {3} ineffective!",target.pbThis,target.abilityName,move.name))
+          @battle.pbDisplay(_INTL("{1}'s {2} Orb made {3} ineffective!",target.pbThis,target.abilityName,move.name))
         end
         @battle.pbHideAbilitySplash(target)
         user.ability_id = ability
@@ -479,9 +482,9 @@ class PokeBattle_Battler
         @battle.pbShowAbilitySplash(target)
         if target.pbCanRaiseStatStage?(:SPECIAL_ATTACK,target)
           target.pbRaiseStatStage(:SPECIAL_ATTACK,1,target)
-          battle.pbDisplay(_INTL("{1}'s {2} Orb boosted its Special Attack!",target.pbThis,target.abilityName))
+          @battle.pbDisplay(_INTL("{1}'s {2} Orb boosted its Special Attack!",target.pbThis,target.abilityName))
         else
-          battle.pbDisplay(_INTL("{1}'s {2} Orb made {3} ineffective!",target.pbThis,target.abilityName,move.name))
+          @battle.pbDisplay(_INTL("{1}'s {2} Orb made {3} ineffective!",target.pbThis,target.abilityName,move.name))
         end
         @battle.pbHideAbilitySplash(target)
         user.ability_id = ability
@@ -495,9 +498,9 @@ class PokeBattle_Battler
         @battle.pbShowAbilitySplash(target)
         if !target.effects[PBEffects::FlashFire]
           target.effects[PBEffects::FlashFire] = true
-            battle.pbDisplay(_INTL("The power of {1}'s Fire-type moves rose because of its {2} Orb!",target.pbThis(true),target.abilityName))
+            @battle.pbDisplay(_INTL("The power of {1}'s Fire-type moves rose because of its {2} Orb!",target.pbThis(true),target.abilityName))
         else
-            battle.pbDisplay(_INTL("{1}'s {2} Orb made {3} ineffective!",
+            @battle.pbDisplay(_INTL("{1}'s {2} Orb made {3} ineffective!",
                target.pbThis,target.abilityName,move.name))
         end
         @battle.pbHideAbilitySplash(target)
@@ -510,10 +513,25 @@ class PokeBattle_Battler
       target.ability_id = :SCALER
       if ability != target.ability_id
         @battle.pbShowAbilitySplash(target)
-        battle.pbDisplay(_INTL("{1}'s {2} Orb made {3} ineffective!",target.pbThis,target.abilityName,move.name))
+        @battle.pbDisplay(_INTL("{1}'s {2} Orb made {3} ineffective!",target.pbThis,target.abilityName,move.name))
         @battle.pbHideAbilitySplash(target)
         user.ability_id = ability
       end
+      return false
+    end
+    if move.priority > 0 && target.hasActiveItem?(:DAZZLINGORB)
+      ability = target.ability_id
+      target.ability_id = :DAZZLING
+      if ability != target.ability_id
+        @battle.pbShowAbilitySplash(target)
+        @battle.pbDisplay(_INTL("{1}'s {2} Orb made {3} ineffective!",target.pbThis,target.abilityName,move.name))
+        @battle.pbHideAbilitySplash(target)
+        user.ability_id = ability
+      end
+      return false
+    end
+    if move.priority > 0 && $gym_priority == true
+      @battle.pbDisplay(_INTL("The mysterious power from the Trainer prevents priority moves!"))
       return false
     end
     if move.damagingMove? && move.calcType == :COSMIC && target.hasActiveItem?(:DIMENSIONBLOCKORB)
@@ -521,7 +539,7 @@ class PokeBattle_Battler
       target.ability_id = :DIMENSIONBLOCK
       if ability != target.ability_id
         @battle.pbShowAbilitySplash(target)
-        battle.pbDisplay(_INTL("{1}'s {2} Orb made {3} ineffective!",target.pbThis,target.abilityName,move.name))
+        @battle.pbDisplay(_INTL("{1}'s {2} Orb made {3} ineffective!",target.pbThis,target.abilityName,move.name))
         @battle.pbHideAbilitySplash(target)
         user.ability_id = ability
       end

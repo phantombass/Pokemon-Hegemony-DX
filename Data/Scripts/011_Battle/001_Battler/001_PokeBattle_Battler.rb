@@ -46,7 +46,12 @@ class PokeBattle_Battler
   attr_accessor :statsLowered  # Stats have been lowered this round
   attr_accessor :damageState
   attr_accessor :initialHP     # Set at the start of each move's usage
-  attr_accessor :droppedBelowHalfHP 
+  attr_accessor :droppedBelowHalfHP
+  STAT_STAGE_MULTIPLIERS    = [2, 2, 2, 2, 2, 2, 2, 3, 4, 5, 6, 7, 8]
+  STAT_STAGE_DIVISORS       = [8, 7, 6, 5, 4, 3, 2, 2, 2, 2, 2, 2, 2]
+  ACC_EVA_STAGE_MULTIPLIERS = [3, 3, 3, 3, 3, 3, 3, 4, 5, 6, 7, 8, 9]
+  ACC_EVA_STAGE_DIVISORS    = [9, 8, 7, 6, 5, 4, 3, 3, 3, 3, 3, 3, 3]
+  STAT_STAGE_MAXIMUM        = 6   # Is also the minimum (-6)
 
   #=============================================================================
   # Complex accessors
@@ -316,7 +321,7 @@ class PokeBattle_Battler
     ret = (@pokemon) ? @pokemon.weight : 500
     ret += @effects[PBEffects::WeightChange]
     ret = 1 if ret<1
-    if abilityActive? && !@battle.moldBreaker
+    if abilityActive? && !affectedByMoldBreaker?
       ret = BattleHandlers.triggerWeightCalcAbility(self.ability,self,ret)
     end
     if itemActive?
@@ -542,8 +547,8 @@ class PokeBattle_Battler
     return false if @effects[PBEffects::SmackDown]
     return false if @battle.field.effects[PBEffects::Gravity] > 0
     return true if pbHasType?(:FLYING)
-    return true if hasActiveAbility?(:LEVITATE) && !@battle.moldBreaker
-    return true if hasActiveAbility?(:MULTITOOL) && !@battle.moldBreaker
+    return true if hasActiveAbility?(:LEVITATE) && !affectedByMoldBreaker?
+    return true if hasActiveAbility?(:MULTITOOL) && !affectedByMoldBreaker?
     return true if hasActiveItem?([:AIRBALLOON,:LEVITATEORB])
     return true if @effects[PBEffects::MagnetRise] > 0
     return true if @effects[PBEffects::Telekinesis] > 0
@@ -627,7 +632,7 @@ class PokeBattle_Battler
       return false
     end
     if Settings::MECHANICS_GENERATION >= 6
-      if hasActiveAbility?(:OVERCOAT) && !@battle.moldBreaker
+      if hasActiveAbility?(:OVERCOAT) && !affectedByMoldBreaker?
         if showMsg
           @battle.pbShowAbilitySplash(self)
           if PokeBattle_SceneConstants::USE_ABILITY_SPLASH
@@ -783,6 +788,7 @@ class PokeBattle_Battler
 
   # Returns the data structure for this battler's side.
   def pbOwnSide
+    return @battle.sides[0] if $spam_block_triggered && @index != 1
     return @battle.sides[idxOwnSide]
   end
 
@@ -805,6 +811,11 @@ class PokeBattle_Battler
 
   def allAllies
     return @battle.allSameSideBattlers(@index).reject { |b| b.index == @index }
+  end
+
+  # Returns an array containing all unfainted opposing Pokémon.
+  def allOpposing
+    return @battle.allOtherSideBattlers(@index)
   end
 
   # Returns the battler that is most directly opposite to self. unfaintedOnly is

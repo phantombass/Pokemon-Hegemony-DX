@@ -481,11 +481,11 @@ class Pokemon
       sp_data = species_data
       abil_index = ability_index
       if abil_index >= 2   # Hidden ability
-        @ability = Randomizer.abilites.nil? ? sp_data.hidden_abilities[abil_index - 2] : getRandAbilities(species,2)
+        @ability = sp_data.hidden_abilities[abil_index - 2]
         abil_index = (@personalID & 1) if !@ability
       end
       if !@ability   # Natural ability or no hidden ability defined
-        @ability = Randomizer.abilites.nil? ? (sp_data.abilities[abil_index] || sp_data.abilities[0]) : (getRandAbilities(species,abil_index) || getRandAbilities(species,0))
+        @ability = sp_data.abilities[abil_index] || sp_data.abilities[0]
       end
     end
     return @ability
@@ -517,11 +517,20 @@ class Pokemon
   def getAbilityList
     ret = []
     sp_data = species_data
-    if Randomizer.active?(:ABILITIES)
+    if Randomizer.active?(:ABILITIES) && !$game_switches[RandBoss::Var]
       array = Randomizer.abilities
       ability = array[:abilities][sp_data.id_number - 1]
-      ability.uniq!
       ability.each_with_index { |a, i| ret.push([a, i]) if a }
+      if ret[0][0] == ret[1][0]
+        ret.delete_at(1)
+      end
+    elsif Restrictions.active?
+      array = Restrictions.abilities
+      ability = array[:abilities][sp_data.id_number - 1]
+      ability.each_with_index { |a, i| ret.push([a, i]) if a }
+      if ret[0][0] == ret[1][0]
+        ret.delete_at(1)
+      end
     else
       sp_data.abilities.each_with_index { |a, i| ret.push([a, i]) if a }
       sp_data.hidden_abilities.each_with_index { |a, i| ret.push([a, i + 2]) if a }
@@ -755,6 +764,7 @@ class Pokemon
   # @return [Boolean] whether the Pokémon is compatible with the given move
   def compatible_with_move?(move_id)
     move_data = GameData::Move.try_get(move_id)
+    return false if Restrictions::BANNED_MOVES.include?(move_data.id) && Restrictions.active?
     return move_data && species_data.tutor_moves.include?(move_data.id)
   end
 
@@ -950,6 +960,15 @@ class Pokemon
 
   # @return [Hash<Integer>] the EV yield of this Pokémon (a hash with six key/value pairs)
   def evYield
+    no_evs = {
+      :HP => 0,
+      :ATTACK => 0,
+      :DEFENSE => 0,
+      :SPEED => 0,
+      :SPECIAL_ATTACK => 0,
+      :SPECIAL_DEFENSE => 0
+    }
+    return no_evs if $game_switches[Settings::DISABLE_EVS]
     this_evs = species_data.evs
     ret = {}
     GameData::Stat.each_main { |s| ret[s.id] = this_evs[s.id] }
@@ -1207,7 +1226,7 @@ class Pokemon
     @ivMaxed          = {}
     @ev               = {}
     GameData::Stat.each_main do |s|
-      @iv[s.id]       = rand(IV_STAT_LIMIT + 1)
+      @iv[s.id]       = $game_switches[Settings::DISABLE_EVS] ? 31 : rand(IV_STAT_LIMIT + 1)
       @ev[s.id]       = 0
     end
     if owner.is_a?(Owner)

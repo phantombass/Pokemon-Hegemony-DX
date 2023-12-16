@@ -112,6 +112,16 @@ class PokeBattle_Scene
       # Actions
       if Input.trigger?(Input::USE)      # Confirm choice
         pbPlayDecisionSE
+        chosen_move = battler.moves[cw.index]
+        $spam_block_flags[:same_move].push(chosen_move) if !@battle.doublebattle
+        recover = ["0D6","0D5","0D8","1D6","0D9"]
+        initative = ["0EE","529","538","0ED","0EA","151"]
+        $spam_block_flags[:double_recover].push(chosen_move) if recover.include?(chosen_move.function) && !@battle.doublebattle
+        $spam_block_flags[:initiative_flag].push(chosen_move) if initative.include?(chosen_move.function) && !@battle.doublebattle
+        $spam_block_flags[:yawn].push(chosen_move) if !@battle.doublebattle
+        $spam_block_flags[:protect_switch].push(chosen_move) if chosen_move.is_a?(PokeBattle_ProtectMove) && !@battle.doublebattle
+        $spam_block_flags[:choice] = battler.moves[cw.index]
+        $spam_block_flags[:triple_switch].clear
         break if yield cw.index
         needFullRefresh = true
         needRefresh = true
@@ -175,6 +185,10 @@ class PokeBattle_Scene
           idxPartyRet = i
           break
         end
+        $spam_block_flags[:triple_switch].push(:Switch)
+        $spam_block_flags[:protect_switch].push(:Switch)
+        $spam_block_flags[:fake_out_ghost_flag].push(:Switch) if (modParty[idxParty].hasType?(:GHOST) || modParty[idxParty].hasAbility?([:ARMORTAIL,:DAZZLING,:QUEENLYMAJESTY,:PSYCHICSURGE]))
+        $spam_block_flags[:choice] = modParty[idxParty]
         break if yield idxPartyRet, switchScreen
       elsif cmdSummary>=0 && command==cmdSummary   # Summary
         scene.pbSummary(idxParty,true)

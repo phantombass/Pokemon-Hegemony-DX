@@ -193,6 +193,10 @@ class HandlerHash2
     @hash.clear
   end
 
+  def remove(key)
+    @hash.delete(key)
+  end
+
   def trigger(sym, *args)
     sym = sym.id if !sym.is_a?(Symbol) && sym.respond_to?("id")
     handler = self[sym]

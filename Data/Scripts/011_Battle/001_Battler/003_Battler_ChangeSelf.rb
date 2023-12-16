@@ -57,6 +57,8 @@ class PokeBattle_Battler
     PBDebug.log("[Pokémon fainted] #{pbThis} (#{@index})") if !showMessage
     @battle.scene.pbFaintBattler(self)
     pbInitEffects(false)
+    $spam_block_flags[:triple_switch].clear if @index == 0
+    $spam_block_flags[:same_move].clear if @index == 0
     # Reset status
     self.status      = :NONE
     self.statusCount = 0
@@ -242,11 +244,9 @@ class PokeBattle_Battler
     if hasActiveAbility?(:MIMICRY)
       newTypes = self.pbTypes
       originalTypes = [@pokemon.type1,@pokemon.type2] | []
-      case @battle.field.terrain
-      when :Electric   then newTypes = :ELECTRIC
-      when :Grassy     then newTypes = :GRASS
-      when :Misty      then newTypes = :FAIRY
-      when :Psychic    then newTypes = :PSYCHIC
+      fe = FIELD_EFFECTS[@battle.field.field_effects]
+      if @battle.field.field_effects != :None
+        newTypes = fe[:mimicry]
       else;                 newTypes = originalTypes.dup
       end
       if self.pbTypes != newTypes

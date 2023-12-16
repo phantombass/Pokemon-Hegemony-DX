@@ -634,7 +634,7 @@ PBAI::SwitchHandler.add do |score,ai,battler,proj,target|
   	score += 400
   	PBAI.log("+ 400")
   end
-  if comet > 0 && (battler.pbHasType?(:COSMIC) && !battler.airborne? && !battler.hasActiveAbility?(:MAGICGUARD)) || battler.hasActiveAbility?(:GALEFORCE)
+  if comet > 0 && (battler.pbHasType?(:COSMIC) || battler.hasActiveAbility?(:GALEFORCE))
   	score += 400
   	PBAI.log("+ 400")
   end
@@ -642,8 +642,8 @@ PBAI::SwitchHandler.add do |score,ai,battler,proj,target|
 end
 
 PBAI::SwitchHandler.add do |score,ai,battler,proj,target|
-	if $switch_flags[:move] != nil
-   lastMove = $switch_flags[:move]
+	if ($switch_flags[:move] != nil) || ($spam_block_triggered && $spam_block_flags[:choice].is_a?(PokeBattle_Move))
+   lastMove = $spam_block_triggered && $spam_block_flags[:choice].is_a?(PokeBattle_Move) ? $spam_block_flags[:choice] : $switch_flags[:move]
    next if lastMove == nil
    matchup = battler.calculate_move_matchup(lastMove.id)
    immune = 0
@@ -723,15 +723,13 @@ PBAI::SwitchHandler.add_out do |switch,ai,battler,target|
 end
 
 PBAI::SwitchHandler.add_out do |switch,ai,battler,target|
-	if battler.setup?
-		if battler.is_physical_attacker? && battler.stages[:ATTACK] != nil
-			if battler.stages[:ATTACK] > 0
-				switch = false
-			end
-		elsif battler.is_special_attacker? && battler.stages[:SPECIAL_ATTACK] != nil
-			if battler.stages[:SPECIAL_ATTACK] > 0
-				switch = false
-			end
+	if battler.is_physical_attacker? && battler.stages[:ATTACK] != nil
+		if battler.stages[:ATTACK] > 0
+			switch = false
+		end
+	elsif battler.is_special_attacker? && battler.stages[:SPECIAL_ATTACK] != nil
+		if battler.stages[:SPECIAL_ATTACK] > 0
+			switch = false
 		end
 	end
 	next switch
@@ -739,6 +737,11 @@ end
 
 PBAI::SwitchHandler.add_out do |switch,ai,battler,target|
 	switch = false if battler.effects[PBEffects::PowerTrick]
+	next switch
+end
+
+PBAI::SwitchHandler.add_out do |switch,ai,battler,target|
+	switch = false if battler.effects[PBEffects::Substitute] > 0
 	next switch
 end
 
@@ -754,13 +757,125 @@ PBAI::SwitchHandler.add_out do |switch,ai,battler,target|
 end
 
 PBAI::SwitchHandler.add do |score,ai,battler,proj,target|
-    next score if !ai.battle.doublebattle
+  next score if !ai.battle.doublebattle
 	ally = battler.side.battlers.find {|proj| proj && proj != battler && !proj.fainted?}
 	for move in ally.moves
 		if ally.target_is_immune?(move,battler) && [:AllNearOthers,:AllBattlers,:BothSides].include?(move.pbTarget(battler))
 			score += 100
 			PBAI.log("+ 100")
 		end
+	end
+  next score
+end
+
+PBAI::SwitchHandler.add_out do |switch,ai,battler,target|
+	next switch if !$spam_block_triggered
+	next switch if !$spam_block_flags[:choice].is_a?(PokeBattle_Move)
+	nextMove = $spam_block_flags[:choice]
+	nextDmg = target.get_move_damage(battler,nextMove)
+  if nextDmg < battler.hp/2 || nextDmg < battler.totalhp/3
+  	switch = false
+  end
+  next switch
+end
+
+PBAI::SwitchHandler.add do |score,ai,battler,proj,target|
+	if $spam_block_triggered && $spam_block_flags[:choice].is_a?(PokeBattle_Move)
+		nextMove = $spam_block_flags[:choice]
+		nextDmg = target.get_move_damage(battler,nextMove)
+		damage = 0
+		if nextDmg >= battler.hp
+			score -= 1000
+			PBAI.log("- 1000 because the battler will faint switching in")
+		else
+			if battler.faster_than?(target)
+				for move in battler.moves
+					damage += 1 if battler.get_move_damage(target,move) >= (target.hp || target.totalhp/2)
+				end
+				if damage > 0
+					score += 200
+					PBAI.log("+ 300 because battler can kill or do significant damage before being killed")
+				else
+					score -= 300
+					PBAI.log("- 300 because battler will be killed before it can kill")
+				end
+			end
+		end
+	end
+  next score
+end
+=begin
+PBAI::SwitchHandler.add_out do |switch,ai,battler,target|
+	next switch if !$spam_block_triggered
+	next switch if !$spam_block_flags[:choice].is_a?(PokeBattle_Move)
+	nextMove = $spam_block_flags[:choice]
+	nextDmg = target.get_move_damage(battler,nextMove)
+  if (nextDmg < battler.hp/2 || nextDmg < battler.totalhp/3) && nextMove.id == :UTURN
+  	pkmn = false
+  	battler.side.party.each do |mon|
+  		next if mon.battler.species != :ANNIHILAPE
+  		pkmn = true if mon.battler.species == :ANNIHILAPE
+  	end
+  	switch = false
+  end
+  next switch
+end
+
+PBAI::SwitchHandler.add do |score,ai,battler,proj,target|
+	if $spam_block_triggered && $spam_block_flags[:choice].is_a?(PokeBattle_Move)
+		nextMove = $spam_block_flags[:choice]
+		nextDmg = target.get_move_damage(battler,nextMove)
+		damage = 0
+		if nextDmg >= battler.hp
+			score -= 1000
+			PBAI.log("- 1000 because the battler will faint switching in")
+		else
+			if nextMove.id == :UTURN && battler.battler.species == :ANNIHILAPE
+				score += 1000
+			end
+		end
+	end
+  next score
+end
+
+#Weather Abusers
+PBAI::SwitchHandler.add_out do |switch,ai,battler,target|
+	weather = [:DROUGHT,:DRIZZLE,:SANDSTREAM,:SANDSPIT,:DESOLATELAND,:PRIMORDIALSEA,:DELTASTREAM,:NIGHTFALL,:EQUINOX,:URBANCLOUD,:GALEFORCE,:SNOWWARNING,:HAILSTORM]
+	weather_move = [:RAINDANCE,:SANDSTORM,:SUNNYDAY,:SNOWSCAPE]
+	abuser = battler.side.party.find {|mon|
+	pkmn = ai.pbMakeFakeBattler(mon)
+	pkmn.has_role?(:WEATHERTERRAINABUSER)}
+	changer = battler.opposing_side.battlers.find {|pkmn| pkmn.hasActiveAbility?(weather) || pkmn.hasMove?(weather_move) }
+	if battler.has_role?(:WEATHERTERRAIN) && !abuser.nil? && !changer.nil?
+		switch = true
+	end
+	next switch
+end
+=end
+#Battler Yawned
+PBAI::SwitchHandler.add_out do |switch,ai,battler,target|
+	if battler.effects[PBEffects::Yawn] == 1
+		switch = true
+	end
+	next switch
+end
+
+PBAI::SwitchHandler.add do |score,ai,battler,proj,target|
+	if battler.hasActiveAbility?(:SUPREMEOVERLORD)
+		score -= 10000
+		PBAI.log("- 10000 to take advantage of Supreme Overlord")
+	end
+  next score
+end
+
+PBAI::SwitchHandler.add do |score,ai,battler,proj,target|
+	mv = false
+	for move in battler.moves
+		mv = true if move.id == :LASTRESPECTS
+	end
+	if mv
+		score -= 10000
+		PBAI.log("- 10000 to take advantage of Last Respects")
 	end
   next score
 end

@@ -135,7 +135,7 @@ class PokeBattle_Move
       BattleHandlers.triggerAccuracyCalcUserAllyAbility(b.ability,
          modifiers,user,target,self,@calcType)
     end
-    if target.abilityActive? && !@battle.moldBreaker
+    if target.abilityActive? && !target.affectedByMoldBreaker?
       BattleHandlers.triggerAccuracyCalcTargetAbility(target.ability,
          modifiers,user,target,self,@calcType)
     end
@@ -181,7 +181,7 @@ class PokeBattle_Move
     if c>=0 && user.abilityActive?
       c = BattleHandlers.triggerCriticalCalcUserAbility(user.ability,user,target,c)
     end
-    if c>=0 && target.abilityActive? && !@battle.moldBreaker
+    if c>=0 && target.abilityActive? && !target.affectedByMoldBreaker?
       c = BattleHandlers.triggerCriticalCalcTargetAbility(target.ability,user,target,c)
     end
     # Item effects that alter critical hit rate
@@ -245,7 +245,7 @@ class PokeBattle_Move
     baseDmg = pbBaseDamage(@baseDamage,user,target)
     # Calculate user's attack stat
     atk, atkStage = pbGetAttackStats(user,target)
-    if !target.hasActiveAbility?(:UNAWARE) || @battle.moldBreaker
+    if !target.hasActiveAbility?(:UNAWARE) || target.affectedByMoldBreaker?
       atkStage = 6 if target.damageState.critical && atkStage<6
       atk = (atk.to_f*stageMul[atkStage]/stageDiv[atkStage]).floor
     end
@@ -287,7 +287,7 @@ class PokeBattle_Move
       BattleHandlers.triggerDamageCalcUserAbility(user.ability,
          user,target,self,multipliers,baseDmg,type)
     end
-    if !@battle.moldBreaker
+    if !target.affectedByMoldBreaker?
       # NOTE: It's odd that the user's Mold Breaker prevents its partner's
       #       beneficial abilities (i.e. Flower Gift boosting Atk), but that's
       #       how it works.
@@ -298,7 +298,7 @@ class PokeBattle_Move
       end
       if target.abilityActive?
         BattleHandlers.triggerDamageCalcTargetAbility(target.ability,
-           user,target,self,multipliers,baseDmg,type) if !@battle.moldBreaker
+           user,target,self,multipliers,baseDmg,type) if !target.affectedByMoldBreaker?
         BattleHandlers.triggerDamageCalcTargetAbilityNonIgnorable(target.ability,
            user,target,self,multipliers,baseDmg,type)
       end
@@ -475,7 +475,7 @@ class PokeBattle_Move
   # Additional effect chance
   #=============================================================================
   def pbAdditionalEffectChance(user,target,effectChance=0)
-    return 0 if target.hasActiveAbility?(:SHIELDDUST) && !@battle.moldBreaker
+    return 0 if target.hasActiveAbility?(:SHIELDDUST) && !target.affectedByMoldBreaker?
     ret = (effectChance>0) ? effectChance : @addlEffect
     if Settings::MECHANICS_GENERATION >= 6 || @function != "0A4"   # Secret Power
       ret *= 2 if user.hasActiveAbility?(:SERENEGRACE) ||
@@ -489,7 +489,7 @@ class PokeBattle_Move
   #       not here.
   def pbFlinchChance(user,target)
     return 0 if flinchingMove?
-    return 0 if target.hasActiveAbility?(:SHIELDDUST) && !@battle.moldBreaker
+    return 0 if target.hasActiveAbility?(:SHIELDDUST) && !target.affectedByMoldBreaker?
     ret = 0
     if user.hasActiveAbility?(:STENCH,true)
       ret = 10

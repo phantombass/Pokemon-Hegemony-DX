@@ -216,6 +216,28 @@ PBAI::ScoreHandler.add do |score, ai, user, target, move|
   next score
 end
 
+#Discount Status Moves if Taunted
+PBAI::ScoreHandler.add do |score, ai, user, target, move|
+  if move.statusMove? && user.effects[PBEffects::Taunt] > 0
+      score -= 1000
+      PBAI.log("- 1000 to prevent failing")
+  end
+  if $spam_block_triggered && move.statusMove? && target.faster_than?(user) && $spam_block_flags[:choice].is_a?(PokeBattle_Move) && $spam_block_flags[:choice].function == "0BA"
+    score -= 1000
+    PBAI.log("- 1000 because target is going for Taunt")
+  end
+  next score
+end
+
+#Properly choose moves if Tormented
+PBAI::ScoreHandler.add do |score, ai, user, target, move|
+  if move == user.lastRegularMoveUsed && user.effects[PBEffects::Torment]
+      score -= 100000
+      PBAI.log("- 100000 to prevent failing")
+  end
+  next score
+end
+
 
 # Increase/decrease score for each positive/negative stat boost the move gives the user
 PBAI::ScoreHandler.add do |score, ai, user, target, move|
@@ -321,7 +343,7 @@ PBAI::ScoreHandler.add do |score, ai, user, target, move|
     PBAI.log("+ #{accIncr} for target accuracy debuff")
   end
   # All remaining stat decrases are multiplied by 10 and added to the score.
-  if debuffs > 0
+  if debuffs > 0 && !target.hasActiveAbility?([:CLEARBODY,:WHITESMOKE,:FULLMETALBODY,:CONTRARY])
     total = 6 * stats.size
     eff = total
     target.stages.each_with_index do |value, stage|
@@ -344,7 +366,8 @@ end
 # or make a rough estimate.
 PBAI::ScoreHandler.add do |score, ai, user, target, move|
   # Apply this logic only for priority moves
-  next if move.priority <= 0 || move.function == "0D4" || move.statusMove? || target.hasActiveAbility?([:ARMORTAIL,:QUEENLYMAJESTY,:DAZZLING])
+  next if move.priority <= 0 || move.function == "0D4" || move.statusMove? || target.hasActiveAbility?([:ARMORTAIL,:QUEENLYMAJESTY,:DAZZLING]) || (ai.battle.field.terrain == :Psychic && target.affectedByTerrain?)
+  next if move.statusMove? && user.hasActiveAbility?(:PRANKSTER) && target.pbHasType?(:DARK)
   # Calculate the damage this priority move will do.
   # The AI kind of cheats here, because this takes all items, berries, abilities, etc. into account.
   # It is worth for the effect though; the AI using a priority move to prevent
@@ -438,6 +461,50 @@ PBAI::ScoreHandler.add do |score, ai, user, target, move|
   next score
 end
 
+#Weather Weakened
+PBAI::ScoreHandler.add do |score, ai, user, target, move|
+  case ai.battle.pbWeather
+  when :Rain
+    if move.type == :FIRE
+      score *= 0.5
+    elsif move.type == :WATER
+      score *= 1.5
+    end
+  when :Sun
+    if move.type == :WATER
+      score *= 0.5
+    elsif move.type == :FIRE
+      score *= 1.5
+    end
+  when :Sleet
+    if move.type == :FIRE
+      score *= 0.5
+    end
+  when :Eclipse
+    case move.type
+    when :FAIRY,:PSYCHIC
+      score *= 0.5
+    when :DARK,:GHOST
+      score *= 1.5
+    end
+  when :Windy
+    case move.type
+    when :ROCK,:ICE
+      score *= 0.5
+    end
+  when :StrongWinds
+    case move.type
+    when :DRAGON,:ICE,:FAIRY,:COSMIC,:ROCK,:ELECTRIC
+      score *= 0.5
+    end
+  when :AcidRain
+    if move.type == :POISON
+      score *= 1.5
+    end
+  end
+  next score
+end
+
 
 # Prefer moves that can thaw the user if the user is frozen
 PBAI::ScoreHandler.add do |score, ai, user, target, move|
@@ -448,7 +515,6 @@ PBAI::ScoreHandler.add do |score, ai, user, target, move|
   end
   next score
 end
-
 
 # Discourage using OHKO moves if the target is higher level or it has sturdy
 PBAI::ScoreHandler.add do |score, ai, user, target, move|
@@ -535,11 +601,11 @@ PBAI::ScoreHandler.add do |score, ai, user, target, move|
         PBAI.log("+ #{chance} for being able to burn the target")
       end
     end
-    if move.statusMove? && (user.pbHasMove?(:HEX) || user.pbHasMove?(:BITTERMALICE)||user.pbHasMove?(:BARBBARRAGE)||user.pbHasMove?(:INFERNALPARADE)) && target.can_burn?(user,move)
+    if move.statusMove? && (user.pbHasMove?(:HEX) || user.pbHasMove?(:BITTERMALICE)|| user.pbHasMove?(:BARBBARRAGE)|| user.pbHasMove?(:INFERNALPARADE)) && target.can_burn?(user,move)
       score += 200
       PBAI.log("+ 200 to set up for Hex-style spam")
     end
-    if move.statusMove? && (target.hasActiveAbility?(:MAGICBOUNCE) || !target.can_burn?(user, move))
+    if move.statusMove? && (target.hasActiveAbility?([:WATERVEIL,:COMATOSE,:WATERBUBBLE,:FAIRYBUBBLE,:WELLBAKEDBODY,:STEAMENGINE,:FLASHFIRE,:PURIFYINGSALT,:GOODASGOLD]) || !target.can_burn?(user, move))
       score -= 1000
       PBAI.log("- 1000 for not being able to status")
     end
@@ -586,7 +652,7 @@ PBAI::ScoreHandler.add do |score, ai, user, target, move|
         PBAI.log("+ #{chance} for being able to frostbite the target")
       end
     end
-    if move.statusMove? && (target.hasActiveAbility?([:MAGICBOUNCE,:GOODASGOLD]) || !target.can_freeze?(user, move) || user.hasActiveAbility?(:PRANKSTER) && target.pbHasType?(:DARK))
+    if move.statusMove? && (target.hasActiveAbility?([:MAGICBOUNCE,:GOODASGOLD]) || !target.can_freeze?(user, move) || user.hasActiveAbility?(:PRANKSTER) && target.pbHasType?(:DARK)) || target.hasActiveAbility?([:MAGMAARMOR,:COMATOSE,:PURIFYINGSALT,:GOODASGOLD])
       score -= 1000
       PBAI.log("- 1000 for not being able to status")
     end
@@ -597,6 +663,7 @@ end
 
 # Encourage using moves that can cause paralysis.
 PBAI::ScoreHandler.add do |score, ai, user, target, move|
+  next if target.hasActiveAbility?([:LIMBER,:COMATOSE,:PURIFYINGSALT,:GOODASGOLD,:FAIRYBUBBLE]) && move.statusMove?
   if move.is_a?(PokeBattle_ParalysisMove) && !target.paralyzed? && target.can_paralyze?(user, move)
     chance = move.pbAdditionalEffectChance(user, target)
     chance = 100 if chance == 0
@@ -604,11 +671,11 @@ PBAI::ScoreHandler.add do |score, ai, user, target, move|
       score += chance
       PBAI.log("+ #{chance} for being able to paralyze the target")
     end
-    if move.statusMove? && (target.hasActiveAbility?([:MAGICBOUNCE,:GOODASGOLD]) || !target.can_paralyze?(user, move) || user.hasActiveAbility?(:PRANKSTER) && target.pbHasType?(:DARK))
+    if move.statusMove? && (target.hasActiveAbility?([:MAGICBOUNCE,:GOODASGOLD]) || !target.can_paralyze?(user, move) || user.hasActiveAbility?(:PRANKSTER) && target.pbHasType?(:DARK)) || target.hasActiveAbility?([:LIMBER,:COMATOSE,:PURIFYINGSALT,:FAIRYBUBBLE,:GOODASGOLD])
       score -= 1000
       PBAI.log("- 1000 for not being able to status")
     end
-    if move.statusMove? && user.target_is_immune?(move,target)
+    if move.statusMove? && (user.target_is_immune?(move,target) || target.paralyzed?)
       score -= 1000
       PBAI.log("- 1000 for being immune")
     end
@@ -626,7 +693,7 @@ PBAI::ScoreHandler.add do |score, ai, user, target, move|
       score += chance
       PBAI.log("+ #{chance} for being able to put the target to sleep")
     end
-    if move.statusMove? && (target.hasActiveAbility?([:MAGICBOUNCE,:GOODASGOLD]) || !target.can_sleep?(user, move) || user.hasActiveAbility?(:PRANKSTER) && target.pbHasType?(:DARK))
+    if move.statusMove? && (target.hasActiveAbility?([:MAGICBOUNCE,:GOODASGOLD]) || !target.can_sleep?(user, move) || user.hasActiveAbility?(:PRANKSTER) && target.pbHasType?(:DARK)) || target.hasActiveAbility?([:COMATOSE,:INSOMNIA,:VITALSPIRIT,:CACOPHONY,:PURIFYINGSALT,:GOODASGOLD])
       score -= 1000
       PBAI.log("- 1000 for not being able to status")
     end
@@ -645,9 +712,14 @@ PBAI::ScoreHandler.add do |score, ai, user, target, move|
         add = chance * 1.4 * move.pbNumHits(user, [target])
         score += add
         PBAI.log("+ #{add} for being able to badly poison the target")
-        if move.statusMove? && ((target.pbHasType?(:POISON) || target.pbHasType?(:STEEL) && !user.hasActiveAbility?([:NITRIC,:CORROSION])) || target.hasActiveAbility?([:POISONHEAL,:IMMUNITY,:TOXICBOOST,:GUTS,:MARVELSCALE,:MAGICBOUNCE]) || target.status != :NONE || ai.battle.field.terrain == :Misty)
+        if move.statusMove? && ((target.pbHasType?(:POISON) || target.pbHasType?(:STEEL) && !user.hasActiveAbility?([:NITRIC,:CORROSION])) || target.hasActiveAbility?([:POISONHEAL,:IMMUNITY,:TOXICBOOST,:GUTS,:MARVELSCALE,:MAGICBOUNCE]) || target.status != :NONE || ai.battle.field.terrain == :Misty) 
           score -= 1000
           PBAI.log("- 1000 because the target cannot be poisoned")
+        else
+          if user.has_role?(:TOXICSTALLER)
+            score += 50
+            PBAI.log("+ 50 for being a Toxic Staller")
+          end
         end
       else
         add = chance * move.pbNumHits(user, [target])
@@ -655,7 +727,7 @@ PBAI::ScoreHandler.add do |score, ai, user, target, move|
         PBAI.log("+ #{add} for being able to poison the target")
       end
     end
-    if move.statusMove? && (target.hasActiveAbility?([:MAGICBOUNCE,:GOODASGOLD]) || !target.can_sleep?(user, move) || user.hasActiveAbility?(:PRANKSTER) && target.pbHasType?(:DARK))
+    if move.statusMove? && (target.hasActiveAbility?([:MAGICBOUNCE,:GOODASGOLD]) || !target.can_poison?(user, move) || user.hasActiveAbility?(:PRANKSTER) && target.pbHasType?(:DARK)) || target.hasActiveAbility?([:IMMUNITY,:TOXICBOOST,:COMATOSE,:PURIFYINGSALT,:GOODASGOLD])
       score -= 1000
       PBAI.log("- 1000 for not being able to status")
     end
@@ -680,7 +752,7 @@ PBAI::ScoreHandler.add do |score, ai, user, target, move|
       score += add
       PBAI.log("+ #{add} for being able to confuse the target")
     end
-    if move.statusMove? && target.hasActiveAbility?([:GOODASGOLD,:OWNTEMPO])
+    if move.statusMove? && (target.hasActiveAbility?([:MAGICBOUNCE,:GOODASGOLD,:OWNTEMPO]) || target.confused?)
       score -= 1000
       PBAI.log("- 1000 because it can't confuse")
     end
@@ -798,7 +870,7 @@ end
 
 # Lower the score of multi-turn moves, because they likely have quite high power and thus score.
 PBAI::ScoreHandler.add_damaging do |score, ai, user, target, move|
-  if !user.has_item?(:POWERHERB) && (move.chargingTurnMove? || move.function == "0C2") # Hyper Beam
+  if !user.hasActiveItem?(:POWERHERB) && (move.chargingTurnMove? || move.function == "0C2") # Hyper Beam
     score -= 70
     PBAI.log("- 70 for requiring a charging turn")
   end
@@ -890,6 +962,16 @@ PBAI::ScoreHandler.add_damaging do |score, ai, user, target, move|
   if ai.battle.doublebattle && [:AllNearFoes].include?(target_type)
     score += 100
     PBAI.log("+ 100 for being able to hit both targets")
+    for targ in user.opposing_side.battlers
+      targ_moves = $game_switches[LvlCap::Expert] ? targ.moves : targ.used_moves
+      if !targ_moves.nil?
+        spread = targ_moves.find {|mov| mov.function == "0AC"}
+      end
+      if spread
+        score -= 1000
+        PBAI.log("- 1000 to predict Wide Guard")
+      end
+    end
   elsif ai.battle.doublebattle && [:AllNearOthers,:AllBattlers,:BothSides].include?(target_type)
     if target_is_immune?(move,ally)
       score += 100
@@ -909,6 +991,16 @@ PBAI::ScoreHandler.add_damaging do |score, ai, user, target, move|
         change = diff == 0 ? -50 : diff
         score += change
         change > 0 ? PBAI.log("+ #{change}") : PBAI.log("#{change}")
+      end
+    end
+    for targ in user.opposing_side.battlers
+      targ_moves = $game_switches[LvlCap::Expert] ? targ.moves : targ.used_moves
+      if !targ_moves.nil?
+        spread = targ_moves.find {|mov| mov.function == "0AC"}
+      end
+      if spread
+        score -= 1000
+        PBAI.log("- 1000 to predict Wide Guard")
       end
     end
   end
@@ -1040,6 +1132,10 @@ PBAI::ScoreHandler.add("007") do |score, ai, user, target, move|
     score += 100
     PBAI.log("+ 100 for being able to paralyze and having the Speed Control role")
   end
+  if target.paralyzed?
+    score -= 1000
+    PBAI.log("- 1000 because the target is already paralyzed")
+  end
   next score
 end
 
@@ -1154,7 +1250,7 @@ PBAI::ScoreHandler.add("0AC") do |score, ai, user, target, move|
     target_moves = $game_switches[LvlCap::Expert] ? target.moves : target.used_moves
     if target_moves != nil
       for i in target_moves
-        wide += 40 if i.target == :AllNearFoes
+        wide += 40 if [:AllNearFoes,:AllNearOthers,:AllBattlers,:BothSides].include?(i.pbTarget(user))
       end
     end
     score += wide
@@ -1343,6 +1439,10 @@ PBAI::ScoreHandler.add("103", "104", "105", "153", "500") do |score, ai, user, t
         score -= 1000
         PBAI.log("- 1000 to counter setup leads vs hazard leads")
       end
+    end
+    if !target.can_switch? || !user.can_switch?
+      score -= 1000
+      PBAI.log("- 1000 hazards are useless, best to attack")
     end
   end
   next score
@@ -1537,9 +1637,9 @@ PBAI::ScoreHandler.add("0EB", "0EC", "0EE", "151", "529") do |score, ai, user, t
     for i in user.roles
       roles.push(i)
     end
-    if user.has_role?([:DEFENSIVEPIVOT,:OFFENSIVEPIVOT,:LEAD])#.include?(roles)
-      score += 40 if user.can_switch?
-      PBAI.log("+ 40 ")
+    if user.has_role?([:DEFENSIVEPIVOT,:OFFENSIVEPIVOT,:LEAD]) && user.can_switch?
+      score += 60 
+      PBAI.log("+ 60 ")
     end
     boosts = 0
     o_boost = 0
@@ -1585,9 +1685,13 @@ PBAI::ScoreHandler.add("0EB", "0EC", "0EE", "151", "529") do |score, ai, user, t
       fnt +=1 if pkmn.fainted?
     end
     diff = user.side.party.length - fnt
-    if user.predict_switch?(target) && kill == 0 && diff > 1
+    if user.predict_switch?(target) && kill == 0 && diff > 1 && !$spam_block_triggered
       score += 100
       PBAI.log("+ 100 for predicting the target to switch, being unable to kill, and having something to switch to")
+    end
+    if diff == 1
+      score -= 100
+      PBAI.log("- 100 to prefer stronger offensive moves if all other party members are fainted")
     end
   end
   if target.hasActiveAbility?([:MAGICBOUNCE,:GOODASGOLD]) && move.statusMove?
@@ -1623,9 +1727,9 @@ PBAI::ScoreHandler.add("538") do |score, ai, user, target, move|
       score += 40
       PBAI.log("+ 40 for switching against a bad matchup")
     end
-    if user.effects[PBEffects::Substitute] > 0
+    if user.effects[PBEffects::Substitute] > 0 || user.hp < user.totalhp/2
       score - 1000
-      PBAI.log("- 1000 because we already have a Substitute")
+      PBAI.log("- 1000 because we cannot make a Substitute")
     end
     if !user.can_switch?
       score -= 1000
@@ -1684,7 +1788,7 @@ PBAI::ScoreHandler.add("0D5", "0D6", "0D7") do |score, ai, user, target, move|
       score -= 10
       PBAI.log("- 10 for we will take more damage than we can heal if the target repeats their move")
     elsif user.is_healing_necessary?(0.65)
-      add = (factor * 250).round
+      add = (factor * 175).round
       score += add
       PBAI.log("+ #{add} for we will likely die without healing")
       if user.has_role?([:PHYSICALWALL,:SPECIALWALL,:TOXICSTALLER,:DEFENSIVEPIVOT,:OFFENSIVEPIVOT,:CLERIC])#.include?(roles)
@@ -1692,7 +1796,7 @@ PBAI::ScoreHandler.add("0D5", "0D6", "0D7") do |score, ai, user, target, move|
         PBAI.log("+ 40 ")
       end
     else
-      add = (factor * 125).round
+      add = (factor * 100).round
       score += add
       PBAI.log("+ #{add} for we have lost some hp")
       if user.has_role?([:PHYSICALWALL,:SPECIALWALL,:TOXICSTALLER,:DEFENSIVEPIVOT,:OFFENSIVEPIVOT,:CLERIC])#.include?(roles)
@@ -1753,11 +1857,11 @@ PBAI::ScoreHandler.add("0D8") do |score, ai, user, target, move|
       score -= 10
       PBAI.log("- 10 for we will take more damage than we can heal if the target repeats their move")
     elsif user.is_healing_necessary?(heal_factor)
-      add = (factor * 250 * effi_factor).round
+      add = (factor * 175 * effi_factor).round
       score += add
       PBAI.log("+ #{add} for we will likely die without healing")
     else
-      add = (factor * 125 * effi_factor).round
+      add = (factor * 100 * effi_factor).round
       score += add
       PBAI.log("+ #{add} for we have lost some hp")
     end
@@ -1786,11 +1890,11 @@ PBAI::ScoreHandler.add("16D") do |score, ai, user, target, move|
       score -= 10
       PBAI.log("- 10 for we will take more damage than we can heal if the target repeats their move")
     elsif user.is_healing_necessary?(0.65)
-      add = (factor * 250).round
+      add = (factor * 200).round
       score += add
       PBAI.log("+ #{add} for we will likely die without healing")
     else
-      add = (factor * 125).round
+      add = (factor * 100).round
       score += add
       PBAI.log("+ #{add} for we have lost some hp")
     end
@@ -1920,6 +2024,11 @@ PBAI::ScoreHandler.add("0BA") do |score, ai, user, target, move|
       score += 150
       PBAI.log("+ 150 for stallbreaking")
     end
+    if $spam_block_triggered && $spam_block_flags[:choice].is_a?(PokeBattle_Move) && ["035","02A","032","10D","02B","02C","14E","032","024","026","518"].include?($spam_block_flags[:choice].function)
+      buff = user.faster_than?(target) ? 300 : 150
+      score += buff
+      PBAI.log("+ #{buff} to prevent setup")
+    end
   end
   if target.hasActiveAbility?([:MAGICBOUNCE,:GOODASGOLD])
     score -= 1000
@@ -2006,14 +2115,17 @@ PBAI::ScoreHandler.add("035") do |score, ai, user, target, move|
         count += 1 if user.get_move_damage(target, m) > target.hp/2
       end
       t_count = 0
+      $thief = 0
       if $game_switches[LvlCap::Expert] == true
         target.moves.each do |tmove|
           t_count += 1 if target.get_move_damage(user, tmove) >= user.hp
+          $thief += 1 if [:SPECTRALTHIEF,:PSYCHUP,:SNATCH].include?(tmove.id)
         end
       else
         if target.used_moves != nil
           target.used_moves.each do |tmove|
             t_count += 1 if target.get_move_damage(user, tmove) >= user.hp
+            $thief += 1 if [:SPECTRALTHIEF,:PSYCHUP,:SNATCH].include?(tmove.id)
           end
         end
       end
@@ -2040,16 +2152,74 @@ PBAI::ScoreHandler.add("035") do |score, ai, user, target, move|
         score -= 100
         PBAI.log("- 100 since the target can now be killed by an attack")
       end
+      if t_count > 0 && !user.can_switch?
+        score -= 1000
+        PBAI.log("- 1000 because setup is pointless.")
+      end
+if $thief > 0
+      score -= 1000
+      PBAI.log("- 1000 to not give a mon free setup")
+    end
     end
     if $spam_block_flags[:haze_flag].include?(target)
-      score = 0
-      PBAI.log("* 0 because target has Haze")
+      score -= 1000
+      PBAI.log("- 1000 because target has Haze")
     end
+    if $spam_block_triggered && $spam_block_flags[:choice].is_a?(Pokemon) && user.set_up_score == 0
+      score += 1000
+      PBAI.log("+ 1000 to set up on the switch")
+    end
+    if user.set_up_score >= 2
+      score -= 1000
+      PBAI.log("- 1000 to encourage attacking")
+    end
+    
   next score
 end
 
-# Swords Dance
-PBAI::ScoreHandler.add("02E","01C") do |score, ai, user, target, move|
+# Agility, Autotomize
+PBAI::ScoreHandler.add("030","031") do |score, ai, user, target, move|
+  count = 0
+  t_count = 0
+  if user.setup?
+    if user.statStageAtMax?(:SPEED)
+      score = 0
+      PBAI.log("* 0 for battler being max on Speed")
+    else
+      count = 0
+      if target.faster_than?(user)  
+        add = user.turnCount == 0 ? 100 : 07
+        score += add
+        PBAI.log("+ #{add}")
+        spe_boost = user.stages[:SPEED]*20
+        diff = spe_boost
+        score -= diff
+        PBAI.log("- #{diff} for boosted stats") if diff > 0
+        PBAI.log("+ #{diff} for lowered stats") if diff < 0
+        score += 20 if user.predict_switch?(target)
+        PBAI.log("+ 20 for predicting the switch") if user.predict_switch?(target)
+        score += 50 if $learned_flags[:setup_fodder].include?(target)
+        PBAI.log("+ 50 for using the target as setup fodder") if $learned_flags[:setup_fodder].include?(target)
+      end
+      if $spam_block_flags[:haze_flag].include?(target)
+        score -= 1000
+        PBAI.log("- 1000 because target has Haze")
+      end
+      if $spam_block_triggered && $spam_block_flags[:choice].is_a?(Pokemon) && user.set_up_score == 0
+        score += 1000
+        PBAI.log("+ 1000 to set up on the switch")
+      end
+      if user.set_up_score >= 2
+        score -= 1000
+        PBAI.log("- 1000 to encourage attacking")
+      end
+    end
+  end
+  next score
+end
+
+# Swords Dance, Power-up Punch, Static Surge
+PBAI::ScoreHandler.add("02E","01C","511","028") do |score, ai, user, target, move|
   count = 0
   if user.setup?
     if user.statStageAtMax?(:ATTACK)
@@ -2061,20 +2231,23 @@ PBAI::ScoreHandler.add("02E","01C") do |score, ai, user, target, move|
         count += 1 if user.get_move_damage(target, m) > target.hp/2 && m.physicalMove?
       end
       t_count = 0
+      $thief = 0
       if $game_switches[LvlCap::Expert] == true
         target.moves.each do |tmove|
           t_count += 1 if target.get_move_damage(user, tmove) >= user.hp
+          $thief += 1 if [:SPECTRALTHIEF,:PSYCHUP,:SNATCH].include?(tmove.id)
         end
       else
         if target.used_moves != nil
           target.used_moves.each do |tmove|
             t_count += 1 if target.get_move_damage(user, tmove) >= user.hp
+            $thief += 1 if [:SPECTRALTHIEF,:PSYCHUP,:SNATCH].include?(tmove.id)
           end
         end
       end
       # As long as the target's stat stages are more advantageous than ours (i.e. net < 0), Haze is a good choice
       if count == 0 && t_count == 0
-        add = user.turnCount == 0 ? 60 : 40
+        add = user.turnCount == 0 ? 80 : 50
         score += add
         PBAI.log("+ #{add} to boost to guarantee the kill")
         score += 40
@@ -2092,12 +2265,28 @@ PBAI::ScoreHandler.add("02E","01C") do |score, ai, user, target, move|
         score -= 100
         PBAI.log("- 100 since the target can now be 2HKO'd by an attack")
       end
+      if t_count > 0 && !user.can_switch?
+        score -= 1000
+        PBAI.log("- 1000 because setup is pointless.")
+      end
+      if $thief > 0
+        score -= 1000
+        PBAI.log("- 1000 to not give a mon free setup")
+      end
     end
   end
   if $spam_block_flags[:haze_flag].include?(target)
-    score = 0
-    PBAI.log("* 0 because target has Haze")
-  end
+      score -= 1000
+      PBAI.log("- 1000 because target has Haze")
+    end
+    if $spam_block_triggered && $spam_block_flags[:choice].is_a?(Pokemon) && user.set_up_score == 0
+      score += 1000
+      PBAI.log("+ 1000 to set up on the switch")
+    end
+    if user.set_up_score >= 2
+      score -= 1000
+      PBAI.log("- 1000 to encourage attacking")
+    end
   next score
 end
 
@@ -2114,23 +2303,26 @@ PBAI::ScoreHandler.add("024", "025", "518", "026") do |score, ai, user, target, 
         count += 1 if user.get_move_damage(target, m) > target.hp/2 && m.physicalMove?
       end
       t_count = 0
+      $thief = 0
       if $game_switches[LvlCap::Expert] == true
         target.moves.each do |tmove|
           t_count += 1 if target.get_move_damage(user, tmove) >= user.hp
+          $thief += 1 if [:SPECTRALTHIEF,:PSYCHUP,:SNATCH].include?(tmove.id)
         end
       else
         if target.used_moves != nil
           target.used_moves.each do |tmove|
             t_count += 1 if target.get_move_damage(user, tmove) >= user.hp
+            $thief += 1 if [:SPECTRALTHIEF,:PSYCHUP,:SNATCH].include?(tmove.id)
           end
         end
       end
-      add = user.turnCount == 0 ? 70 : 50
+      add = user.turnCount == 0 ? 80 : 50
       score += add
       PBAI.log("+ #{add} ")
       end
       if count == 0 && t_count == 0
-        add = user.turnCount == 0 ? 60 : 40
+        add = user.turnCount == 0 ? 80 : 50
         score += add
         PBAI.log("+ #{add} to boost to guarantee the kill")
         atk_boost = user.stages[:ATTACK]*20
@@ -2164,11 +2356,28 @@ PBAI::ScoreHandler.add("024", "025", "518", "026") do |score, ai, user, target, 
         score -= 500
         PBAI.log("- 500 since the target can now be killed and cannot kill back")
       end
+      if t_count > 0 && !user.can_switch?
+        score -= 1000
+        PBAI.log("- 1000 because setup is pointless.")
+      end
+      if $thief > 0
+        score -= 1000
+        PBAI.log("- 1000 to not give a mon free setup")
+      end
     end
     if $spam_block_flags[:haze_flag].include?(target)
-      score = 0
-      PBAI.log("* 0 because target has Haze")
+      score -= 1000
+      PBAI.log("- 1000 because target has Haze")
     end
+    if $spam_block_triggered && $spam_block_flags[:choice].is_a?(Pokemon) && user.set_up_score == 0
+      score += 1000
+      PBAI.log("+ 1000 to set up on the switch")
+    end
+    if user.set_up_score >= 2
+      score -= 1000
+      PBAI.log("- 1000 to encourage attacking")
+    end
+    
   next score
 end
 
@@ -2185,23 +2394,26 @@ PBAI::ScoreHandler.add("10D") do |score, ai, user, target, move|
         count += 1 if user.get_move_damage(target, m) > target.hp/2 && m.physicalMove?
       end
       t_count = 0
+      $thief = 0
       if $game_switches[LvlCap::Expert] == true
         target.moves.each do |tmove|
           t_count += 1 if target.get_move_damage(user, tmove) >= user.hp
+          $thief += 1 if [:SPECTRALTHIEF,:PSYCHUP,:SNATCH].include?(tmove.id)
         end
       else
         if target.used_moves != nil
           target.used_moves.each do |tmove|
             t_count += 1 if target.get_move_damage(user, tmove) >= user.hp
+            $thief += 1 if [:SPECTRALTHIEF,:PSYCHUP,:SNATCH].include?(tmove.id)
           end
         end
       end
-      add = user.turnCount == 0 ? 70 : 50
+      add = user.turnCount == 0 ? 80 : 50
       score += add
       PBAI.log("+ #{add} ")
       end
       if count == 0 && t_count == 0
-        add = user.turnCount == 0 ? 60 : 40
+        add = user.turnCount == 0 ? 80 : 50
         score += add
         PBAI.log("+ #{add} to boost to guarantee the kill")
         atk_boost = user.stages[:ATTACK]*20
@@ -2218,11 +2430,28 @@ PBAI::ScoreHandler.add("10D") do |score, ai, user, target, move|
         score -= 100
         PBAI.log("- 100 since the target can now be killed by an attack")
       end
+      if t_count > 0 && !user.can_switch?
+        score -= 1000
+        PBAI.log("- 1000 because setup is pointless.")
+      end
+      if $thief > 0
+        score -= 1000
+        PBAI.log("- 1000 to not give a mon free setup")
+      end
     end
     if $spam_block_flags[:haze_flag].include?(target)
-      score = 0
-      PBAI.log("* 0 because target has Haze")
+      score -= 1000
+      PBAI.log("- 1000 because target has Haze")
     end
+    if $spam_block_triggered && $spam_block_flags[:choice].is_a?(Pokemon) && user.set_up_score == 0
+      score += 1000
+      PBAI.log("+ 1000 to set up on the switch")
+    end
+    if user.set_up_score >= 2
+      score -= 1000
+      PBAI.log("- 1000 to encourage attacking")
+    end
+    
   next score
 end
 
@@ -2239,20 +2468,23 @@ PBAI::ScoreHandler.add("032") do |score, ai, user, target, move|
         count += 1 if user.get_move_damage(target, m) > target.hp/2 && m.specialMove?
       end
       t_count = 0
+      $thief = 0
       if $game_switches[LvlCap::Expert] == true
         target.moves.each do |tmove|
           t_count += 1 if target.get_move_damage(user, tmove) >= user.hp
+          $thief += 1 if [:SPECTRALTHIEF,:PSYCHUP,:SNATCH].include?(tmove.id)
         end
       else
         if target.used_moves != nil
           target.used_moves.each do |tmove|
             t_count += 1 if target.get_move_damage(user, tmove) >= user.hp
+            $thief += 1 if [:SPECTRALTHIEF,:PSYCHUP,:SNATCH].include?(tmove.id)
           end
         end
       end
       # As long as the target's stat stages are more advantageous than ours (i.e. net < 0), Haze is a good choice
       if count == 0 && t_count == 0
-        add = user.turnCount == 0 ? 60 : 40
+        add = user.turnCount == 0 ? 80 : 50
         score += add
         PBAI.log("+ #{add} to boost to guarantee the kill")
         score += 40
@@ -2270,17 +2502,34 @@ PBAI::ScoreHandler.add("032") do |score, ai, user, target, move|
         score -= 100
         PBAI.log("- 100 since the target can now be killed by an attack")
       end
+      if t_count > 0 && !user.can_switch?
+        score -= 1000
+        PBAI.log("- 1000 because setup is pointless.")
+      end
+      if $thief > 0
+        score -= 1000
+        PBAI.log("- 1000 to not give a mon free setup")
+      end
     end
   end
   if $spam_block_flags[:haze_flag].include?(target)
-    score = 0
-    PBAI.log("* 0 because target has Haze")
-  end
+      score -= 1000
+      PBAI.log("- 1000 because target has Haze")
+    end
+    if $spam_block_triggered && $spam_block_flags[:choice].is_a?(Pokemon) && user.set_up_score == 0
+      score += 1000
+      PBAI.log("+ 1000 to set up on the switch")
+    end
+    if user.set_up_score >= 2
+      score -= 1000
+      PBAI.log("- 1000 to encourage attacking")
+    end
+    
   next score
 end
 
 # Calm Mind/Quiver Dance/Geomancy/Tail Glow
-PBAI::ScoreHandler.add("02B", "02C", "14E", "039") do |score, ai, user, target, move|
+PBAI::ScoreHandler.add("02B", "02C", "14E", "039","028") do |score, ai, user, target, move|
   count = 0
   if user.setup?
     if user.statStageAtMax?(:SPECIAL_ATTACK)
@@ -2292,22 +2541,25 @@ PBAI::ScoreHandler.add("02B", "02C", "14E", "039") do |score, ai, user, target, 
         count += 1 if user.get_move_damage(target, m) > target.hp/2 && m.specialMove?
       end
       t_count = 0
+      $thief = 0
       if $game_switches[LvlCap::Expert] == true
         target.moves.each do |tmove|
           t_count += 1 if target.get_move_damage(user, tmove) >= user.hp
+          $thief += 1 if [:SPECTRALTHIEF,:PSYCHUP,:SNATCH].include?(tmove.id)
         end
       else
         if target.used_moves != nil
           target.used_moves.each do |tmove|
             t_count += 1 if target.get_move_damage(user, tmove) >= user.hp
+            $thief += 1 if [:SPECTRALTHIEF,:PSYCHUP,:SNATCH].include?(tmove.id)
           end
         end
       end
-      add = user.turnCount == 0 ? 70 : 50
+      add = user.turnCount == 0 ? 80 : 50
       score += add
       PBAI.log("+ #{add} ")
       if count == 0 && t_count == 0
-        add = user.turnCount == 0 ? 60 : 40
+        add = user.turnCount == 0 ? 80 : 50
         score += add
         PBAI.log("+ #{add} to boost to guarantee the kill")
         atk_boost = user.stages[:SPECIAL_ATTACK]*20
@@ -2341,12 +2593,29 @@ PBAI::ScoreHandler.add("02B", "02C", "14E", "039") do |score, ai, user, target, 
         score -= 500
         PBAI.log("- 500 since the target can now be killed and cannot kill back")
       end
+      if t_count > 0 && !user.can_switch?
+        score -= 1000
+        PBAI.log("- 1000 because setup is pointless.")
+      end
+      if $thief > 0
+        score -= 1000
+        PBAI.log("- 1000 to not give a mon free setup")
+      end
     end
   end
   if $spam_block_flags[:haze_flag].include?(target)
-    score = 0
-    PBAI.log("* 0 because target has Haze")
-  end
+      score -= 1000
+      PBAI.log("- 1000 because target has Haze")
+    end
+    if $spam_block_triggered && $spam_block_flags[:choice].is_a?(Pokemon) && user.set_up_score == 0
+      score += 1000
+      PBAI.log("+ 1000 to set up on the switch")
+    end
+    if user.set_up_score >= 2
+      score -= 1000
+      PBAI.log("- 1000 to encourage attacking")
+    end
+    
   next score
 end
 
@@ -2520,8 +2789,8 @@ PBAI::ScoreHandler.add("10C") do |score, ai, user, target, move|
       PBAI.log("+ 50")
     end
     if user.hp < user.totalhp/4
-      score -= 100
-      PBAI.log("- 100 for being unable to Substitute")
+      score -= 10000
+      PBAI.log("- 10000 for being unable to Substitute")
     end
     if sound > 0
       score -= 30
@@ -2555,7 +2824,7 @@ PBAI::ScoreHandler.add("0E7") do |score, ai, user, target, move|
     end
   end
   if dmg > 0
-    dbond = 50*dmg
+    dbond = 100*dmg
     score += dbond
     PBAI.log("+ #{dbond} for being able to take down the opponent with Destiny Bond")
     if user.hasActiveItem?(:CUSTAPBERRY) && user.hp <= user.totalhp/4
@@ -2718,6 +2987,7 @@ end
 PBAI::ScoreHandler.add("117","120") do |score, ai, user, target, move|
   if ai.battle.pbSideSize(0) == 2
     ally = false
+    prio = false
     b = nil
     enemy = []
     user.battler.eachAlly do |battler|
@@ -2728,12 +2998,18 @@ PBAI::ScoreHandler.add("117","120") do |score, ai, user, target, move|
         enemy.push(opp)
       end
       mon = user.side.battlers.find {|proj| proj && proj != self && !proj.fainted?}
+      prio = (mon.has_role?(:TANK) && mon.has_role?(:REDIRECTION))
       if (mon.bad_against?(enemy[0]) || mon.bad_against?(enemy[1]))
         score += 200
         PBAI.log("+ 200 for redirecting an attack away from partner")
         if user.has_role?(:REDIRECTION)
-          score += 250
-          PBAI.log("+ 250")
+          if prio
+            score -= 1000
+            PBAI.log("- 1000 because ally is more defensive")
+          else
+            score += 250
+            PBAI.log("+ 250")
+          end
         end
       end
       if user.has_role?(:REDIRECTION) && mon.setup?
@@ -2751,6 +3027,10 @@ PBAI::ScoreHandler.add("117","120") do |score, ai, user, target, move|
     score -= 1000
     PBAI.log("- 1000 because move will fail")
   end
+  if $team_flags[:will_redirect] == true
+    score -= 1000
+    PBAI.log("- 1000 to prevent double Follow Me")
+  end
   next score
 end
 
@@ -2766,14 +3046,17 @@ PBAI::ScoreHandler.add("036") do |score, ai, user, target, move|
       user.moves.each do |m|
         count += 1 if user.get_move_damage(target, m) >= target.hp && m.physicalMove?
       end
-      if $game_switches[LvlCap::Expert]
+      $thief = 0
+      if $game_switches[LvlCap::Expert] == true
         target.moves.each do |tmove|
           t_count += 1 if target.get_move_damage(user, tmove) >= user.hp
+          $thief += 1 if [:SPECTRALTHIEF,:PSYCHUP,:SNATCH].include?(tmove.id)
         end
       else
         if target.used_moves != nil
           target.used_moves.each do |tmove|
             t_count += 1 if target.get_move_damage(user, tmove) >= user.hp
+            $thief += 1 if [:SPECTRALTHIEF,:PSYCHUP,:SNATCH].include?(tmove.id)
           end
         end
       end
@@ -2801,11 +3084,24 @@ PBAI::ScoreHandler.add("036") do |score, ai, user, target, move|
         score -= 1000
         PBAI.log("- 1000 because we outspeed and Special Attackers don't factor Attack")
       end
+      if $thief > 0
+        score -= 1000
+        PBAI.log("- 1000 to not give a mon free setup")
+      end
     end
     if $spam_block_flags[:haze_flag].include?(target)
-      score = 0
-      PBAI.log("* 0 because target has Haze")
+      score -= 1000
+      PBAI.log("- 1000 because target has Haze")
     end
+    if $spam_block_triggered && $spam_block_flags[:choice].is_a?(Pokemon) && user.set_up_score == 0
+      score += 1000
+      PBAI.log("+ 1000 to set up on the switch")
+    end
+    if user.set_up_score >= 2
+      score -= 1000
+      PBAI.log("- 1000 to encourage attacking")
+    end
+    
   next score
 end
 
@@ -2836,6 +3132,18 @@ PBAI::ScoreHandler.add("179") do |score, ai, user, target, move|
       PBAI.log("+ 50 for predicting the switch")
     end
   end
+  if $spam_block_flags[:haze_flag].include?(target)
+      score -= 1000
+      PBAI.log("- 1000 because target has Haze")
+    end
+    if $spam_block_triggered && $spam_block_flags[:choice].is_a?(Pokemon) && user.set_up_score == 0
+      score += 1000
+      PBAI.log("+ 1000 to set up on the switch")
+    end
+    if user.set_up_score >= 2
+      score -= 1000
+      PBAI.log("- 1000 to encourage attacking")
+    end
   next score
 end
 
@@ -2844,6 +3152,9 @@ PBAI::ScoreHandler.add("174") do |score, ai, user, target, move|
   if user.turnCount == 0 && ai.battle.field.terrain != :Psychic && !target.hasActiveAbility?([:ARMORTAIL,:DAZZLING,:QUEENLYMAJESTY])
     score += 200
     PBAI.log("+ 200 for getting priority damage")
+  else
+    score -= 1000
+    PBAI.log("- 1000 to discourage use after turn 1")
   end
   next score
 end
@@ -2942,6 +3253,62 @@ PBAI::ScoreHandler.add("07F","519","515","517") do |score, ai, user, target, mov
   if target.status != :NONE
     score += 200
     PBAI.log("+ 200 for abusing target's status")
+  end
+  next score
+end
+
+# Bolt Beak, Fishious Rend
+PBAI::ScoreHandler.add("178") do |score, ai, user, target, move|
+  if (user.faster_than?(target) && !user.target_is_immune?(move,target)) || user.predict_switch?(target)
+    score += 250
+    PBAI.log("+ 250 for getting double damage")
+  end
+  next score
+end
+
+#Knock Off
+PBAI::ScoreHandler.add("0F0") do |score, ai, user, target, move|
+  item = target.item
+  dmg = 0
+  if $game_switches[LvlCap::Expert]
+    for i in target.moves
+      dmg += 1 if target.get_move_damage(user,i) >= user.hp
+    end
+  else
+    if target.used_moves != nil
+      for i in target.used_moves
+        dmg += 1 if target.get_move_damage(user,i) >= user.hp
+      end
+    else
+      dmg = 0
+    end
+  end
+  next score if item.nil?
+  if !user.unlosableItem?(item)
+    score += 200
+    PBAI.log("+ 200 for removing items")
+  end
+  if target.faster_than?(user) && dmg > 0
+    score -= 1000
+    PBAI.log("- 1000 to prioritize priority moves over removing items since we will die anyway")
+  end
+  next score
+end
+
+# Hydro Steam
+PBAI::ScoreHandler.add("550") do |score, ai, user, target, move|
+  if ai.battle.pbWeather == :Sun
+    score += 200
+    PBAI.log("+ 200 for abusing Sun")
+  end
+  next score
+end
+
+# PsyBlade
+PBAI::ScoreHandler.add("551") do |score, ai, user, target, move|
+  if ai.battle.field.terrain == :Electric
+    score += 200
+    PBAI.log("+ 200 for abusing Electric Terrain")
   end
   next score
 end

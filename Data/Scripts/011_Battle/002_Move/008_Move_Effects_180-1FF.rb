@@ -392,7 +392,7 @@ class PokeBattle_Move_18F < PokeBattle_Move
       @battle.pbDisplay(_INTL("{1} is unaffected!", target.pbThis))
       return true
     end
-    if target.hasActiveAbility?(:STICKYHOLD) && !@battle.moldBreaker
+    if target.hasActiveAbility?(:STICKYHOLD) && !target.affectedByMoldBreaker?
       @battle.pbShowAbilitySplash(target)
       if PokeBattle_SceneConstants::USE_ABILITY_SPLASH
         @battle.pbDisplay(_INTL("{1} is unaffected!", target.pbThis))

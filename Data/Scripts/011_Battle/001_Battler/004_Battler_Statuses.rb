@@ -71,7 +71,7 @@ class PokeBattle_Battler
       end
     end
     # Uproar immunity
-    if newStatus == :SLEEP && !(hasActiveAbility?(:SOUNDPROOF) && !@battle.moldBreaker)
+    if newStatus == :SLEEP && !(hasActiveAbility?(:SOUNDPROOF) && !affectedByMoldBreaker?)
       @battle.eachBattler do |b|
         next if b.effects[PBEffects::Uproar]==0
         @battle.pbDisplay(_INTL("But the uproar kept {1} awake!",pbThis(true))) if showMessages
@@ -103,7 +103,7 @@ class PokeBattle_Battler
     immuneByAbility = false; immAlly = nil
     if BattleHandlers.triggerStatusImmunityAbilityNonIgnorable(self.ability,self,newStatus)
       immuneByAbility = true
-    elsif selfInflicted || !@battle.moldBreaker
+    elsif selfInflicted || !affectedByMoldBreaker?
       if abilityActive? && BattleHandlers.triggerStatusImmunityAbility(self.ability,self,newStatus)
         immuneByAbility = true
       else
@@ -465,7 +465,7 @@ class PokeBattle_Battler
       @battle.pbDisplay(_INTL("{1} surrounds itself with misty terrain!",pbThis(true))) if showMessages
       return false
     end
-    if selfInflicted || !@battle.moldBreaker
+    if selfInflicted || !affectedByMoldBreaker?
       if hasActiveAbility?(:OWNTEMPO)
         if showMessages
           @battle.pbShowAbilitySplash(self)
@@ -527,7 +527,7 @@ class PokeBattle_Battler
       @battle.pbDisplay(_INTL("{1} is unaffected!",pbThis)) if showMessages
       return false
     end
-    if !@battle.moldBreaker
+    if !affectedByMoldBreaker?
       if hasActiveAbility?([:AROMAVEIL,:OBLIVIOUS])
         if showMessages
           @battle.pbShowAbilitySplash(self)
@@ -580,7 +580,7 @@ class PokeBattle_Battler
   # Flinching
   #=============================================================================
   def pbFlinch(_user=nil)
-    return if hasActiveAbility?(:INNERFOCUS) && !@battle.moldBreaker
+    return if hasActiveAbility?(:INNERFOCUS) && !affectedByMoldBreaker?
     @effects[PBEffects::Flinch] = true
   end
 end

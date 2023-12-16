@@ -853,7 +853,7 @@ HiddenMoveHandlers::UseMove.add(:SWEETSCENT,proc { |move,pokemon|
 })
 
 
-
+=begin
 #===============================================================================
 # Teleport
 #===============================================================================
@@ -903,7 +903,7 @@ HiddenMoveHandlers::UseMove.add(:TELEPORT,proc { |move,pokemon|
   pbEraseEscapePoint
   next true
 })
-
+=end
 
 
 #===============================================================================

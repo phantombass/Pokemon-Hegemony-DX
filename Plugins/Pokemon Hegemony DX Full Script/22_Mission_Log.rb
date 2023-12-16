@@ -31,21 +31,23 @@ class Mission_Overlay
     @sprites["descwindow"].lineHeight(30)
   end
   def pbShow
-    quest_stage = $PokemonGlobal.quests.active_quests[0].stage
-    quest_info = $quest_data.getStageDescription(:Quest1,quest_stage)
+    if hasAnyQuests?
+      quest_stage = $PokemonGlobal.quests.active_quests[0].stage
+      quest_info = $quest_data.getStageDescription(:Quest1,quest_stage)
 
-    descwindow = @sprites["descwindow"]
-    descwindow.resizeToFit(quest_info, Graphics.width - 64)
-    descwindow.text = quest_info
-    descwindow.x = ((Graphics.width-64)/2)-(descwindow.width/2)
-    descwindow.y = 0
-    descwindow.visible = true
+      descwindow = @sprites["descwindow"]
+      descwindow.resizeToFit(quest_info, Graphics.width - 64)
+      descwindow.text = quest_info
+      descwindow.x = ((Graphics.width-64)/2)-(descwindow.width/2)
+      descwindow.y = 0
+      descwindow.visible = true
 
-    background = @sprites["background"]
-    background.height = descwindow.height
-    background.y = 0
-    background.visible = true
-    $mission_steps = 10
+      background = @sprites["background"]
+      background.height = descwindow.height
+      background.y = 0
+      background.visible = true
+      $mission_steps = 10
+    end
   end
   def update
     pbUpdateSpriteHash(@sprites)

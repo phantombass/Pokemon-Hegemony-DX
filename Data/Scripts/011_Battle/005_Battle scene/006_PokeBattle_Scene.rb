@@ -72,6 +72,16 @@ class PokeBattle_Scene
     @sprites["dataBox_#{idxBattler}"].refresh if @sprites["dataBox_#{idxBattler}"]
   end
 
+  def pbRefreshEverything
+    pbCreateBackdropSprites
+    @battle.battlers.each_with_index do |battler, i|
+      next if !battler
+      pbChangePokemon(i, @sprites["pokemon_#{i}"].pkmn)
+      @sprites["dataBox_#{i}"].initializeDataBoxGraphic(@battle.pbSideSize(i))
+      @sprites["dataBox_#{i}"].refresh
+    end
+  end
+
   #=============================================================================
   # Party lineup
   #=============================================================================
@@ -302,6 +312,7 @@ class PokeBattle_Scene
     pbBGMFade(1.0)
     pbFadeOutAndHide(@sprites)
     pbDisposeSprites
+    @viewport.dispose
   end
 
   #=============================================================================

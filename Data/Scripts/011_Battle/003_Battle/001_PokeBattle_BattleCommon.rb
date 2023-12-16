@@ -175,6 +175,11 @@ module PokeBattle_BattleCommon
       pkmn.makeUnprimal
       pkmn.update_shadow_moves if pkmn.shadowPokemon?
       pkmn.record_first_moves
+      if $game_switches[75]
+        for key in pkmn.iv.keys
+          pkmn.iv[key] = 31
+        end
+      end
       # Reset form
       pkmn.forced_form = nil if MultipleForms.hasFunction?(pkmn.species,"getForm")
       @peer.pbOnLeavingBattle(self,pkmn,true,true)
@@ -208,7 +213,7 @@ module PokeBattle_BattleCommon
     elsif battler.status != :NONE
       x *= 1.5
     end
-    if $game_switches[75] || $game_switches[LvlCap::Ironmon]
+    if $game_switches[295] || $game_switches[LvlCap::Ironmon]
       x *= 10000
     end
     x = x.floor

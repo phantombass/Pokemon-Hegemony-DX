@@ -35,6 +35,7 @@ class PokeBattle_Move
 
   def pbContactMove?(user)
     return false if user.hasActiveAbility?(:LONGREACH)
+    return false if user.hasActiveItem?(:PUNCHINGGLOVE) && punchingMove?
     return contactMove?
   end
 
@@ -81,7 +82,7 @@ class PokeBattle_Move
   # Check if target is immune to the move because of its ability
   #=============================================================================
   def pbImmunityByAbility(user,target)
-    return false if @battle.moldBreaker
+    return false if target.affectedByMoldBreaker?
     ret = false
     if target.abilityActive?
       ret = BattleHandlers.triggerMoveImmunityTargetAbility(target.ability,
@@ -124,7 +125,7 @@ class PokeBattle_Move
   end
 
   def pbMoveFailedAromaVeil?(user,target,showMessage=true)
-    return false if @battle.moldBreaker
+    return false if target.affectedByMoldBreaker?
     if target.hasActiveAbility?(:AROMAVEIL)
       if showMessage
         @battle.pbShowAbilitySplash(target)
@@ -166,13 +167,13 @@ class PokeBattle_Move
       return
     end
     # Disguise will take the damage
-    if !@battle.moldBreaker && target.isSpecies?(:MIMIKYU) &&
+    if !target.affectedByMoldBreaker? && target.isSpecies?(:MIMIKYU) &&
        target.form == 0 && target.ability == :DISGUISE
       target.damageState.disguise = true
       return
     end
     # Ice Face will take the damage
-    if !@battle.moldBreaker && target.isSpecies?(:EISCUE) &&
+    if !target.affectedByMoldBreaker? && target.isSpecies?(:EISCUE) &&
        target.form == 0 && target.ability == :ICEFACE && physicalMove?
       target.damageState.iceface = true
       return
@@ -202,7 +203,7 @@ class PokeBattle_Move
         target.damageState.endured = true
         damage -= 1
       elsif damage==target.totalhp
-        if target.hasActiveAbility?(:STURDY) && !@battle.moldBreaker
+        if target.hasActiveAbility?(:STURDY) && !target.affectedByMoldBreaker?
           target.damageState.sturdy = true
           damage -= 1
         elsif target.hasActiveItem?(:FOCUSSASH) && target.hp==target.totalhp

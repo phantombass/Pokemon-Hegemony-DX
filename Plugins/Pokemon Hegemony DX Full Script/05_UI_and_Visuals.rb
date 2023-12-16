@@ -37,7 +37,7 @@ class PokemonPauseMenu_Scene
       @viewport = Viewport.new(0,0,Graphics.width,Graphics.height)
       @viewport.z = 99999
       capColor = "90F090,000000"
-      levelCap = LEVEL_CAP[$game_system.level_cap]
+      levelCap = $game_switches[LvlCap::Insane] ? INSANE_LEVEL_CAP[$game_system.level_cap] : LEVEL_CAP[$game_system.level_cap]
       quest_stage = $PokemonGlobal.quests.active_quests[0].stage
       quest_info = $quest_data.getStageDescription(:Quest1,quest_stage)
       @sprites = {}
@@ -688,10 +688,85 @@ class PokemonSummary_Scene
     end
   end
 
+  def set_Status
+    pkmn = @pokemon
+    if pkmn.egg?
+      pbDisplay(_INTL("{1} is an egg.", pkmn.name))
+    elsif pkmn.hp <= 0
+      pbDisplay(_INTL("{1} is fainted, can't change status.", pkmn.name))
+    else
+      cmd = 0
+      commands = [_INTL("[Cure]")]
+      ids = [:NONE]
+      GameData::Status.each do |s|
+        next if s.id == :NONE
+        commands.push(s.name)
+        ids.push(s.id)
+      end
+      loop do
+        cmd = pbShowCommands(commands, cmd)
+        break if cmd < 0
+        case cmd
+        when 0   # Cure
+          pkmn.heal_status
+          pbDisplay(_INTL("{1}'s status was cured.", pkmn.name))
+          dorefresh = true
+          if dorefresh
+            drawPage(@page)
+            break
+          end
+        else   # Give status problem
+          count = 0
+          cancel = false
+          if ids[cmd] == :POISON && (pkmn.hasType?(:POISON) || pkmn.hasType?(:STEEL) || pkmn.hasAbility?([:IMMUNITY,:COMATOSE]))
+            pbDisplay(_INTL("This Pokémon cannot be poisoned."))
+            cancel = true
+          elsif ids[cmd] == :BURN && (pkmn.hasType?(:FIRE) || pkmn.hasAbility?([:WATERBUBBLE,:WATERVEIL,:FAIRYBUBBLE,:THERMALEXCHANGE,:COMATOSE]))
+            pbDisplay(_INTL("This Pokémon cannot be burned."))
+            cancel = true
+          elsif ids[cmd] == :SLEEP
+            if (pkmn.hasAbility?([:INSOMNIA,:CACOPHONY]))
+              pbDisplay(_INTL("This Pokémon cannot be put to sleep."))
+              cancel = true
+            else
+              params = ChooseNumberParams.new
+              params.setRange(0, 9)
+              params.setDefaultValue(3)
+              count = pbMessageChooseNumber(
+                 _INTL("Set the Pokémon's sleep count."), params) { pbUpdate }
+              cancel = true if count <= 0
+            end
+          elsif ids[cmd] == :FROZEN && (pkmn.hasType?(:ICE) || pkmn.hasAbility?([:MAGMAARMOR,:COMATOSE]))
+            pbDisplay(_INTL("This Pokémon cannot be frostbitten."))
+            cancel = true
+          elsif ids[cmd] == :PARALYSIS && (pkmn.hasType?(:ELECTRIC) || pkmn.hasAbility?([:LIMBER,:COMATOSE]))
+            pbDisplay(_INTL("This Pokémon cannot be paralyzed."))
+            cancel = true
+          end
+          if !cancel
+            pkmn.status      = ids[cmd]
+            pkmn.statusCount = count
+            dorefresh = true
+          end
+          if dorefresh
+            drawPage(@page)
+            break
+          end
+        end
+      end
+    end
+  end
+
   def change_Ability
     commands = []
     ids = []
     pkmn = @pokemon
+    if $game_variables[969] != 0 || $game_variables[Restriction_Info::Abilities] != 0
+      spec_num = GameData::Species.get_species_form(pkmn.species, pkmn.form_simple)
+      array = !Randomizer.active?(:ABILITIES) ? Restrictions.abilities : Randomizer.abilities
+      ability = array[:abilities][spec_num.id_number - 1]
+      habil = ability[2]
+    end
     loop do
       abils = pkmn.getAbilityList
       ability_commands = []
@@ -727,12 +802,13 @@ class PokemonSummary_Scene
       end
       case lvl
       when 0
-        pkmn.level = LEVEL_CAP[$game_system.level_cap]
+        pkmn.level = $game_switches[LvlCap::Insane] ? INSANE_LEVEL_CAP[$game_system.level_cap] : LEVEL_CAP[$game_system.level_cap]
         pkmn.calc_stats
         dorefresh = true
       when 1
         params = ChooseNumberParams.new
-        params.setRange(1, LEVEL_CAP[$game_system.level_cap])
+        cap = $game_switches[LvlCap::Insane] ? INSANE_LEVEL_CAP[$game_system.level_cap] : LEVEL_CAP[$game_system.level_cap]
+        params.setRange(1, cap)
         params.setDefaultValue(pkmn.level)
         level = pbMessageChooseNumber(
            _INTL("Set the Pokémon's level (max. {1}).", params.maxNumber), params) { pbUpdate }
@@ -744,58 +820,6 @@ class PokemonSummary_Scene
       end
       if dorefresh
         drawPage(@page)
-      end
-    end
-  end
-
-  def set_Status
-    pkmn = @pokemon
-    if pkmn.egg?
-      pbDisplay(_INTL("{1} is an egg.", pkmn.name))
-    elsif pkmn.hp <= 0
-      pbDisplay(_INTL("{1} is fainted, can't change status.", pkmn.name))
-    else
-      cmd = 0
-      commands = [_INTL("[Cure]")]
-      ids = [:NONE]
-      GameData::Status.each do |s|
-        next if s.id == :NONE
-        commands.push(s.name)
-        ids.push(s.id)
-      end
-      loop do
-        cmd = pbShowCommands(commands, cmd)
-        break if cmd < 0
-        case cmd
-        when 0   # Cure
-          pkmn.heal_status
-          pbDisplay(_INTL("{1}'s status was cured.", pkmn.name))
-          dorefresh = true
-          if dorefresh
-            drawPage(@page)
-            break
-          end
-        else   # Give status problem
-          count = 0
-          cancel = false
-          if ids[cmd] == :SLEEP
-            params = ChooseNumberParams.new
-            params.setRange(0, 9)
-            params.setDefaultValue(3)
-            count = pbMessageChooseNumber(
-               _INTL("Set the Pokémon's sleep count."), params) { pbUpdate }
-            cancel = true if count <= 0
-          end
-          if !cancel
-            pkmn.status      = ids[cmd] if pkmn.pbCanInflictStatus?(ids[cmd])
-            pkmn.statusCount = count
-            dorefresh = true
-          end
-          if dorefresh
-            drawPage(@page)
-            break
-          end
-        end
       end
     end
   end
@@ -1189,7 +1213,7 @@ class PokemonSummary_Scene
       cmdAbility = -1
       min_grind_commands[cmdLevel = min_grind_commands.length] = _INTL("Set Level") if (@page == 2 || @page == 3 || @page == 4)
       min_grind_commands[cmdNature = min_grind_commands.length] = _INTL("Change Nature") if @page == 2 || @page == 3 || @page == 4
-      min_grind_commands[cmdStatChange = min_grind_commands.length] = _INTL("Change EVs/IVs") if @page == 3 || @page == 4
+      min_grind_commands[cmdStatChange = min_grind_commands.length] = _INTL("Change EVs/IVs") if (@page == 3 || @page == 4) && !$game_switches[Settings::DISABLE_EVS]
       min_grind_commands[cmdAbility = min_grind_commands.length] = _INTL("Change Ability") if @page == 2 || @page == 3 || @page == 4
       min_grind_commands[cmdStatus = min_grind_commands.length] = _INTL("Set Status") if (@page == 2 || @page == 3 || @page == 4)
       min_command = pbShowCommands(min_grind_commands)

@@ -2029,6 +2029,7 @@ class PokeBattle_Move_15D < PokeBattle_Move
   def ignoresSubstitute?(user); return true; end
 
   def pbStealStats(user,target,numTargets=1)
+    return if Restrictions.active?
     if target.hasRaisedStatStages?
       pbShowAnimation(@id,user,target,1)   # Stat stage-draining animation
       @battle.pbDisplay(_INTL("{1} stole the target's boosted stats!",user.pbThis))
@@ -2086,7 +2087,7 @@ class PokeBattle_Move_160 < PokeBattle_Move
     #       has Contrary and is at +6" check too for symmetry. This move still
     #       works even if the stat stage cannot be changed due to an ability or
     #       other effect.
-    if !@battle.moldBreaker && target.hasActiveAbility?(:CONTRARY) &&
+    if !target.affectedByMoldBreaker? && target.hasActiveAbility?(:CONTRARY) &&
        target.statStageAtMax?(:ATTACK)
       @battle.pbDisplay(_INTL("But it failed!"))
       return true

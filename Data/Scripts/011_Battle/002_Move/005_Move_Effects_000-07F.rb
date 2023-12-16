@@ -68,7 +68,7 @@ class PokeBattle_Move_004 < PokeBattle_Move
   end
 
   def pbEffectAgainstTarget(user,target)
-    target.effects[PBEffects::Yawn] = 1
+    target.effects[PBEffects::Yawn] = 2
     @battle.pbDisplay(_INTL("{1} made {2} drowsy!",user.pbThis,target.pbThis(true)))
   end
 end
@@ -134,7 +134,7 @@ class PokeBattle_Move_008 < PokeBattle_ParalysisMove
     case @battle.pbWeather
     when :Sun, :HarshSun
       return 50
-    when :Rain, :HeavyRain
+    when :Rain, :HeavyRain, :Storm
       return 0
     end
     return super
@@ -312,7 +312,7 @@ class PokeBattle_Move_015 < PokeBattle_ConfuseMove
     case @battle.pbWeather
     when :Sun, :HarshSun
       return 50
-    when :Rain, :HeavyRain
+    when :Rain, :HeavyRain, :Windy, :Storm
       return 0
     end
     return super
@@ -794,7 +794,7 @@ end
 class PokeBattle_Move_02D < PokeBattle_MultiStatUpMove
   def initialize(battle,move)
     super
-    @statUp = [:ATTACK,1,:DEFENSE,1,:SPECIAL_ATTACK,1,:SPECIAL_DEFENSE,1,:SPEED,1]
+    @statUp = [:ATTACK,1,:DEFENSE,1,:SPECIAL_ATTACK,1,:SPECIAL_DEFENSE,1,:SPEED,1] if !Restrictions.active?
   end
 end
 
@@ -1437,7 +1437,7 @@ class PokeBattle_Move_04E < PokeBattle_TargetStatDownMove
       @battle.pbDisplay(_INTL("{1} is unaffected!",target.pbThis))
       return true
     end
-    if target.hasActiveAbility?(:OBLIVIOUS) && !@battle.moldBreaker
+    if target.hasActiveAbility?(:OBLIVIOUS) && !target.affectedByMoldBreaker?
       @battle.pbShowAbilitySplash(target)
       if PokeBattle_SceneConstants::USE_ABILITY_SPLASH
         @battle.pbDisplay(_INTL("{1} is unaffected!",target.pbThis))
@@ -1452,7 +1452,7 @@ class PokeBattle_Move_04E < PokeBattle_TargetStatDownMove
 
   def pbAdditionalEffect(user,target)
     return if user.gender==2 || target.gender==2 || user.gender==target.gender
-    return if target.hasActiveAbility?(:OBLIVIOUS) && !@battle.moldBreaker
+    return if target.hasActiveAbility?(:OBLIVIOUS) && !target.affectedByMoldBreaker?
     super
   end
 end
@@ -1729,6 +1729,7 @@ class PokeBattle_Move_05C < PokeBattle_Move
        "05D",   # Sketch
        "069"    # Transform
     ]
+    @moveBlacklist += Restrictions::BANNED_MOVES if Restrictions.active?
   end
 
   def pbMoveFailed?(user,targets)
@@ -1779,6 +1780,7 @@ class PokeBattle_Move_05D < PokeBattle_Move
        # Struggle
        "002"    # Struggle
     ]
+    @moveBlacklist += Restrictions::BANNED_MOVES if Restrictions.active?
   end
 
   def pbMoveFailed?(user,targets)
@@ -2393,7 +2395,7 @@ class PokeBattle_Move_070 < PokeBattle_FixedDamageMove
       @battle.pbDisplay(_INTL("{1} is unaffected!",target.pbThis))
       return true
     end
-    if target.hasActiveAbility?(:STURDY) && !@battle.moldBreaker
+    if target.hasActiveAbility?(:STURDY) && !target.affectedByMoldBreaker?
       @battle.pbShowAbilitySplash(target)
       if PokeBattle_SceneConstants::USE_ABILITY_SPLASH
         @battle.pbDisplay(_INTL("But it failed to affect {1}!",target.pbThis(true)))
@@ -2746,7 +2748,7 @@ class PokeBattle_Move_07E < PokeBattle_Move
   def damageReducedByBurn?; return Settings::MECHANICS_GENERATION <= 5; end
 
   def pbBaseDamage(baseDmg,user,target)
-    baseDmg *= 2 if user.poisoned? || user.burned? || user.paralyzed?
+    baseDmg *= 2 if user.poisoned? || user.burned? || user.paralyzed? || user.frozen?
     return baseDmg
   end
 end

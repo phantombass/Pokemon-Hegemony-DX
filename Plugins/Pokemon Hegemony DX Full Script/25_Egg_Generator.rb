@@ -1,3 +1,43 @@
+def egglocke_generator
+  eggs = []
+  pbEachPokemon { |poke,_box|
+    mon = poke.species
+    egg = GameData::Species.get(mon).get_baby_species
+    evos = GameData::Species.get(egg).get_family_evolutions
+    eggs.push(evos)
+  }
+  loop do
+    pkmn = Randomizer.all_species.sample
+    pkmn = GameData::Species.get(pkmn).get_baby_species
+    next if eggs.include?(pkmn)
+    pkmn = Pokemon.new(pkmn,1)
+    pkmn.calc_stats
+    pkmn.name           = _INTL("Egg")
+    pkmn.steps_to_hatch = 20
+    pkmn.hatched_map    = 0
+    pkmn.obtain_method  = 1
+    if $game_switches[75]
+      for stat in pkmn.iv.keys
+        pkmn.iv[stat] = 31
+      end
+    end
+    2.times do
+      pkmn.learn_move(addRandomEggMove(pkmn.species))
+    end
+    return pkmn if !eggs.include?(pkmn.species) && pbHasEgg?(pkmn.species)
+  end
+end
+
+def addRandomEggMove(species)
+    baby = GameData::Species.get(species).get_baby_species
+    form = GameData::Species.get(species).form
+    egg = GameData::Species.get_species_form(baby,form).egg_moves
+    moveChoice = rand(egg.length)
+    moves = egg[moveChoice]
+    return moves
+end
+
+
 def grass_starter_eggs
   egg_list = [:BULBASAUR,:CHIKORITA,:TREECKO,:TURTWIG,:SNIVY,:CHESPIN,:ROWLET,:GROOKEY,:SPRIGATITO]
   eggs = []
@@ -93,7 +133,7 @@ def hisui_eggs
 end
 
 def random_eggs
-  egg_list = [:MILCERY,:SKITTY,:GULPIN,:FLABEBE,:AZURILL,:MAREANIE,:SNEASEL,:TEDDIURSA,:TOXEL,:CUBONE,:DARUMAKA,:MIMEJR,:MEOWTH,:PONYTA,:CORSOLA,:FARFETCHD,:GEODUDE,:ROLYCOLY,:SKIDDO,:KLINK,:STANTLER,:PICHU,:MAGBY,:ELEKID,:SMOOCHUM,:HAPPINY,:MUNCHLAX,:POIPOLE,:COSMOG,:PHIONE,:KUBFU,:LARVESTA,:SIZZLIPEDE,:SILICOBRA,:MAGNEMITE,:CARBINK,:AUDINO,:RALTS,:ABRA,:GASTLY,:DROWZEE,:ELGYEM,:BRONZOR,:MUNNA,:IMPIDIMP,:INDEEDEE,:PINCURCHIN,:PYUKUMUKU,:WYNAUT,:SCRAGGY,:SEEL,:HORSEA,:JIGGLYPUFF,:MANKEY,:SEVIPER,
+  egg_list = [:MELTAN,:MILCERY,:SKITTY,:GULPIN,:FLABEBE,:AZURILL,:MAREANIE,:SNEASEL,:TEDDIURSA,:TOXEL,:CUBONE,:DARUMAKA,:MIMEJR,:MEOWTH,:PONYTA,:CORSOLA,:FARFETCHD,:GEODUDE,:ROLYCOLY,:SKIDDO,:KLINK,:STANTLER,:PICHU,:MAGBY,:ELEKID,:SMOOCHUM,:HAPPINY,:MUNCHLAX,:POIPOLE,:COSMOG,:PHIONE,:KUBFU,:LARVESTA,:SIZZLIPEDE,:SILICOBRA,:MAGNEMITE,:CARBINK,:AUDINO,:RALTS,:ABRA,:GASTLY,:DROWZEE,:ELGYEM,:BRONZOR,:MUNNA,:IMPIDIMP,:INDEEDEE,:PINCURCHIN,:PYUKUMUKU,:WYNAUT,:SCRAGGY,:SEEL,:HORSEA,:JIGGLYPUFF,:MANKEY,:SEVIPER,
   :ZANGOOSE,:SNUBBULL,:MAREEP,:GIRAFARIG,:DUNSPARCE,:CHINGLING,:SNORUNT,:SPHEAL,:BUIZEL,:FINNEON,:ARROKUDA,:MORELULL,:FOMANTIS,:INKAY,:COTTONEE,:MISDREAVUS,:MURKROW,:FEEBAS,:GOTHITA,:SOLOSIS,:STUNFISK,:PIKIPEK,:EMOLGA,:PLUSLE,:MINUN,:TOGEDEMARU,:MORPEKO,:VOLBEAT,:ILLUMISE,:ODDISH,:BELLSPROUT,:IGGLYBUFF,:CLEFFA,:PICHU,:STARYU,:GRIMER,:KOFFING,:LAPRAS,:ZUBAT,:NATU,:BONSLY,:WEEDLE,:CATERPIE,:WAILMER,:SHELMET,:KARRABLAST,:SCYTHER,:BARBOACH,:LUVDISC,:DEDENNE,:MINIOR,:CLOBBOPUS,:CRABRAWLER,:KRABBY,
   :SKORUPI,:FOMANTIS,:DEWPIDER,:BUNEARY,:TYNAMO,:DELIBIRD,:REMORAID,:WOOLOO,:NICKIT,:SKWOVET,:DHELMISE,:EKANS,:CRYOGONAL,:CUBCHOO,:WISHIWASHI,:DEINO,:TRAPINCH,:BELDUM,:BAGON,:LARVITAR,:DRATINI,:EEVEE,:GIBLE,:NOIBAT,:JANGMOO,:DREEPY,:RIOLU,:TYROGUE,:CROAGUNK,:GLIGAR,:HATENNA,:ZIGZAGOON,:ROOKIDEE,:JOLTIK,:WOOPER,
   :TAROUNTULA,:LECHONK,:FIDOUGH,:GIMMIGHOUL,:TAUROS,:MILTANK,:BOUFFALANT,:FRIGIBAX,:FLITTLE,:TOEDSCOOL,:WIGLETT,:DONDOZO,:TATSUGIRI,:VELUZA,:TADBULB,:PAWMI,:FLAMIGO,:MASCHIFF,:GREAVARD,:PAWNIARD,:SMOLIV,:NYMBLE,:BOMBIRDIER,:KLAWF,:ORTHWORM,:CAPSAKID,:GLIMMET,:VAROOM,:BRAMBLIN,:WATTREL,:SHROODLE,:CYCLIZAR,:TINKATINK,:TANDEMAUS,:RELLOR,:FINIZEN,:NACLI,:CETODDLE]
@@ -207,9 +247,15 @@ def generate_hisui_egg
     move = GameData::Species.get(species).egg_moves
     egg.ability_index = 2
     egg.form = (species == :BASCULIN) ? 2 : 1
-    egg.iv[:HP] = 31
-    egg.iv[:DEFENSE] = 31
-    egg.iv[:SPECIAL_DEFENSE] = 31
+    if $game_switches[75]
+      for stat in egg.iv.keys
+        egg.iv[stat] = 31
+      end
+    else
+      egg.iv[:HP] = 31
+      egg.iv[:DEFENSE] = 31
+      egg.iv[:SPECIAL_DEFENSE] = 31
+    end
     egg.learn_move(move[rand(move.length)])
     egg.steps_to_hatch = 200
     egg.calc_stats
@@ -233,9 +279,15 @@ def generate_wartime_egg
     species = egg.species
     move = GameData::Species.get(species).egg_moves
     egg.ability_index = 2
-    egg.iv[:HP] = 31
-    egg.iv[:DEFENSE] = 31
-    egg.iv[:SPECIAL_DEFENSE] = 31
+    if $game_switches[75]
+      for stat in egg.iv.keys
+        egg.iv[stat] = 31
+      end
+    else
+      egg.iv[:HP] = 31
+      egg.iv[:DEFENSE] = 31
+      egg.iv[:SPECIAL_DEFENSE] = 31
+    end
     egg.learn_move(move[rand(move.length)])
     egg.steps_to_hatch = 200
     egg.calc_stats
@@ -259,9 +311,15 @@ def generate_postgame_wartime_egg
     species = egg.species
     move = GameData::Species.get(species).egg_moves
     egg.ability_index = 2
-    egg.iv[:HP] = 31
-    egg.iv[:DEFENSE] = 31
-    egg.iv[:SPECIAL_DEFENSE] = 31
+    if $game_switches[75]
+      for stat in egg.iv.keys
+        egg.iv[stat] = 31
+      end
+    else
+      egg.iv[:HP] = 31
+      egg.iv[:DEFENSE] = 31
+      egg.iv[:SPECIAL_DEFENSE] = 31
+    end
     egg.learn_move(move[rand(move.length)])
     egg.steps_to_hatch = 200
     egg.calc_stats
@@ -288,9 +346,15 @@ def generate_random_egg
     move = GameData::Species.get(species).egg_moves
     egg.ability_index = 2
     egg.form = regionals.include?(species) ? (reg_rand > 4 ? 1 : 0) : 0
-    egg.iv[:HP] = 31
-    egg.iv[:DEFENSE] = 31
-    egg.iv[:SPECIAL_DEFENSE] = 31
+    if $game_switches[75]
+      for stat in egg.iv.keys
+        egg.iv[stat] = 31
+      end
+    else
+      egg.iv[:HP] = 31
+      egg.iv[:DEFENSE] = 31
+      egg.iv[:SPECIAL_DEFENSE] = 31
+    end
     egg.learn_move(move[rand(move.length)])
     egg.steps_to_hatch = 200
     egg.calc_stats
@@ -322,9 +386,15 @@ def generate_starter_egg(type)
       else
         egg.form = 0
       end
-      egg.iv[:HP] = 31
-      egg.iv[:DEFENSE] = 31
-      egg.iv[:SPECIAL_DEFENSE] = 31
+      if $game_switches[75]
+        for stat in egg.iv.keys
+          egg.iv[stat] = 31
+        end
+      else
+        egg.iv[:HP] = 31
+        egg.iv[:DEFENSE] = 31
+        egg.iv[:SPECIAL_DEFENSE] = 31
+      end
       egg.learn_move(move[rand(move.length)])
       egg.steps_to_hatch = 200
       egg.calc_stats
@@ -352,9 +422,15 @@ def generate_starter_egg(type)
       else
         egg.form = 0
       end
-      egg.iv[:HP] = 31
-      egg.iv[:DEFENSE] = 31
-      egg.iv[:SPECIAL_DEFENSE] = 31
+      if $game_switches[75]
+        for stat in egg.iv.keys
+          egg.iv[stat] = 31
+        end
+      else
+        egg.iv[:HP] = 31
+        egg.iv[:DEFENSE] = 31
+        egg.iv[:SPECIAL_DEFENSE] = 31
+      end
       egg.learn_move(move[rand(move.length)])
       egg.steps_to_hatch = 200
       egg.calc_stats
@@ -382,9 +458,15 @@ def generate_starter_egg(type)
       else
         egg.form = 0
       end
-      egg.iv[:HP] = 31
-      egg.iv[:DEFENSE] = 31
-      egg.iv[:SPECIAL_DEFENSE] = 31
+      if $game_switches[75]
+        for stat in egg.iv.keys
+          egg.iv[stat] = 31
+        end
+      else
+        egg.iv[:HP] = 31
+        egg.iv[:DEFENSE] = 31
+        egg.iv[:SPECIAL_DEFENSE] = 31
+      end
       egg.learn_move(move[rand(move.length)])
       egg.steps_to_hatch = 200
       egg.calc_stats
@@ -413,9 +495,15 @@ def generate_starter_egg_vendor(type)
       move = GameData::Species.get(species).egg_moves
       egg.ability_index = 2
       egg.form = species != :ROWLET ? 0 : (hisui_rand > 4 ? 1 : 0)
-      egg.iv[:HP] = 31
-      egg.iv[:DEFENSE] = 31
-      egg.iv[:SPECIAL_DEFENSE] = 31
+      if $game_switches[75]
+        for stat in egg.iv.keys
+          egg.iv[stat] = 31
+        end
+      else
+        egg.iv[:HP] = 31
+        egg.iv[:DEFENSE] = 31
+        egg.iv[:SPECIAL_DEFENSE] = 31
+      end
       egg.learn_move(move[rand(move.length)])
       egg.steps_to_hatch = 200
       egg.calc_stats
@@ -439,9 +527,15 @@ def generate_starter_egg_vendor(type)
       move = GameData::Species.get(species).egg_moves
       egg.ability_index = 2
       egg.form = species != :CYNDAQUIL ? 0 : (hisui_rand > 4 ? 1 : 0)
-      egg.iv[:HP] = 31
-      egg.iv[:DEFENSE] = 31
-      egg.iv[:SPECIAL_DEFENSE] = 31
+      if $game_switches[75]
+        for stat in egg.iv.keys
+          egg.iv[stat] = 31
+        end
+      else
+        egg.iv[:HP] = 31
+        egg.iv[:DEFENSE] = 31
+        egg.iv[:SPECIAL_DEFENSE] = 31
+      end
       egg.learn_move(move[rand(move.length)])
       egg.steps_to_hatch = 200
       egg.calc_stats
@@ -465,9 +559,15 @@ def generate_starter_egg_vendor(type)
       move = GameData::Species.get(species).egg_moves
       egg.ability_index = 2
       egg.form = species != :OSHAWOTT ? 0 : (hisui_rand > 4 ? 1 : 0)
-      egg.iv[:HP] = 31
-      egg.iv[:DEFENSE] = 31
-      egg.iv[:SPECIAL_DEFENSE] = 31
+      if $game_switches[75]
+        for stat in egg.iv.keys
+          egg.iv[stat] = 31
+        end
+      else
+        egg.iv[:HP] = 31
+        egg.iv[:DEFENSE] = 31
+        egg.iv[:SPECIAL_DEFENSE] = 31
+      end
       egg.learn_move(move[rand(move.length)])
       egg.steps_to_hatch = 200
       egg.calc_stats

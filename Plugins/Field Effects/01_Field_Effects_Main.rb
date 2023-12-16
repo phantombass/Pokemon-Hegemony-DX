@@ -46,17 +46,37 @@ GameData::FieldEffects.register({
 
 GameData::FieldEffects.register({
   :id   => :Grassy,
-  :name => _INTL("Grassy")
+  :name => _INTL("Grassy Terrain")
 })
 
 GameData::FieldEffects.register({
   :id   => :Electric,
-  :name => _INTL("Electric")
+  :name => _INTL("Electric Terrain")
 })
 
 GameData::FieldEffects.register({
-  :id   => :Cave,
+  :id   => :EchoChamber,
   :name => _INTL("Cave")
+})
+
+GameData::FieldEffects.register({
+  :id   => :Wildfire,
+  :name => _INTL("Wildfire")
+})
+
+GameData::FieldEffects.register({
+  :id   => :Psychic,
+  :name => _INTL("Psychic Terrain")
+})
+
+GameData::FieldEffects.register({
+  :id   => :Misty,
+  :name => _INTL("Misty Terrain")
+})
+
+GameData::FieldEffects.register({
+  :id   => :Poison,
+  :name => _INTL("Poison Terrain")
 })
 
 #Define Environments to match your Field Effects here
@@ -73,19 +93,75 @@ GameData::Environment.register({
   :battle_base => "field"
 })
 
+GameData::Environment.register({
+  :id          => :Grassy,
+  :name        => _INTL("Grassy"),
+  :battle_base => "Grassy"
+})
+
+GameData::Environment.register({
+  :id          => :Electric,
+  :name        => _INTL("Electric"),
+  :battle_base => "Electric"
+})
+
+GameData::Environment.register({
+  :id          => :Misty,
+  :name        => _INTL("Misty"),
+  :battle_base => "Misty"
+})
+
+GameData::Environment.register({
+  :id          => :Psychic,
+  :name        => _INTL("Psychic"),
+  :battle_base => "Psychic"
+})
+
+GameData::Environment.register({
+  :id          => :Poison,
+  :name        => _INTL("Poison"),
+  :battle_base => "Poison"
+})
+
+GameData::Environment.register({
+  :id          => :Wildfire,
+  :name        => _INTL("Wildfire"),
+  :battle_base => "wildfire"
+})
+
+GameData::Environment.register({
+  :id          => :EchoChamber,
+  :name        => _INTL("Cave"),
+  :battle_base => "cave1"
+})
+
 module Fields
   sound = []
   pulse = []
+  wind = []
+  slicing = []
+  punching = []
+  kicking = []
+  water = []
   moves = load_data("Data/moves.dat")
   for move in moves
     next if move[0].is_a?(Integer)
     mv = move[1]
     sound.push(GameData::Move.get(mv).id) if mv.flags[/k/]
+    pulse.push(GameData::Move.get(mv).id) if mv.flags[/m/]
+    wind.push(GameData::Move.get(mv).id) if mv.flags[/r/]
+    slicing.push(GameData::Move.get(mv).id) if mv.flags[/q/]
+    punching.push(GameData::Move.get(mv).id) if mv.flags[/j/]
+    kicking.push(GameData::Move.get(mv).id) if mv.flags[/t/]
+    water.push(GameData::Move.get(mv).id) if (mv.type == :WATER && mv.category != 2)
   end
   SOUND_MOVES = sound
-  WIND_MOVES = [:AIRCUTTER,:HURRICANE,:AIRSLASH,:OMINOUSWIND,:HEATWAVE,:SILVERWIND,:AEROBLAST,:ICYWIND]
+  WIND_MOVES = wind
+  ECHO_MOVES = slicing + kicking + sound + punching
   IGNITE_MOVES = [:FLAMEBURST,:INCINERATE,:LAVAPLUME,:FLAMETHROWER,:MAGMATREK,:FLAREBLITZ,:FLAMEWHEEL,:ERUPTION]
-  QUAKE_MOVES = [:EARTHQUAKE,:BULLDOZE,:STOMPINGTANTRUM,:FISSURE]
+  QUAKE_MOVES = [:EARTHQUAKE,:BULLDOZE,:STOMPINGTANTRUM,:FISSURE,:STEAMROLLER,:STEELROLLER,:ICESPINNER]
+  DOUSERS = [:RAINDANCE,:DRIZZLE,:PRIMORDIALSEA] + water
+  REMOVAL = [:DEFOG,:TIDYUP,:GALEFORCE,:TAILWIND] + wind
   #These are examples of arrays you can make for moves that will affect or be affected by a field effect
 end
 
@@ -582,7 +658,7 @@ class PokeBattle_Battle
     pbParty(0).each_with_index do |pkmn,i|
       next if !pkmn
       @peer.pbOnLeavingBattle(self,pkmn,@usedInBattle[0][i],true)   # Reset form
-      if pkmn.fainted? && $game_switches[902]
+      if pkmn.fainted? && $game_switches[LvlCap::Ironmon]
         $PokemonBag.pbStoreItem(pkmn.item, 1) if pkmn.item
         $Trainer.party.delete_at(pkmn.index)
         $PokemonTemp.evolutionLevels.delete_at(pkmn.index)
@@ -637,7 +713,7 @@ class PokeBattle_Battle
 	  msg = FIELD_EFFECTS[newField][:intro_message]
   	bg = FIELD_EFFECTS[newField][:field_gfx]
     pbDisplay(_INTL(msg)) if msg != nil
-  	$field_effect_bg = bg
+  	@scene.pbChangeField(newField)
 	  pbHideAbilitySplash(user) if user
   	@scene.pbRefreshEverything
 	  fe = FIELD_EFFECTS[newField]
@@ -683,16 +759,44 @@ class PokeBattle_Battler
   end
 end
 
+def pbSetField(terrain)
+  setBattleRule("field",terrain)
+  setBattleRule("environment",terrain)
+  name = GameData::Environment.get(terrain).name
+  $PokemonGlobal.nextBattleBack = name
+end
+
 #Field Changes due to Move Usage
 class PokeBattle_Scene
+  def pbChangeField(terrain)
+    terrain = :EchoChamber if $game_map.map_id > 375
+    name = GameData::Environment.get(terrain).battle_base
+    @battle.field.field_effects = terrain
+    back = name
+    base = name
+    return [back,base]
+  end
   def pbCreateBackdropSprites
     case @battle.time
     when 1 then time = "eve"
     when 2 then time = "night"
     end
     # Put everything together into backdrop, bases and message bar filenames
-    @battle.backdrop = $field_effect_bg if $field_effect_bg != nil
-    @battle.backdropBase = $field_effect_bg if $field_effect_bg != nil
+    default = []
+    2.times do
+      default.push(GameData::Environment.get(@battle.field.defaultField).battle_base)
+    end
+    change = []
+    2.times do
+      change.push(GameData::Environment.get(@battle.field.field_effects).battle_base)
+    end
+    if @battle.field.field_effects != :None
+      @battle.backdrop = change[0]
+      @battle.backdropBase = change[1]
+    else
+      @battle.backdrop = default[0]
+      @battle.backdropBase = default[1]
+    end
     backdropFilename = @battle.backdrop
     baseFilename = @battle.backdrop
     baseFilename = sprintf("%s_%s", baseFilename, @battle.backdropBase) if @battle.backdropBase
@@ -827,6 +931,124 @@ class PokeBattle_Move
   	end
     return ret
   end
+  alias fe_pbCalcDamageMultipliers pbCalcDamageMultipliers
+  def pbCalcDamageMultipliers(*args)
+    fe_pbCalcDamageMultipliers(*args)
+    # Field Effects
+    fe = FIELD_EFFECTS[@battle.field.field_effects]
+     if fe[:field_changers] != nil
+       priority = @battle.pbPriority(true)
+       msg = nil
+       for fc in fe[:field_changers].keys
+        if @battle.field.field_effects != :None
+          if fe[:field_changers][fc].include?(self.id) && fe[:field_change_conditions][fc] != nil && fe[:field_change_conditions][fc] == true
+            for message in fe[:change_message].keys
+              msg = message if fe[:change_message][message].include?(self.id)
+            end
+            @battle.pbDisplay(_INTL("#{msg}")) if msg != nil
+                      @battle.field.field_effects = fc
+            fe = FIELD_EFFECTS[@battle.field.field_effects]
+            @battle.scene.pbChangeField(@battle.field.field_effects)
+            @battle.scene.pbRefreshEverything
+            #@battle.field.weather == :None
+            priority.each do |pkmn|
+              if pkmn.hasActiveAbility?([fe[:abilities]])
+                for key in fe[:ability_effects].keys
+                  if pkmn.ability != fc
+                    abil = nil
+                  else
+                    abil = fe[:ability_effects][pkmn.ability]
+                  end
+                  if pkmn.ability == fc && abil.is_a?(Array)
+                    trigger = true
+                  end
+                end
+                BattleHandlers.triggerAbilityOnSwitchIn(fc,pkmn,@battle) if trigger
+                pkmn.pbRaiseStatStage(abil[0],abil[1],user) if abil != nil && !trigger
+              end
+            end
+          end
+        end
+      end
+    end
+   #Field Effect Type Boosts
+     trigger = false
+     mesg = false
+     if fe[:type_damage_change] != nil
+       for key in fe[:type_damage_change].keys
+         if @battle.field.field_effects != :None
+          if fe[:type_damage_change][key].include?(type)
+            multipliers[:final_damage_multiplier] *= key
+            mesg = true
+          end
+          if mesg == true
+            for mess in fe[:type_messages].keys
+              msg = mess if fe[:type_messages][mess].include?(type)
+            end
+            @battle.pbDisplay(_INTL("#{msg}"))
+          end
+         end
+       end
+     end
+     #Field Effect Specific Move Boost
+     if fe[:move_damage_boost] != nil
+       for dmg in fe[:move_damage_boost].keys
+         if @battle.field.field_effects != :None
+          if fe[:move_damage_boost][dmg].is_a?(Array)
+            if fe[:move_damage_boost][dmg].include?(self.id)
+              multipliers[:final_damage_multiplier] *= dmg 
+              mesg = true if j == type
+            end
+          elsif type == getConst(PBTypes,fe[:move_damage_boost][dmg])
+            multipliers[:final_damage_multiplier] *= dmg
+            mesg = true
+          end
+          if mesg == true
+            for mess in fe[:move_messages].keys
+              if fe[:move_messages][mess].is_a?(Array)
+                msg = mess if fe[move_messages][mess].include?(self.id)
+              else
+                msg = mess if GameData::Type.get(fe[:move_messages][mess]).id == type
+              end
+            end
+            @battle.pbDisplay(INTL("#{msg}"))
+          end
+         end
+       end
+     end
+
+    #Field Effect Defensive Modifiers
+     if fe[:defensive_modifiers] != nil
+      priority = @battle.pbPriority(true)
+      msg = nil
+      for d in fe[:defensive_modifiers].keys
+        if fe[:defensive_modifiers][d][1] == "fullhp"
+          multipliers[:final_damage_multiplier] /= d
+        elsif fe[:defensive_modifiers][d][1] == "physical"
+          multipliers[DEF_MULT] *= d if physicalMove?
+        elsif fe[:defensive_modifiers][d][1] == "special"
+          multipliers[DEF_MULT] *= d if specialMove?
+        elsif fe[:defensive_modifiers][d][1] == nil
+          multipliers[DEF_MULT] *= d
+        end
+      end
+    end
+    #Additional Effects of Field Effects
+     if fe[:side_effects] != nil
+      priority = @battle.pbPriority(true)
+      msg = nil
+      f = fe[:side_effects].keys
+      for eff in fe[:side_effects].keys
+        if (fe[:side_effects][eff].is_a?(Array) && fe[:side_effects][eff].include?(self.id)) || (!fe[:side_effects][eff].is_a?(Array) && type == GameData::Type.get(fe[:side_effects][eff]).id)
+          #case eff
+            #add side effects for fields here
+          #end
+        end
+      end
+    end
+  end
+
+
   def pbCalcTypeModSingle(moveType, defType, user, target)
     ret = Effectiveness.calculate_one(moveType, defType)
     if Effectiveness.ineffective_type?(moveType, defType)

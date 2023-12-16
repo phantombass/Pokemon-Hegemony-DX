@@ -55,10 +55,12 @@ class Randomizer
 
   	def self.active?(type)
   	    return false if @choices.nil?
+  	    return false if @choices == 0
   		return @choices.include?(type)
   	end
 
   	def self.setup
+  		PBAI.log("Setting up randomizer...")
   		@randomized = $game_switches[Randomizer_Info::RandomizerOn]
   		@choices = $game_variables[Randomizer_Info::Choices]
 		@trainers = $game_variables[Randomizer_Info::Trainers]
@@ -69,6 +71,20 @@ class Randomizer
 		@base_stats = $game_variables[Randomizer_Info::Base_Stats]
 		@abilities = $game_variables[Randomizer_Info::Abilities]
 		@movesets = $game_variables[Randomizer_Info::Movesets]
+	end
+
+	def self.clear
+		PBAI.log("Clearing randomizer options...")
+		$game_switches[Randomizer_Info::RandomizerOn] = false
+  		$game_variables[Randomizer_Info::Choices] = 0
+		$game_variables[Randomizer_Info::Trainers] = 0
+		$game_variables[Randomizer_Info::Encounters] = 0
+		$game_switches[Randomizer_Info::Items] = false
+		$game_variables[Randomizer_Info::Static] = 0
+		$game_variables[Randomizer_Info::Gift] = 0
+		$game_variables[Randomizer_Info::Base_Stats] = 0
+		$game_variables[Randomizer_Info::Abilities] = 0
+		$game_variables[Randomizer_Info::Movesets] = 0
 	end
 
 	def self.choose_options
@@ -810,6 +826,7 @@ class PokemonLoadScreen
     ret = pbStartLoadScreen_randomizer
     # refresh current cache
     Randomizer.setup if Randomizer.activated?
+    Restrictions.setup if Restrictions.active?
     return ret
   end
 end
@@ -833,16 +850,6 @@ def pbLoadTrainer(tr_type, tr_name, tr_version = 0)
   return (trainer_data) ? trainer_data.to_trainer : nil
 end
 
-alias pbLoadTrainer_rand pbLoadTrainer unless defined?(pbLoadTrainer_rand)
-def pbLoadTrainer(tr_type, tr_name, tr_version = 0)
-  ret = pbLoadTrainer_rand(tr_type, tr_name, tr_version)
-  ret.partyID = tr_version if ret
-  # try to load the next battle speech
-  speech = ret ? EliteBattle.get_trainer_data(tr_type, :BATTLESCRIPT, ret) : nil
-  EliteBattle.set(:nextBattleScript, (speech.is_a?(Hash) ? speech : speech.to_sym)) if !speech.nil?
-  return ret
-end
-
 class Pokemon
   def baseStats
     this_base_stats = Randomizer.active?(:STATS) ? getRandStats(species_data) : species_data.base_stats
@@ -855,18 +862,31 @@ class Pokemon
     if !@ability
       sp_data = species_data
       abil_index = ability_index
+      if Randomizer.active?(:ABILITIES)
+      	abilities = Restrictions.active? ? Restrictions.abilities : Randomizer.abilities
+      elsif !Randomizer.active?(:ABILITIES) && Restrictions.active?
+      	abilities = Restrictions.abilities
+      end
       if abil_index >= 2   # Hidden ability
-        @ability = !Randomizer.active?(:ABILITIES) ? sp_data.hidden_abilities[abil_index - 2] : getRandAbilities(species,2)
+        @ability = !Randomizer.active?(:ABILITIES) ? sp_data.hidden_abilities[abil_index - 2] : getRandAbilities(abilities[:pokemon][sp_data.id_number-1],2)
+        @ability = getRestrictedAbility(abilities[:pokemon][sp_data.id_number-1],2) if Restrictions.active?
         abil_index = (@personalID & 1) if !@ability
       end
-      if !@ability   # Natural ability or no hidden ability defined
-        @ability = !Randomizer.active?(:ABILITIES) ? (sp_data.abilities[abil_index] || sp_data.abilities[0]) : (getRandAbilities(species,abil_index) || getRandAbilities(species,0))
+      if !@ability  # Natural ability or no hidden ability defined
+        @ability = (!Randomizer.active?(:ABILITIES) || $game_switches[RandBoss::Var]) ? (sp_data.abilities[abil_index] || sp_data.abilities[0]) : (getRandAbilities(abilities[:pokemon][sp_data.id_number-1],abil_index) || getRandAbilities(abilities[:abilities][sp_data.id_number-1],0))
+        @ability = (getRestrictedAbility(abilities[:pokemon][sp_data.id_number-1],abil_index) || getRestrictedAbility(abilities[:pokemon][sp_data.id_number-1],0)) if Restrictions.active?
       end
     end
     return @ability
   end
 
   def getMoveList
-    return Randomizer.active?(:MOVES) ? getRandMoves(self.species) : species_data.moves
+  	if Randomizer.active?(:MOVES)
+  		return Restrictions.active? ? getRestrictedMoves(species_data.id) : getRandMoves(species_data.id)
+  	elsif !Randomizer.active?(:MOVES) && Restrictions.active?
+  		return getRestrictedMoves(species_data.id)
+  	else
+  		return species_data.moves
+  	end
   end
 end

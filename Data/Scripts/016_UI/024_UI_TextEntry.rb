@@ -757,9 +757,11 @@ class PokemonEntry
   end
 
   def pbStartScreen(helptext,minlength,maxlength,initialText,mode=-1,pokemon=nil)
+    $repel_toggle = false
     @scene.pbStartScene(helptext,minlength,maxlength,initialText,mode,pokemon)
     ret=@scene.pbEntry
     @scene.pbEndScene
+    $repel_toggle = true
     return ret
   end
 end

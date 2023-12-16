@@ -123,6 +123,11 @@ class PokeBattle_Move
   def pbBeamMove?;            return beamMove?; end
   def pbSoundMove?;           return soundMove?; end
   def pbHammerMove?;           return hammerMove?; end
+  def headMove?
+    head = [:HEADSMASH,:HEADBUTT,:CROWNRUSH,:SKULLBLITZ,
+      :SKULLBASH,:HEADCHARGE,:IRONHEAD,:HEADLONGRUSH]
+    return head.include?(@id)
+  end
 
   def pbNumHits(user,targets)
     if user.hasActiveAbility?(:PARENTALBOND) && pbDamagingMove? &&
@@ -471,7 +476,7 @@ class PokeBattle_Move
       end
     end
     # Terrain moves
-    case @battle.field.terrain
+    case @battle.field.field_effects
     when :Electric
       multipliers[:base_damage_multiplier] *= 1.5 if type == :ELECTRIC && user.affectedByTerrain?
     when :Grassy
@@ -603,119 +608,6 @@ class PokeBattle_Move
         multipliers[:defense_multiplier] *= 1.5
       end
     end
-    # Field Effects
-    fe = FIELD_EFFECTS[@battle.field.field_effects]
-   if fe[:field_changers] != nil
-     priority = @battle.pbPriority(true)
-     msg = nil
-     for fc in fe[:field_changers].keys
-      if @battle.field.field_effects != :None
-        if fe[:field_changers][fc].include?(self.id) && fe[:field_change_conditions][fc] != nil && fe[:field_change_conditions][fc] == true
-          for message in fe[:change_message].keys
-            msg = message if fe[:change_message][message].include?(self.id)
-          end
-          @battle.pbDisplay(_INTL("#{msg}")) if msg != nil
-                    @battle.field.field_effects = fc
-          fe = FIELD_EFFECTS[@battle.field.field_effects]
-          $field_effect_bg = fe[:field_gfx]
-          @battle.scene.pbRefreshEverything
-          @battle.field.weather == :None
-          priority.each do |pkmn|
-            if pkmn.hasActiveAbility?([fe[:abilities]])
-              for key in fe[:ability_effects].keys
-                if pkmn.ability != fc
-                  abil = nil
-                else
-                  abil = fe[:ability_effects][pkmn.ability]
-                end
-                if pkmn.ability == fc && abil.is_a?(Array)
-                  trigger = true
-                end
-              end
-              BattleHandlers.triggerAbilityOnSwitchIn(fc,pkmn,@battle) if trigger
-              pkmn.pbRaiseStatStage(abil[0],abil[1],user) if abil != nil && !trigger
-            end
-          end
-        end
-      end
-    end
-    end
- #Field Effect Type Boosts
-   trigger = false
-   mesg = false
-   if fe[:type_damage_change] != nil
-     for key in fe[:type_damage_change].keys
-       if @battle.field.field_effects != :None
-        if if fe[:type_damage_change][key].include?(type)
-          multipliers[:final_damage_multiplier] *= key
-          mesg = true
-        end
-        if mesg == true
-          for mess in fe[:type_messages].keys
-            msg = mess if fe[:type_messages][mess].include?(type)
-          end
-          @battle.pbDisplay(_INTL("#{msg}"))
-        end
-       end
-     end
-   end
-   #Field Effect Specific Move Boost
-   if fe[:move_damage_boost] != nil
-     for dmg in fe[:move_damage_boost].keys
-       if @battle.field.field_effects != :None
-        if fe[:move_damage_boost][dmg].is_a?(Array)
-          if fe[:move_damage_boost][dmg].include?(self.id)
-            multipliers[:final_damage_multiplier] *= dmg 
-            mesg = true if j == type
-          end
-        elsif type == getConst(PBTypes,fe[:move_damage_boost][dmg])
-          multipliers[:final_damage_multiplier] *= dmg
-          mesg = true
-        end
-        if mesg == true
-          for mess in fe[:move_messages].keys
-            if fe[:move_messages][mess].is_a?(Array)
-              msg = mess if fe[move_messages][mess].include?(self.id)
-            else
-              msg = mess if GameData::Type.get(fe[:move_messages][mess]).id == type
-            end
-          end
-          @battle.pbDisplay(INTL("#{msg}"))
-        end
-       end
-     end
-   end
-
-  #Field Effect Defensive Modifiers
-   if fe[:defensive_modifiers] != nil
-    priority = @battle.pbPriority(true)
-    msg = nil
-    for d in fe[:defensive_modifiers].keys
-      if fe[:defensive_modifiers][d][1] == "fullhp"
-        multipliers[:final_damage_multiplier] /= d
-      elsif fe[:defensive_modifiers][d][1] == "physical"
-        multipliers[DEF_MULT] *= d if physicalMove?
-      elsif fe[:defensive_modifiers][d][1] == "special"
-        multipliers[DEF_MULT] *= d if specialMove?
-      elsif fe[:defensive_modifiers][d][1] == nil
-        multipliers[DEF_MULT] *= d
-      end
-    end
-  end
-  #Additional Effects of Field Effects
-   if fe[:side_effects] != nil
-    priority = @battle.pbPriority(true)
-    msg = nil
-    f = fe[:side_effects].keys
-    for eff in fe[:side_effects].keys
-      if (fe[:side_effects][eff].is_a?(Array) && fe[:side_effects][eff].include?(self.id)) || (!fe[:side_effects][eff].is_a?(Array) && type == GameData::Type.get(fe[:side_effects][eff]).id)
-        #case eff
-          #add side effects for fields here
-        #end
-      end
-    end
-  end
-   end
     # Critical hits
     if target.damageState.critical
       if Settings::NEW_CRITICAL_HIT_RATE_MECHANICS
@@ -913,7 +805,7 @@ BattleHandlers::MoveImmunityTargetAbility.add(:STEAMENGINE,
 
 BattleHandlers::SpeedCalcAbility.add(:SLUDGERUSH,
   proc { |ability,battler,mult|
-    next mult*2 if battler.battle.field.terrain == :Poison
+    next mult*2 if battler.battle.field.field_effects == :Poison
   }
 )
 
@@ -951,7 +843,7 @@ BattleHandlers::TargetAbilityOnHit.add(:WEBWEAVER,
 BattleHandlers::TargetAbilityOnHit.add(:SEEDSOWER,
   proc { |ability, user, target, move, battle|
     next if !move.damagingMove?
-    next if battle.field.terrain == :Grassy
+    next if battle.field.field_effects == :Grassy
     battle.pbShowAbilitySplash(target)
     battle.pbDisplay(_INTL("Grass grew to cover the battlefield!"))
     battle.pbStartTerrain(target, :Grassy)
@@ -1186,7 +1078,7 @@ BattleHandlers::MoveImmunityTargetAbility.add(:GOODASGOLD,
 BattleHandlers::AbilityOnSwitchIn.add(:HADRONENGINE,
   proc { |ability, battler, battle, switch_in|
     battle.pbShowAbilitySplash(battler)
-    if battle.field.terrain == :Electric
+    if battle.field.field_effects == :Electric
       battle.pbDisplay(_INTL("{1} used the Electric Terrain to energize its futuristic engine!", battler.pbThis))
       battle.pbHideAbilitySplash(battler)
       next
@@ -1198,7 +1090,7 @@ BattleHandlers::AbilityOnSwitchIn.add(:HADRONENGINE,
 )
 BattleHandlers::DamageCalcUserAbility.add(:HADRONENGINE,
   proc { |ability, user, target, move, mults, baseDmg, type|
-    mults[:attack_multiplier] *= 1.5 if move.specialMove? && user.battle.field.terrain == :Electric
+    mults[:attack_multiplier] *= 1.5 if move.specialMove? && user.battle.field.field_effects == :Electric
   }
 )
 
@@ -1301,7 +1193,7 @@ BattleHandlers::AbilityOnSwitchIn.add(:PROTOSYNTHESIS,
 )
 BattleHandlers::AbilityOnSwitchIn.add(:QUARKDRIVE,
   proc { |ability, battler, battle, switch_in|
-    next if battle.field.terrain != :Electric && battler.item != :BOOSTERENERGY
+    next if battle.field.field_effects != :Electric && battler.item != :BOOSTERENERGY
     userStats = battler.plainStats
     highestStatValue = 0
     userStats.each_value { |value| highestStatValue = value if highestStatValue < value }
@@ -1309,7 +1201,7 @@ BattleHandlers::AbilityOnSwitchIn.add(:QUARKDRIVE,
     [:ATTACK,:DEFENSE,:SPECIAL_ATTACK,:SPECIAL_DEFENSE,:SPEED].each do |s|
       next if userStats[s] < highestStatValue
       battle.pbShowAbilitySplash(battler)
-      if battler.item == :BOOSTERENERGY && !battle.field.terrain == :Electric
+      if battler.item == :BOOSTERENERGY && !battle.field.field_effects == :Electric
         battler.pbHeldItemTriggered(battler.item)
         battler.effects[PBEffects::BoosterEnergy] = true
         battle.pbDisplay(_INTL("{1} used its Booster Energy to activate its Quark Drive!", battler.pbThis))
@@ -1325,7 +1217,7 @@ BattleHandlers::AbilityOnSwitchIn.add(:QUARKDRIVE,
 )
 BattleHandlers::OnTerrainChangeAbility.add(:QUARKDRIVE,
 proc { |ability, battler, battle, switch_in|
-    next if battle.field.terrain == :Electric
+    next if battle.field.field_effects == :Electric
     next if battler.effects[PBEffects::BoosterEnergy]
     if battler.item == :BOOSTERENERGY
       battler.pbHeldItemTriggered(battler.item)
@@ -1577,10 +1469,11 @@ BattleHandlers::AbilityOnSwitchIn.add(:CLOUDCOVER,
 
 BattleHandlers::AbilityOnSwitchIn.add(:TOXICSURGE,
   proc { |ability,battler,battle|
-    next if battle.field.terrain == :Poison
+    next if battle.field.field_effects == :Poison
     battle.pbShowAbilitySplash(battler)
     battle.scene.pbAnimation(GameData::Move.get(:PSYCHICTERRAIN).id,battler,battler)
-    battle.pbStartTerrain(battler, :Poison)
+    battle.field.terrainDuration = battler.hasActiveItem?(:TERRAINEXTENDER) ? 8 : 5
+    battle.pbStartFieldEffect(battler, :Poison)
     # NOTE: The ability splash is hidden again in def pbStartTerrain.
   }
 )
@@ -3726,6 +3619,7 @@ class PokeBattle_Move
     def slicingMove?;       return @flags[/q/]; end
     def windMove?;          return @flags[/r/]; end
     def hammerMove?;        return @flags[/s/]; end
+    def kickingMove?;        return @flags[/t/]; end
     def damageReducedByFreeze?;  return true;  end   # For Facade
     def pbHitEffectivenessMessages(user,target,numTargets=1)
       return if target.damageState.disguise
@@ -3835,7 +3729,7 @@ class PokeBattle_Move_049 < PokeBattle_TargetStatDownMove
                     targetOpposingSide.effects[PBEffects::ToxicSpikes]>0 ||
                     targetOpposingSide.effects[PBEffects::StickyWeb] ||
                     targetOpposingSide.effects[PBEffects::CometShards])
-    return false if Settings::MECHANICS_GENERATION >= 8 && @battle.field.terrain != :None
+    return false if Settings::MECHANICS_GENERATION >= 8 && @battle.field.field_effects != :None
     return super
   end
 
@@ -3902,8 +3796,8 @@ class PokeBattle_Move_049 < PokeBattle_TargetStatDownMove
     else
       @battle.pbDisplay(_INTL("The mysterious force prevents hazard removal!"))
     end
-    if Settings::MECHANICS_GENERATION >= 8 && @battle.field.terrain != :None
-      case @battle.field.terrain
+    if Settings::MECHANICS_GENERATION >= 8 && @battle.field.field_effects != :None
+      case @battle.field.field_effects
       when :Electric
         @battle.pbDisplay(_INTL("The electricity disappeared from the battlefield."))
       when :Grassy
@@ -3915,7 +3809,7 @@ class PokeBattle_Move_049 < PokeBattle_TargetStatDownMove
       when :Poison
         @battle.pbDisplay(_INTL("The toxic waste disappeared from the battlefield."))
       end
-      @battle.field.terrain = :None
+      @battle.field.field_effects = :None
     end
   end
 end
@@ -3971,17 +3865,9 @@ class PokeBattle_Move_0B3 < PokeBattle_Move
     #       turn into, but what self-respecting game wouldn't at least have Tri
     #       Attack in it?
     @npMove = :TRIATTACK
-    case @battle.field.terrain
-    when :Electric
-      @npMove = :THUNDERBOLT if GameData::Move.exists?(:THUNDERBOLT)
-    when :Grassy
-      @npMove = :ENERGYBALL if GameData::Move.exists?(:ENERGYBALL)
-    when :Misty
-      @npMove = :MOONBLAST if GameData::Move.exists?(:MOONBLAST)
-    when :Psychic
-      @npMove = :PSYCHIC if GameData::Move.exists?(:PSYCHIC)
-    when :Poison
-      @npMove = :DEATHTOLL if GameData::Move.exists?(:POISON)
+    fe = FIELD_EFFECTS[@battle.field.field_effects]
+    if @battle.field.field_effects != :None
+      @npMove = fe[:nature_power] if GameData::Move.exists?(fe[:nature_power])
     else
       if @battle.field.weather == :Storm
         @npMove = :THUNDERBOLT if GameData::Move.exists?(:THUNDERBOLT)
@@ -4930,14 +4816,14 @@ end
 #===============================================================================
 class PokeBattle_Move_18A < PokeBattle_Move
   def pbBaseDamage(baseDmg,user,target)
-    baseDmg *= 2 if @battle.field.terrain != :None && !user.airborne?
+    baseDmg *= 2 if @battle.field.field_effects != :None && !user.airborne?
     return baseDmg
   end
 
   def pbBaseType(user)
     ret = :NORMAL
     if !user.airborne?
-      case @battle.field.terrain
+      case @battle.field.field_effects
       when :Electric
         ret = :ELECTRIC if GameData::Type.exists?(:ELECTRIC)
       when :Grassy
@@ -4991,7 +4877,7 @@ end
 #===============================================================================
 class PokeBattle_Move_18C < PokeBattle_Move
   def pbChangePriority(user)
-    return 1 if @battle.field.terrain == :Grassy && !user.airborne?
+    return 1 if @battle.field.field_effects == :Grassy && !user.airborne?
     return 1 if [:Grassy,:Garden].include?(@battle.field.field_effects)
     return 0
   end
@@ -5149,7 +5035,7 @@ end
 #===============================================================================
 class PokeBattle_Move_195 < PokeBattle_Move
   def pbMoveFailed?(user,targets)
-    if @battle.field.terrain == :None
+    if @battle.field.field_effects == :None
       @battle.pbDisplay(_INTL("But it failed!"))
       return true
     end
@@ -5157,7 +5043,7 @@ class PokeBattle_Move_195 < PokeBattle_Move
   end
 
   def pbEffectGeneral(user)
-    case @battle.field.terrain
+    case @battle.field.field_effects
       when :Electric
         @battle.pbDisplay(_INTL("The electric current disappeared from the battlefield!"))
       when :Grassy
@@ -5169,7 +5055,7 @@ class PokeBattle_Move_195 < PokeBattle_Move
       when :Poison
         @battle.pbDisplay(_INTL("The toxic waste disappeared from the battlefield!"))
     end
-    @battle.field.terrain = :None
+    @battle.field.field_effects = :None
   end
 end
 
@@ -5328,7 +5214,7 @@ end
 
 class PokeBattle_Move_525 < PokeBattle_Move
   def pbEffectGeneral(user)
-    case @battle.field.terrain
+    case @battle.field.field_effects
     when :Electric
       @battle.pbDisplay(_INTL("The electricity disappeared from the battlefield."))
     when :Grassy
@@ -5340,7 +5226,7 @@ class PokeBattle_Move_525 < PokeBattle_Move
     when :Poison
       @battle.pbDisplay(_INTL("The toxic waste disappeared from the battlefield."))
     end
-    @battle.field.terrain = :None
+    @battle.field.field_effects = :None
     @battle.eachBattler do |battler| 
       battler.pbAbilityOnTerrainChange
     end
@@ -6069,18 +5955,18 @@ class PokeBattle_Battle
   end
 
   def pbStartTerrain(user,newTerrain,fixedDuration=true)
-    return if @field.terrain==newTerrain
-    @field.terrain = newTerrain
+    return if @field.field_effects==newTerrain
+    @field.field_effects = newTerrain
     duration = (fixedDuration) ? 5 : -1
     if duration>0 && user && user.itemActive?
       duration = BattleHandlers.triggerTerrainExtenderItem(user.item,
          newTerrain,duration,user,self)
     end
     @field.terrainDuration = duration
-    terrain_data = GameData::BattleTerrain.try_get(@field.terrain)
+    terrain_data = GameData::BattleTerrain.try_get(@field.field_effects)
     pbCommonAnimation(terrain_data.animation) if terrain_data
     pbHideAbilitySplash(user) if user
-    case @field.terrain
+    case @field.field_effects
     when :Electric
       pbDisplay(_INTL("An electric current runs across the battlefield!"))
     when :Grassy
@@ -6101,6 +5987,7 @@ class PokeBattle_Battle
 
   def pbEORTerrain
     return if ![:Electric,:Grassy,:Psychic,:Misty,:Poison].include?(@field.field_effects)
+    return if [:Electric,:Grassy,:Psychic,:Misty,:Poison].include?(@field.defaultField)
     # Count down terrain duration
     @field.terrainDuration -= 1 if @field.terrainDuration>0
     # Terrain wears off
@@ -6133,9 +6020,6 @@ class PokeBattle_Battle
     pbCalculatePriority           # recalculate speeds
     priority = pbPriority(true)   # in order of fastest -> slowest speeds only
     # Weather
-    priority.each do |battler|
-      pbEORField(battler)
-    end
     pbEORWeather(priority)
     # Future Sight/Doom Desire
     @positions.each_with_index do |pos,idxPos|
@@ -6209,15 +6093,7 @@ class PokeBattle_Battle
     priority.each do |b|
       next if b.fainted?
       # Grassy Terrain (healing)
-      if @field.terrain == :Grassy && b.affectedByTerrain? && b.canHeal?
-        PBDebug.log("[Lingering effect] Grassy Terrain heals #{b.pbThis(true)}")
-        b.pbRecoverHP(b.totalhp/16)
-        pbDisplay(_INTL("{1}'s HP was restored.",b.pbThis))
-      elsif @field.terrain == :Poison && b.affectedByTerrain? && b.pbCanPoison?(b,false,nil)
-          PBDebug.log("[Lingering effect] Poison Terrain poisons #{b.pbThis(true)}")
-          b.pbInflictStatus(:POISON)
-          pbDisplay(_INTL("{1}'s HP was poisoned by the toxic waste!",b.pbThis))
-      end
+      pbEORField(b)
       # Healer, Hydration, Shed Skin
       BattleHandlers.triggerEORHealingAbility(b.ability,b,self) if b.abilityActive?
       # Black Sludge, Leftovers
@@ -6541,7 +6417,7 @@ class PokeBattle_Battle
     pbEORCountDownFieldEffect(PBEffects::MagicRoom,
        _INTL("Magic Room wore off, and held items' effects returned to normal!"))
     # End of terrains
-    pbEORTerrain
+    #pbEORTerrain
     priority.each do |b|
       next if b.fainted?
       # Hyper Mode (Shadow Pokémon)
@@ -6766,6 +6642,196 @@ module PBEffects
   EchoChamber         = 431
 end
 
+class PokeBattle_Move_570 < PokeBattle_TargetStatDownMove
+  def initialize(battle,move)
+    super
+    @statDown = [:SPEED,1]
+  end
+
+  def pbBaseDamage(baseDmg,user,target)
+    if @battle.field.field_effects == :Grassy
+      baseDmg = (baseDmg/2.0).round
+    end
+    return baseDmg
+  end
+end
+
+#===============================================================================
+# Weather-inducing move.
+#===============================================================================
+class PokeBattle_TerrainMove < PokeBattle_Move
+  def initialize(battle,move)
+    super
+    @terrainType = :None
+  end
+
+  def pbMoveFailed?(user,targets)
+    case @battle.field.weather
+    when @terrainType
+      @battle.pbDisplay(_INTL("But it failed!"))
+      return true
+    end
+    if $gym_terrain == true
+      @battle.pbDisplay(_INTL("But it failed!"))
+      return true
+    end
+    return false
+  end
+
+  def pbEffectGeneral(user)
+    @battle.pbStartFieldEffect(user,@terrainType)
+    #@battle.pbStartTerrain(user,@terrainType)
+  end
+end
+
+#===============================================================================
+# For 5 rounds, creates an electric terrain which boosts Electric-type moves and
+# prevents Pokémon from falling asleep. Affects non-airborne Pokémon only.
+# (Electric Terrain)
+#===============================================================================
+class PokeBattle_Move_154 < PokeBattle_TerrainMove
+  def initialize(battle,move)
+    super
+    @terrainType = :Electric
+  end
+end
+
+
+
+#===============================================================================
+# For 5 rounds, creates a grassy terrain which boosts Grass-type moves and heals
+# Pokémon at the end of each round. Affects non-airborne Pokémon only.
+# (Grassy Terrain)
+#===============================================================================
+class PokeBattle_Move_155 < PokeBattle_TerrainMove
+  def initialize(battle,move)
+    super
+    @terrainType = :Grassy
+  end
+end
+
+
+
+#===============================================================================
+# For 5 rounds, creates a misty terrain which weakens Dragon-type moves and
+# protects Pokémon from status problems. Affects non-airborne Pokémon only.
+# (Misty Terrain)
+#===============================================================================
+class PokeBattle_Move_156 < PokeBattle_TerrainMove
+  def initialize(battle,move)
+    super
+    @terrainType = :Misty
+  end
+end
+
+#===============================================================================
+# For 5 rounds, creates a psychic terrain which boosts Psychic-type moves and
+# prevents Pokémon from being hit by >0 priority moves. Affects non-airborne
+# Pokémon only. (Psychic Terrain)
+#===============================================================================
+class PokeBattle_Move_173 < PokeBattle_TerrainMove
+  def initialize(battle,move)
+    super
+    @terrainType = :Psychic
+  end
+end
+
+BattleHandlers::UserAbilityEndOfMove.add(:LIONSPRIDE,
+  proc { |ability,user,targets,move,battle|
+    next if battle.pbAllFainted?(user.idxOpposingSide)
+    numFainted = 0
+    targets.each { |b| numFainted += 1 if b.damageState.fainted }
+    next if numFainted==0 || !user.pbCanRaiseStatStage?(:SPECIAL_ATTACK,user) || user.fainted?
+    battle.pbShowAbilitySplash(user,false,true,GameData::Ability.get(:LIONSPRIDE).name)
+    if PokeBattle_SceneConstants::USE_ABILITY_SPLASH
+      user.pbRaiseStatStage(:SPECIAL_ATTACK,numFainted,user)
+    else
+      user.pbRaiseStatStageByCause(:SPECIAL_ATTACK,numFainted,user,GameData::Ability.get(:LIONSPRIDE).name)
+    end
+    battle.pbHideAbilitySplash(user)
+  }
+)
+
+BattleHandlers::AbilityOnSwitchIn.copy(:ASONEGHOST,:LIONSPRIDE)
+
+BattleHandlers::DamageCalcUserAbility.add(:VOCALFRY,
+  proc { |ability,user,target,move,mults,baseDmg,type|
+    if move.soundMove? && move.damagingMove?
+      move.category = 0
+      mults[:base_damage_multiplier] = (mults[:base_damage_multiplier]*1.2).round
+    end
+  }
+)
+
+BattleHandlers::TrappingTargetAbility.add(:DEATHGRIP,
+  proc { |ability,switcher,bearer,battle|
+    next true if !switcher.hasActiveAbility?(:DEATHGRIP)
+  }
+)
+
+BattleHandlers::DamageCalcUserAllyAbility.add(:UNKNOWNPOWER,
+  proc { |ability,user,target,move,mults,baseDmg,type|
+    mults[:final_damage_multiplier] *= 1.3
+  }
+)
+
+BattleHandlers::DamageCalcUserAbility.add(:UNKNOWNPOWER,
+  proc { |ability,user,target,move,mults,baseDmg,type|
+    mults[:final_damage_multiplier] *= 1.3
+  }
+)
+
+BattleHandlers::DamageCalcTargetAbility.add(:UNKNOWNPOWER,
+  proc { |ability,user,target,move,mults,baseDmg,type|
+    mults[:defense_multiplier] *= 1.5
+  }
+)
+
+BattleHandlers::SpeedCalcAbility.add(:MEADOWRUSH,
+  proc { |ability,battler,mult|
+    next mult*2 if battler.battle.field_effects == :Grassy
+  }
+)
+
+BattleHandlers::DamageCalcUserAbility.add(:ROCKHEAD,
+  proc { |ability,user,target,move,mults,baseDmg,type|
+    mults[:base_damage_multiplier] = (mults[:base_damage_multiplier]*1.2).round if move.headMove?
+  }
+)
+
+BattleHandlers::AbilityOnSwitchIn.add(:GODLIKEPOWER,
+  proc { |ability,battler,battle|
+    battle.pbShowAbilitySplash(battler)
+    battle.pbDisplay(_INTL("Time to get rekt.",battler.pbOpposingTeam))
+    battle.pbHideAbilitySplash(battler)
+  }
+)
+
+BattleHandlers::MoveImmunityTargetAbility.add(:PESTICIDE,
+  proc { |ability,user,target,move,type,battle|
+    next if type != :BUG
+    battle.pbShowAbilitySplash(target)
+    if PokeBattle_SceneConstants::USE_ABILITY_SPLASH
+      battle.pbDisplay(_INTL("It doesn't affect {1}...",target.pbThis(true)))
+    else
+      battle.pbDisplay(_INTL("{1}'s {2} blocks {3}!",target.pbThis,target.abilityName,move.name))
+    end
+    if user.status == :NONE
+      anim_name = GameData::Status.get(:POISON).animation
+      battle.pbCommonAnimation(anim_name, user)
+      user.status = :POISON
+    end
+    battle.pbParty(user.index).each do |pkmn|
+      next if !pkmn.hasType?(:BUG) || pkmn.hasType?(:STEEL) || pkmn.hasType?(:POISON)
+      next if pkmn.hasAbility?([:IMMUNITY,:PURIFYINGSALT,:FAIRYBUBBLE,:COMATOSE,:SHIELDSDOWN])
+      pkmn.status = :POISON
+    end
+    battle.pbDisplay(_INTL("All Bug-types in the party were Poisoned!"))
+    battle.pbHideAbilitySplash(target)
+    next true
+  }
+)
+
 BattleHandlers::DamageCalcTargetAbility.add(:GRASSPELT,
   proc { |ability,user,target,move,mults,baseDmg,type|
     if user.battle.field.field_effects == :Grassy || user.battle.field.field_effects == :Garden
@@ -6779,6 +6845,7 @@ BattleHandlers::AbilityOnSwitchIn.add(:GRASSYSURGE,
     next if battle.field.field_effects == :Grassy
     battle.pbShowAbilitySplash(battler)
     battle.scene.pbAnimation(GameData::Move.get(:GRASSYTERRAIN).id,battler,battler)
+    battle.field.terrainDuration = battler.hasActiveItem?(:TERRAINEXTENDER) ? 8 : 5
     battle.pbStartFieldEffect(battler, :Grassy)
     # NOTE: The ability splash is hidden again in def pbStartTerrain.
   }
@@ -6789,7 +6856,30 @@ BattleHandlers::AbilityOnSwitchIn.add(:ELECTRICSURGE,
     next if battle.field.field_effects == :Electric
     battle.pbShowAbilitySplash(battler)
     battle.scene.pbAnimation(GameData::Move.get(:ELECTRICTERRAIN).id,battler,battler)
+    battle.field.terrainDuration = battler.hasActiveItem?(:TERRAINEXTENDER) ? 8 : 5
     battle.pbStartFieldEffect(battler, :Electric)
+    # NOTE: The ability splash is hidden again in def pbStartTerrain.
+  }
+)
+
+BattleHandlers::AbilityOnSwitchIn.add(:MISTYSURGE,
+  proc { |ability,battler,battle|
+    next if battle.field.field_effects == :Misty
+    battle.pbShowAbilitySplash(battler)
+    battle.scene.pbAnimation(GameData::Move.get(:MISTYTERRAIN).id,battler,battler)
+    battle.field.terrainDuration = battler.hasActiveItem?(:TERRAINEXTENDER) ? 8 : 5
+    battle.pbStartFieldEffect(battler, :Misty)
+    # NOTE: The ability splash is hidden again in def pbStartTerrain.
+  }
+)
+
+BattleHandlers::AbilityOnSwitchIn.add(:PSYCHICSURGE,
+  proc { |ability,battler,battle|
+    next if battle.field.field_effects == :Psychic
+    battle.pbShowAbilitySplash(battler)
+    battle.scene.pbAnimation(GameData::Move.get(:PSYCHICTERRAIN).id,battler,battler)
+    battle.field.terrainDuration = battler.hasActiveItem?(:TERRAINEXTENDER) ? 8 : 5
+    battle.pbStartFieldEffect(battler, :Psychic)
     # NOTE: The ability splash is hidden again in def pbStartTerrain.
   }
 )

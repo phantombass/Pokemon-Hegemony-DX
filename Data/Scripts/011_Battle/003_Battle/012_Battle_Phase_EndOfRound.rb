@@ -110,7 +110,7 @@ class PokeBattle_Battle
     # Count down terrain duration
     @field.terrainDuration -= 1 if @field.terrainDuration>0
     # Terrain wears off
-    if @field.terrain != :None && @field.terrainDuration == 0
+    if (@field.terrain != :None && @field.terrainDuration == 0 || @field.terrain != $def_terrain)
       case @field.terrain
       when :Electric
         pbDisplay(_INTL("The electric current disappeared from the battlefield!"))

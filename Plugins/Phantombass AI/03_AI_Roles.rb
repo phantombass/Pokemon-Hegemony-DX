@@ -180,3 +180,9 @@ GameData::Role.register({
   :id_number    => 25,
   :name         => _INTL("Support")
 })
+
+GameData::Role.register({
+  :id           => :WEATHERTERRAINABUSER,
+  :id_number    => 26,
+  :name         => _INTL("Weather/Terrain Abuser")
+})

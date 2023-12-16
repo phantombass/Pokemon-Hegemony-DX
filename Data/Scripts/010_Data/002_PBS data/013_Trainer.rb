@@ -117,7 +117,7 @@ module GameData
       # Create each Pokémon owned by the trainer
       randPkmn = Randomizer.trainers
       trainer_exclusions = $game_switches[906] ? nil : [:RIVAL1,:RIVAL2,:LEADER_Brock,:LEADER_Misty,:LEADER_Surge,:LEADER_Erika,:LEADER_Sabrina,:LEADER_Blaine,:LEADER_Winslow,:LEADER_Jackson,:OFFCORP,:DEFCORP,:PSYCORP,:ROCKETBOSS,:CHAMPION,:ARMYBOSS,:NAVYBOSS,:AIRFORCEBOSS,:GUARDBOSS,:CHANCELLOR,:DOJO_Luna,:DOJO_Apollo,:DOJO_Jasper,:DOJO_Maloki,:DOJO_Juliet,:DOJO_Adam,:DOJO_Wendy,:LEAGUE_Astrid,:LEAGUE_Winslow,:LEAGUE_Eugene,:LEAGUE_Armand,:LEAGUE_Winston,:LEAGUE_Vincent]
-      if randPkmn.nil? || randPkmn == 0 || trainer_exclusions.include?(@trainer_type) || @version == 4 || @version > 99
+      if randPkmn.nil? || randPkmn == 0 || trainer_exclusions.include?(@trainer_type) || @version == 4 || @version == 6 || @version > 99
         @pokemon.each do |pkmn_data|
           species = GameData::Species.get(pkmn_data[:species]).species
           pkmn = Pokemon.new(species, pkmn_data[:level], trainer, false)
@@ -157,10 +157,14 @@ module GameData
             else
               pkmn.iv[s.id] = [pkmn_data[:level] / 2, Pokemon::IV_STAT_LIMIT].min
             end
-            if pkmn_data[:ev]
-              pkmn.ev[s.id] = pkmn_data[:ev][s.id]
+            if $game_switches[Settings::DISABLE_EVS]
+              pkmn.ev[s.id] = 0
             else
-              pkmn.ev[s.id] = [pkmn_data[:level] * 3 / 2, Pokemon::EV_LIMIT / 6].min
+              if pkmn_data[:ev]
+                pkmn.ev[s.id] = pkmn_data[:ev][s.id]
+              else
+                pkmn.ev[s.id] = [pkmn_data[:level] * 3 / 2, Pokemon::EV_LIMIT / 6].min
+              end
             end
           end
           pkmn.happiness = pkmn_data[:happiness] if pkmn_data[:happiness]

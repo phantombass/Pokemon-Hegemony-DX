@@ -85,6 +85,26 @@ ItemHandlers::UseOnPokemon.add(:REVIVALHERB,proc { |item,pkmn,scene|
   next true
 })
 
+def give_ability_orb
+  item_list = [
+      :INTIMIDATEORB,
+      :SAPSIPPERORB,
+      :FLASHFIREORB,
+      :LEVITATEORB,
+      :ILLUMINATEORB,
+      :FILTERORB,
+      :WATERABSORBORB,
+      :LIGHTNINGRODORB,
+      :MEDUSOIDORB,
+      :DAZZLINGORB
+    ]
+  item_list = [:INTIMIDATEORB,:FLASHFIREORB,:LEVITATEORB,:ILLUMINATEORB,:FILTERORB,:WATERABSORBORB,:DAZZLINGORB] if Restrictions.active?
+  gift = rand(item_list.length)
+  orb = item_list[gift]
+  pbReceiveItem(orb,1)
+  vSS(@event_id,"B")
+end
+
 class PokeBattle_Battler
   def hasActiveItem?(check_item, ignore_fainted = false)
     return false if !itemActive?(ignore_fainted)
@@ -104,7 +124,11 @@ class PokeBattle_Battler
       :WATERABSORBORB,
       :DIMENSIONBLOCKORB,
       :EARTHEATERORB,
-      :LIGHTNINGRODORB
+      :LIGHTNINGRODORB,
+      :SCALERORB,
+      :UNSHAKENORB,
+      :MEDUSOIDORB,
+      :DAZZLINGORB
     ]
     return item_list.include?(item.id)
   end
@@ -375,9 +399,7 @@ def useMoveDive
     dive_map_id = map_metadata.dive_map_id if map_metadata
   end
   return false if !dive_map_id
-  if !pbHiddenMoveAnimation(pokemon)
-    pbMessage(_INTL("{1} used Dive!",$Trainer.name))
-  end
+  pbMessage(_INTL("{1} used Dive!",$Trainer.name))
   pbFadeOutIn {
     $game_temp.player_new_map_id    = dive_map_id
     $game_temp.player_new_x         = $game_player.x
@@ -464,6 +486,8 @@ def useMoveFly
     if $game_switches[283] == true && $game_switches[239] == true
       $game_switches[283] = false
     end
+    $game_switches[150] = false
+    randomizer_on
     $CanToggle = true
     $game_temp.player_new_direction = 2
     $PokemonTemp.flydata = nil
@@ -1012,6 +1036,16 @@ BattleHandlers::WeatherExtenderItem.add(:WEATHERROCK,
   }
 )
 
+BattleHandlers::TerrainStatBoostItem.add(:TOXICSEED,
+  proc { |item,battler,battle|
+    next false if battle.field.terrain != :Poison
+    next false if !battler.pbCanRaiseStatStage?(:SPEED,battler)
+    itemName = GameData::Item.get(item).name
+    battle.pbCommonAnimation("UseItem",battler)
+    next battler.pbRaiseStatStageByCause(:SPEED,1,battler,itemName)
+  }
+)
+
 ItemHandlers::UseOnPokemon.add(:RARECANDY,proc { |item,pkmn,scene|
   if pkmn.level>=GameData::GrowthRate.max_level || pkmn.shadowPokemon? || (pkmn.level>=LEVEL_CAP[$game_system.level_cap] && $game_switches[Settings::LEVEL_CAP_SWITCH] == true) || (pkmn.fainted? && $game_switches[73])
     scene.pbDisplay(_INTL("It won't have any effect."))
@@ -1397,10 +1431,6 @@ ItemHandlers::UseOnPokemon.add(:ABILITYPATCH,proc { |item,pkmn,scene|
   for j in abils
     abilsarr.push([j[1],j[0]]) if j[0] && j[1]<2 && pkmn.ability_index != j[1]
   end
-  if pkmn.isSpecies?(:ZYGARDE) || pkmn.isSpecies?(:YAMASK) || pkmn.isSpecies?(:COFAGRIGUS) || pkmn.isSpecies?(:RUNERIGUS) || pkmn.isSpecies?(:ARCHEN) || pkmn.isSpecies?(:ARCHEOPS) || pkmn.isSpecies?(:CASTFORM) || pkmn.isSpecies?(:TYPENULL) || pkmn.isSpecies?(:SILVALLY)
-    scene.pbDisplay(_INTL("It won't have any effect."))
-    next false
-  end
   if pkmn.ability_index != 2
     abilRand = rand(hiddenArr.length)
     newabil = hiddenArr[abilRand]
@@ -1409,6 +1439,10 @@ ItemHandlers::UseOnPokemon.add(:ABILITYPATCH,proc { |item,pkmn,scene|
     abilRand = rand(abilsarr.length)
     newabil = abilsarr[abilRand]
     abilMarker = 0
+  end
+  if newabil == nil
+    scene.pbDisplay(_INTL("It won't have any effect."))
+    next false
   end
   newabilname = GameData::Ability.get(newabil[1]).name
   if scene.pbConfirm(_INTL("Would you like to change {1}'s Ability to {2}?",pkmn.name,newabilname))
@@ -1514,15 +1548,20 @@ module PokeBattle_BattleCommon
   end
 end
 
+#================================
+# Ability Orbs
+#================================
+
+
 BattleHandlers::ItemOnSwitchIn.add(:LEVITATEORB,
   proc { |ability, battler, battle|
     ability = battler.ability_id
-    battler.ability_id = :LEVITATE
-    if ability != battler.ability_id
-      battle.pbShowAbilitySplash(battler,false,true)
+    orb = GameData::Ability.get(:LEVITATE).real_name
+    if ability != :LEVITATE
+      battle.pbShowAbilitySplash(battler,false,true,orb)
       battle.pbDisplay(_INTL("{1}'s Levitate Orb lifts it off the ground!",battler.name))
       battle.pbHideAbilitySplash(battler)
-      battler.ability_id = ability
+      
     end
   }
 )
@@ -1530,9 +1569,9 @@ BattleHandlers::ItemOnSwitchIn.add(:LEVITATEORB,
 BattleHandlers::ItemOnSwitchIn.add(:INTIMIDATEORB,
   proc { |item, battler, battle|
     ability = battler.ability_id
-    battler.ability_id = :INTIMIDATE
-    if ability != battler.ability_id
-      battle.pbShowAbilitySplash(battler,false,true)
+    orb = GameData::Ability.get(:INTIMIDATE).real_name
+    if ability != :INTIMIDATE
+      battle.pbShowAbilitySplash(battler,false,true,orb)
       battle.eachOtherSideBattler(battler.index) do |b|
         next if !b.near?(battler)
         check_item = true
@@ -1546,7 +1585,7 @@ BattleHandlers::ItemOnSwitchIn.add(:INTIMIDATEORB,
       end
       battle.pbDisplay(_INTL("{1}'s Intimidate Orb lowers the foe's Attack!",battler.name))
       battle.pbHideAbilitySplash(battler)
-      battler.ability_id = ability
+      
     end
   }
 )
@@ -1554,9 +1593,9 @@ BattleHandlers::ItemOnSwitchIn.add(:INTIMIDATEORB,
 BattleHandlers::ItemOnSwitchIn.add(:MEDUSOIDORB,
   proc { |item, battler, battle|
     ability = battler.ability_id
-    battler.ability_id = :MEDUSOID
-    if ability != battler.ability_id
-      battle.pbShowAbilitySplash(battler,false,true)
+    orb = GameData::Ability.get(:MEDUSOID).real_name
+    if ability != :MEDUSOID
+      battle.pbShowAbilitySplash(battler,false,true,orb)
       battle.eachOtherSideBattler(battler.index) do |b|
         next if !b.near?(battler)
         check_item = true
@@ -1570,7 +1609,7 @@ BattleHandlers::ItemOnSwitchIn.add(:MEDUSOIDORB,
       end
       battle.pbDisplay(_INTL("{1}'s Medusoid Orb lowers the foe's Speed!",battler.name))
       battle.pbHideAbilitySplash(battler)
-      battler.ability_id = ability
+      
     end
   }
 )
@@ -1578,12 +1617,12 @@ BattleHandlers::ItemOnSwitchIn.add(:MEDUSOIDORB,
 BattleHandlers::ItemOnSwitchIn.add(:FLASHFIREORB,
   proc { |ability, battler, battle|
     ability = battler.ability_id
-    battler.ability_id = :FLASHFIRE
-    if ability != battler.ability_id
-      battle.pbShowAbilitySplash(battler,false,true)
+    orb = GameData::Ability.get(:FLASHFIRE).real_name
+    if ability != :FLASHFIRE
+      battle.pbShowAbilitySplash(battler,false,true,orb)
       battle.pbDisplay(_INTL("{1}'s Flash Fire Orb lights up!",battler.name))
       battle.pbHideAbilitySplash(battler)
-      battler.ability_id = ability
+      
     end
   }
 )
@@ -1591,12 +1630,25 @@ BattleHandlers::ItemOnSwitchIn.add(:FLASHFIREORB,
 BattleHandlers::ItemOnSwitchIn.add(:SAPSIPPERORB,
   proc { |ability, battler, battle|
     ability = battler.ability_id
-    battler.ability_id = :SAPSIPPER
-    if ability != battler.ability_id
-      battle.pbShowAbilitySplash(battler,false,true)
+    orb = GameData::Ability.get(:SAPSIPPER).real_name
+    if ability != :SAPSIPPER
+      battle.pbShowAbilitySplash(battler,false,true,orb)
       battle.pbDisplay(_INTL("{1}'s Sap Sipper Orb lights up!",battler.name))
       battle.pbHideAbilitySplash(battler)
-      battler.ability_id = ability
+      
+    end
+  }
+)
+
+BattleHandlers::ItemOnSwitchIn.add(:LIGHTNINGRODORB,
+  proc { |ability, battler, battle|
+    ability = battler.ability_id
+    orb = GameData::Ability.get(:LIGHTNINGROD).real_name
+    if ability != :LIGHTNINGROD
+      battle.pbShowAbilitySplash(battler,false,true,orb)
+      battle.pbDisplay(_INTL("{1}'s Lightning Rod Orb lights up!",battler.name))
+      battle.pbHideAbilitySplash(battler)
+      
     end
   }
 )
@@ -1604,11 +1656,12 @@ BattleHandlers::ItemOnSwitchIn.add(:SAPSIPPERORB,
 BattleHandlers::ItemOnSwitchIn.add(:ILLUMINATEORB,
   proc { |ability, battler, battle|
     ability = battler.ability_id
-    battler.ability_id = :ILLUMINATE
-    if ability != battler.ability_id
-      battler.pbRaiseStatStageByAbility(:ACCURACY, 1, battler)
+    orb = GameData::Ability.get(:ILLUMINATE).real_name
+    if ability != :ILLUMINATE
+      battle.pbShowAbilitySplash(battler,false,true,orb)
+      battler.pbRaiseStatStage(:ACCURACY, 1, battler)
       battle.pbDisplay(_INTL("{1}'s Illuminate Orb boosts its accuracy!",battler.name))
-      battler.ability_id = ability
+      battle.pbHideAbilitySplash(battler)
     end
   }
 )
@@ -1616,12 +1669,12 @@ BattleHandlers::ItemOnSwitchIn.add(:ILLUMINATEORB,
 BattleHandlers::ItemOnSwitchIn.add(:FILTERORB,
   proc { |ability, battler, battle|
     ability = battler.ability_id
-    battler.ability_id = :FILTER
-    if ability != battler.ability_id
-      battle.pbShowAbilitySplash(battler,false,true)
+    orb = GameData::Ability.get(:FILTER).real_name
+    if ability != :FILTER
+      battle.pbShowAbilitySplash(battler,false,true,orb)
       battle.pbDisplay(_INTL("{1}'s Filter Orb lights up!",battler.name))
       battle.pbHideAbilitySplash(battler)
-      battler.ability_id = ability
+      
     end
   }
 )
@@ -1637,12 +1690,12 @@ BattleHandlers::DamageCalcTargetItem.add(:FILTERORB,
 BattleHandlers::ItemOnSwitchIn.add(:SCALERORB,
   proc { |ability, battler, battle|
     ability = battler.ability_id
-    battler.ability_id = :SCALER
-    if ability != battler.ability_id
-      battle.pbShowAbilitySplash(battler,false,true)
+    orb = GameData::Ability.get(:SCALER).real_name
+    if ability != :SCALER
+      battle.pbShowAbilitySplash(battler,false,true,orb)
       battle.pbDisplay(_INTL("{1}'s Scaler Orb lights up!",battler.name))
       battle.pbHideAbilitySplash(battler)
-      battler.ability_id = ability
+      
     end
   }
 )
@@ -1650,12 +1703,12 @@ BattleHandlers::ItemOnSwitchIn.add(:SCALERORB,
 BattleHandlers::ItemOnSwitchIn.add(:UNSHAKENORB,
   proc { |ability, battler, battle|
     ability = battler.ability_id
-    battler.ability_id = :UNSHAKEN
-    if ability != battler.ability_id
-      battle.pbShowAbilitySplash(battler,false,true)
+    orb = GameData::Ability.get(:UNSHAKEN).real_name
+    if ability != :UNSHAKEN
+      battle.pbShowAbilitySplash(battler,false,true,orb)
       battle.pbDisplay(_INTL("{1}'s Unshaken Orb lights up!",battler.name))
       battle.pbHideAbilitySplash(battler)
-      battler.ability_id = ability
+      
     end
   }
 )
@@ -1663,12 +1716,12 @@ BattleHandlers::ItemOnSwitchIn.add(:UNSHAKENORB,
 BattleHandlers::ItemOnSwitchIn.add(:EARTHEATERORB,
   proc { |ability, battler, battle|
     ability = battler.ability_id
-    battler.ability_id = :EARTHEATER
-    if ability != battler.ability_id
-      battle.pbShowAbilitySplash(battler,false,true)
+    orb = GameData::Ability.get(:EARTHEATER).real_name
+    if ability != :EARTHEATER
+      battle.pbShowAbilitySplash(battler,false,true,orb)
       battle.pbDisplay(_INTL("{1}'s Earth Eater Orb lights up!",battler.name))
       battle.pbHideAbilitySplash(battler)
-      battler.ability_id = ability
+      
     end
   }
 )
@@ -1676,12 +1729,12 @@ BattleHandlers::ItemOnSwitchIn.add(:EARTHEATERORB,
 BattleHandlers::ItemOnSwitchIn.add(:WATERABSORBORB,
   proc { |ability, battler, battle|
     ability = battler.ability_id
-    battler.ability_id = :WATERABSORB
-    if ability != battler.ability_id
-      battle.pbShowAbilitySplash(battler,false,true)
+    orb = GameData::Ability.get(:WATERABSORB).real_name
+    if ability != :WATERABSORB
+      battle.pbShowAbilitySplash(battler,false,true,orb)
       battle.pbDisplay(_INTL("{1}'s Water Absorb Orb lights up!",battler.name))
       battle.pbHideAbilitySplash(battler)
-      battler.ability_id = ability
+      
     end
   }
 )
@@ -1689,12 +1742,53 @@ BattleHandlers::ItemOnSwitchIn.add(:WATERABSORBORB,
 BattleHandlers::ItemOnSwitchIn.add(:DIMENSIONBLOCKORB,
   proc { |ability, battler, battle|
     ability = battler.ability_id
-    battler.ability_id = :DIMENSIONBLOCK
-    if ability != battler.ability_id
-      battle.pbShowAbilitySplash(battler,false,true)
+    orb = GameData::Ability.get(:DIMENSIONBLOCK).real_name
+    if ability != :DIMENSIONBLOCK
+      battle.pbShowAbilitySplash(battler,false,true,orb)
       battle.pbDisplay(_INTL("{1}'s Dimension Block Orb lights up!",battler.name))
       battle.pbHideAbilitySplash(battler)
-      battler.ability_id = ability
+      
     end
+  }
+)
+
+BattleHandlers::ItemOnSwitchIn.add(:DAZZLINGORB,
+  proc { |ability, battler, battle|
+    ability = battler.ability_id
+    orb = GameData::Ability.get(:DAZZLING).real_name
+    if ability != :DAZZLING
+      battle.pbShowAbilitySplash(battler,false,true,orb)
+      battle.pbDisplay(_INTL("{1}'s Dazzling Orb lights up!",battler.name))
+      battle.pbHideAbilitySplash(battler)
+      
+    end
+  }
+)
+
+# Sheath
+BattleHandlers::DamageCalcUserItem.add(:SHEATH,
+  proc { |item, user, target, move, mults, baseDmg, type|
+    next if user.hasActiveAbility?(:SHARPNESS)
+    mults[:base_damage_multiplier] *= 1.2 if move.slicingMove?
+  }
+)
+
+# Mjolnir
+BattleHandlers::DamageCalcUserItem.add(:MJOLNIR,
+  proc { |item, user, target, move, mults, baseDmg, type|
+    next if user.hasActiveAbility?(:GAVELPOWER)
+    mults[:base_damage_multiplier] *= 1.2 if move.hammerMove?
+  }
+)
+
+#=======================
+# Gen 9 Items
+#=======================
+
+# Punching Glove
+BattleHandlers::DamageCalcUserItem.add(:PUNCHINGGLOVE,
+  proc { |item, user, target, move, mults, baseDmg, type|
+    next if user.hasActiveAbility?(:IRONFIST)
+    mults[:base_damage_multiplier] *= 1.2 if move.punchingMove?
   }
 )

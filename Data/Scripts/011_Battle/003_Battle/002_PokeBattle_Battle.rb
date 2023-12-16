@@ -148,6 +148,7 @@ class PokeBattle_Battle
     @priorityTrickRoom = false
     @choices           = []
     @rage_hit          = []
+    @sideStatUps     = [{}, {}]
     @megaEvolution     = [
        [-1] * (@player ? @player.length : 1),
        [-1] * (@opponent ? @opponent.length : 1)
