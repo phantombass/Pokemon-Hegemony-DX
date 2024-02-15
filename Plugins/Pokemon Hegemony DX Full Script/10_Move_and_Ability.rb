@@ -385,296 +385,6 @@ class PokeBattle_Move
     damage  = [(damage  * multipliers[:final_damage_multiplier]).round, 1].max
     target.damageState.calcDamage = damage
   end
-
-  def pbCalcDamageMultipliers(user,target,numTargets,type,baseDmg,multipliers)
-    # Global abilities
-    if (@battle.pbCheckGlobalAbility(:DARKAURA) && type == :DARK) ||
-       (@battle.pbCheckGlobalAbility(:FAIRYAURA) && type == :FAIRY) ||
-       (@battle.pbCheckGlobalAbility(:GAIAFORCE) && type == :GROUND) ||
-       (@battle.pbCheckGlobalAbility(:FEVERPITCH) && type == :POISON)
-      if @battle.pbCheckGlobalAbility(:AURABREAK)
-        multipliers[:base_damage_multiplier] *= 2 / 3.0
-      else
-        multipliers[:base_damage_multiplier] *= 4 / 3.0
-      end
-    end
-    # Ability effects that alter damage
-    if user.abilityActive?
-      BattleHandlers.triggerDamageCalcUserAbility(user.ability,
-         user,target,self,multipliers,baseDmg,type)
-    end
-    if !@battle.moldBreaker
-      # NOTE: It's odd that the user's Mold Breaker prevents its partner's
-      #       beneficial abilities (i.e. Flower Gift boosting Atk), but that's
-      #       how it works.
-      user.eachAlly do |b|
-        next if !b.abilityActive?
-        BattleHandlers.triggerDamageCalcUserAllyAbility(b.ability,
-           user,target,self,multipliers,baseDmg,type)
-      end
-      if target.abilityActive?
-        BattleHandlers.triggerDamageCalcTargetAbility(target.ability,
-           user,target,self,multipliers,baseDmg,type) if !@battle.moldBreaker
-        BattleHandlers.triggerDamageCalcTargetAbilityNonIgnorable(target.ability,
-           user,target,self,multipliers,baseDmg,type)
-      end
-      target.eachAlly do |b|
-        next if !b.abilityActive?
-        BattleHandlers.triggerDamageCalcTargetAllyAbility(b.ability,
-           user,target,self,multipliers,baseDmg,type)
-      end
-    end
-    # Item effects that alter damage
-    if user.itemActive?
-      BattleHandlers.triggerDamageCalcUserItem(user.item,
-         user,target,self,multipliers,baseDmg,type)
-    end
-    if target.itemActive?
-      BattleHandlers.triggerDamageCalcTargetItem(target.item,
-         user,target,self,multipliers,baseDmg,type)
-    end
-    # Parental Bond's second attack
-    if user.effects[PBEffects::ParentalBond]==1
-      multipliers[:base_damage_multiplier] /= 4
-    end
-    if user.effects[PBEffects::Ambidextrous]==1
-      multipliers[:base_damage_multiplier] /= 4
-    end
-    if user.effects[PBEffects::EchoChamber]==1
-      multipliers[:base_damage_multiplier] /= 4
-    end
-    # Other
-    if user.effects[PBEffects::MeFirst]
-      multipliers[:base_damage_multiplier] *= 1.5
-    end
-    if user.effects[PBEffects::HelpingHand] && !self.is_a?(PokeBattle_Confusion)
-      multipliers[:base_damage_multiplier] *= 1.5
-    end
-    if user.effects[PBEffects::Charge]>0 && type == :ELECTRIC
-      multipliers[:base_damage_multiplier] *= 2
-    end
-    # Mud Sport
-    if type == :ELECTRIC
-      @battle.eachBattler do |b|
-        next if !b.effects[PBEffects::MudSport]
-        multipliers[:base_damage_multiplier] /= 3
-        break
-      end
-      if @battle.field.effects[PBEffects::MudSportField]>0
-        multipliers[:base_damage_multiplier] /= 3
-      end
-    end
-    # Water Sport
-    if type == :FIRE
-      @battle.eachBattler do |b|
-        next if !b.effects[PBEffects::WaterSport]
-        multipliers[:base_damage_multiplier] /= 3
-        break
-      end
-      if @battle.field.effects[PBEffects::WaterSportField]>0
-        multipliers[:base_damage_multiplier] /= 3
-      end
-    end
-    # Terrain moves
-    case @battle.field.field_effects
-    when :Electric
-      multipliers[:base_damage_multiplier] *= 1.5 if type == :ELECTRIC && user.affectedByTerrain?
-    when :Grassy
-      multipliers[:base_damage_multiplier] *= 1.5 if type == :GRASS && user.affectedByTerrain?
-    when :Psychic
-      multipliers[:base_damage_multiplier] *= 1.5 if type == :PSYCHIC && user.affectedByTerrain?
-    when :Misty
-      multipliers[:base_damage_multiplier] /= 2 if type == :DRAGON && target.affectedByTerrain?
-    when :Poison
-      multipliers[:base_damage_multiplier] *= 1.5 if type == :POISON && user.affectedByTerrain?
-    end
-    # Badge multipliers
-    if @battle.internalBattle
-      if user.pbOwnedByPlayer?
-        if physicalMove? && @battle.pbPlayer.badge_count >= Settings::NUM_BADGES_BOOST_ATTACK
-          multipliers[:attack_multiplier] *= 1.1
-        elsif specialMove? && @battle.pbPlayer.badge_count >= Settings::NUM_BADGES_BOOST_SPATK
-          multipliers[:attack_multiplier] *= 1.1
-        end
-      end
-      if target.pbOwnedByPlayer?
-        if physicalMove? && @battle.pbPlayer.badge_count >= Settings::NUM_BADGES_BOOST_DEFENSE
-          multipliers[:defense_multiplier] *= 1.1
-        elsif specialMove? && @battle.pbPlayer.badge_count >= Settings::NUM_BADGES_BOOST_SPDEF
-          multipliers[:defense_multiplier] *= 1.1
-        end
-      end
-    end
-    # Multi-targeting attacks
-    if numTargets>1
-      multipliers[:final_damage_multiplier] *= 0.75
-    end
-    # Weather
-    case @battle.pbWeather
-    when :Sun, :HarshSun
-      if type == :FIRE
-        multipliers[:final_damage_multiplier] *= 1.5
-      elsif type == :WATER && !target.hasActiveAbility?(:STEAMPOWERED)
-        multipliers[:final_damage_multiplier] /= 2
-      end
-    when :Rain, :HeavyRain
-      if type == :FIRE && !target.hasActiveAbility?(:STEAMPOWERED)
-        multipliers[:final_damage_multiplier] /= 2
-      elsif type == :WATER
-        multipliers[:final_damage_multiplier] *= 1.5
-      end
-    when :Hail
-      if Settings::GEN_9_SNOW == true
-        if target.pbHasType?(:ICE) && (physicalMove? || @function="122")
-          multipliers[:defense_multiplier] *= 1.5
-        end
-     end
-    when :Starstorm
-     if type == :COSMIC
-       multipliers[:final_damage_multiplier] *= 1.5
-     elsif type == :STEEL
-       multipliers[:final_damage_multiplier] /= 2
-     elsif target.pbHasType?(:COSMIC) && (physicalMove? || @function="122")
-       multipliers[:defense_multiplier] *= 1.5
-     end
-    when :Windy
-      if type == :ROCK || type == :ICE
-        multipliers[:final_damage_multiplier] /= 2
-      end
-    when :Fog
-      if type == :DRAGON
-        multipliers[:final_damage_multiplier] /= 2
-      end
-    when :Eclipse
-      if type == :DARK
-        multipliers[:final_damage_multiplier] *= 1.5
-      elsif type == :GHOST
-        multipliers[:final_damage_multiplier] *= 1.5
-      elsif type == :FAIRY && !user.hasActiveAbility?(:NOCTEMBOOST)
-        multipliers[:final_damage_multiplier] /= 2
-      elsif type == :PSYCHIC
-        multipliers[:final_damage_multiplier] /= 2
-      end
-    when :Borealis
-      if type == :PSYCHIC
-        multipliers[:final_damage_multiplier] *= 1.5
-      elsif type == :DARK
-        multipliers[:final_damage_multiplier] /= 2
-      end
-    when :Rainbow
-      if type == :GRASS
-        multipliers[:final_damage_multiplier] *= 1.5
-      elsif type == :ICE
-        multipliers[:final_damage_multiplier] /= 2
-      end
-    when :Overcast
-      if type == :DARK
-        multipliers[:final_damage_multiplier] *= 1.5
-      elsif type == :GHOST
-        multipliers[:final_damage_multiplier] *= 1.5
-      elsif type == :FAIRY
-        multipliers[:final_damage_multiplier] /= 2
-      elsif type == :PSYCHIC
-        multipliers[:final_damage_multiplier] /= 2
-      end
-    when :VolcanicAsh
-      if type == :STEEL
-        multipliers[:final_damage_multiplier] *= 1.5
-      end
-    when :Storm
-      if type == :FIRE && !target.hasActiveAbility?(:STEAMPOWERED)
-        multipliers[:final_damage_multiplier] /= 2
-      elsif type == :WATER
-        multipliers[:final_damage_multiplier] *= 1.5
-      elsif type == :ELECTRIC
-        multipliers[:final_damage_multiplier] *= 1.5
-      end
-    when :Humid
-      if type == :BUG
-        multipliers[:final_damage_multiplier] *= 1.5
-      elsif type == :FIRE
-        multipliers[:final_damage_multiplier] /= 2
-      end
-    when :Sleet
-      if type == :FIRE
-        multipliers[:final_damage_multiplier] /= 2
-      end
-    when :AcidRain
-      if target.pbHasType?(:POISON) && (physicalMove? || @function="122")
-        multipliers[:defense_multiplier] *= 1.5
-      end
-    when :Sandstorm
-      if target.pbHasType?(:ROCK) && specialMove? && @function != "122"   # Psyshock
-        multipliers[:defense_multiplier] *= 1.5
-      end
-    end
-    # Critical hits
-    if target.damageState.critical
-      if Settings::NEW_CRITICAL_HIT_RATE_MECHANICS
-        multipliers[:final_damage_multiplier] *= 1.5
-      else
-        multipliers[:final_damage_multiplier] *= 2
-      end
-    end
-    # Random variance
-    if !self.is_a?(PokeBattle_Confusion)
-      random = 85+@battle.pbRandom(16)
-      multipliers[:final_damage_multiplier] *= random / 100.0
-    end
-    # STAB
-    if type && user.pbHasType?(type)
-      if user.hasActiveAbility?(:ADAPTABILITY)
-        multipliers[:final_damage_multiplier] *= 2
-      else
-        multipliers[:final_damage_multiplier] *= 1.5
-      end
-    end
-    # Type effectiveness
-    multipliers[:final_damage_multiplier] *= target.damageState.typeMod.to_f / Effectiveness::NORMAL_EFFECTIVE
-    # Burn
-    if user.status == :BURN && physicalMove? && damageReducedByBurn? &&
-       !user.hasActiveAbility?(:GUTS)
-      multipliers[:final_damage_multiplier] /= 2
-    end
-    #Frostbite
-    if user.status == :FROZEN && specialMove? && damageReducedByFreeze?
-      multipliers[:final_damage_multiplier] /= 2
-    end
-    # Aurora Veil, Reflect, Light Screen
-    if !ignoresReflect? && !target.damageState.critical &&
-       !user.hasActiveAbility?(:INFILTRATOR)
-      if target.pbOwnSide.effects[PBEffects::AuroraVeil] > 0
-        if @battle.pbSideBattlerCount(target)>1
-          multipliers[:final_damage_multiplier] *= 2 / 3.0
-        else
-          multipliers[:final_damage_multiplier] /= 2
-        end
-      elsif target.pbOwnSide.effects[PBEffects::Reflect] > 0 && physicalMove?
-        if @battle.pbSideBattlerCount(target)>1
-          multipliers[:final_damage_multiplier] *= 2 / 3.0
-        else
-          multipliers[:final_damage_multiplier] /= 2
-        end
-      elsif target.pbOwnSide.effects[PBEffects::LightScreen] > 0 && specialMove?
-        if @battle.pbSideBattlerCount(target) > 1
-          multipliers[:final_damage_multiplier] *= 2 / 3.0
-        else
-          multipliers[:final_damage_multiplier] /= 2
-        end
-      end
-    end
-    # Minimize
-    if target.effects[PBEffects::Minimize] && tramplesMinimize?(2)
-      multipliers[:final_damage_multiplier] *= 2
-    end
-    # Glaive Rush
-    multipliers[:final_damage_multiplier] *= 2 if target.effects[PBEffects::GlaiveRush] > 0
-    # Move-specific base damage modifiers
-    multipliers[:base_damage_multiplier] = pbBaseDamageMultiplier(multipliers[:base_damage_multiplier], user, target)
-    # Move-specific final damage modifiers
-    multipliers[:final_damage_multiplier] = pbModifyDamage(multipliers[:final_damage_multiplier], user, target)
-  end
-
   #=============================================================================
   # Additional effect chance
   #=============================================================================
@@ -686,6 +396,7 @@ class PokeBattle_Move
                   user.pbOwnSide.effects[PBEffects::Rainbow]>0
     end
     ret = 100 if $DEBUG && Input.press?(Input::CTRL)
+    ret = 100 if @id == :SCORCHINGSANDS && @battle.field.field_effects == :Desert
     return ret
   end
 
@@ -1169,7 +880,7 @@ BattleHandlers::DamageCalcUserAbility.add(:ORICHALCUMPULSE,
 #===============================================================================
 BattleHandlers::AbilityOnSwitchIn.add(:PROTOSYNTHESIS,
   proc { |ability, battler, battle, switch_in|
-    next if ![:Sun, :HarshSun].include?(battler.battle.pbWeather) && battler.item != :BOOSTERENERGY
+    next if ![:Sun, :HarshSun].include?(battler.battle.pbWeather) && battler.item != :BOOSTERENERGY && battle.field.field_effects != :Lava
     userStats = battler.plainStats
     highestStatValue = 0
     userStats.each_value { |value| highestStatValue = value if highestStatValue < value }
@@ -1182,7 +893,7 @@ BattleHandlers::AbilityOnSwitchIn.add(:PROTOSYNTHESIS,
         battler.effects[PBEffects::BoosterEnergy] = true
         battle.pbDisplay(_INTL("{1} used its Booster Energy to activate Protosynthesis!", battler.pbThis))
       else
-        battle.pbDisplay(_INTL("The harsh sunlight activated {1}'s Protosynthesis!", battler.pbThis(true)))
+        battle.pbDisplay(_INTL("The heat activated {1}'s Protosynthesis!", battler.pbThis(true)))
       end
       battler.effects[PBEffects::ParadoxStat] = s
       battle.pbDisplay(_INTL("{1}'s {2} was heightened!", battler.pbThis,GameData::Stat.get(s).name))
@@ -2141,6 +1852,8 @@ class PokeBattle_Battler
     @effects[PBEffects::BallFetch]           = nil
     @effects[PBEffects::Obstruct]            = false
     @effects[PBEffects::TarShot]             = false
+    @effects[PBEffects::Cinders]             = -1
+    @effects[PBEffects::Singed]              = false
   end
   def pbUseMove(choice,specialUsage=false)
     # NOTE: This is intentionally determined before a multi-turn attack can
@@ -3389,10 +3102,8 @@ class PokeBattle_Battler
       end
       # Silk Trap
         if target.effects[PBEffects::SilkTrap] && move.damagingMove? && !unseenfist
-          if show_message
-            @battle.pbCommonAnimation("SpikyShield", target)
-            @battle.pbDisplay(_INTL("{1} protected itself!", target.pbThis))
-          end
+          @battle.pbCommonAnimation("SpikyShield", target)
+          @battle.pbDisplay(_INTL("{1} protected itself!", target.pbThis))
           target.damageState.protected = true
           @battle.successStates[user.index].protected = true
           if move.pbContactMove?(user) && user.affectedByContactEffect?
@@ -3916,7 +3627,7 @@ class PokeBattle_Move_0B3 < PokeBattle_Move
       when :Sky
         @npMove = :AIRSLASH if GameData::Move.exists?(:AIRSLASH)
       when :Space
-        @npMove = :DRACOMETEOR if GameData::Move.exists?(:DRACOMETEOR)
+        @npMove = :STARBEAM if GameData::Move.exists?(:STARBEAM)
       when :UltraSpace
         @npMove = :PSYSHOCK if GameData::Move.exists?(:PSYSHOCK)
       end
@@ -6192,6 +5903,16 @@ class PokeBattle_Battle
         b.pbFaint if b.fainted?
       end
     end
+    priority.each do |b|
+      next if b.fainted?
+      next if b.effects[PBEffects::Cinders] < 0
+      if b.effects[PBEffects::Cinders] > 0
+        b.pbReduceHP(b.totalhp/16,false)
+        pbDisplay(_INTL("{1} was hurt by the cinders!",b.pbThis))
+      else
+        pbDisplay(_INTL("{1} cleared away the cinders!",b.pbThis))
+      end
+    end
     # Damage from burn
     priority.each do |b|
       next if b.status != :BURN || !b.takesIndirectDamage?
@@ -6498,6 +6219,7 @@ class PokeBattle_Battle
       b.effects[PBEffects::Roost]            = false
       b.effects[PBEffects::Snatch]           = 0
       b.effects[PBEffects::SpikyShield]      = false
+      b.effects[PBEffects::SilkTrap]         = false
       b.effects[PBEffects::Spotlight]        = 0
       b.effects[PBEffects::ThroatChop]       -= 1 if b.effects[PBEffects::ThroatChop]>0
       b.effects[PBEffects::Obstruct]         = false
@@ -6640,6 +6362,8 @@ module PBEffects
   BlunderPolicy       = 429
   NeutralizingGas     = 430
   EchoChamber         = 431
+  Cinders             = 432
+  Singed              = 433
 end
 
 class PokeBattle_Move_570 < PokeBattle_TargetStatDownMove
@@ -6888,5 +6612,41 @@ BattleHandlers::SpeedCalcAbility.add(:SURGESURFER,
   proc { |ability,battler,mult|
     next mult*2 if battler.battle.field.field_effects == :Electric
     next mult*2 if battler.battle.pbWeather == :Storm
+  }
+)
+
+class PokeBattle_Move_0D6 < PokeBattle_HealingMove
+  def pbHealAmount(user)
+    if !user.pbHasType?(:FIRE) && @battle.field.field_effects == :Lava
+      @battle.pbDisplay(_INTL("The lava singed {1}'s wings!",user.pbThis))
+      user.effects[PBEffects::Singed] = true
+      return 0
+    else
+      return (user.totalhp/2.0).round
+    end
+  end
+
+  def pbMoveFailed?(user,targets)
+    return true if user.effects[PBEffects::Singed]
+    return super
+  end
+
+  def pbEffectAfterAllHits(user,target)
+    user.effects[PBEffects::Roost] = true
+  end
+end
+
+BattleHandlers::EORWeatherAbility.add(:STARSALVE,
+  proc { |ability,weather,battler,battle|
+    next unless [:Starstorm].include?(weather)
+    next if !battler.canHeal?
+    battle.pbShowAbilitySplash(battler)
+    battler.pbRecoverHP(battler.totalhp/8)
+    if PokeBattle_SceneConstants::USE_ABILITY_SPLASH
+      battle.pbDisplay(_INTL("{1}'s HP was restored.",battler.pbThis))
+    else
+      battle.pbDisplay(_INTL("{1}'s {2} restored its HP.",battler.pbThis,battler.abilityName))
+    end
+    battle.pbHideAbilitySplash(battler)
   }
 )

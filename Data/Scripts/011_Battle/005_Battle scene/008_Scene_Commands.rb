@@ -67,6 +67,8 @@ class PokeBattle_Scene
   #=============================================================================
   def pbFightMenu(idxBattler,megaEvoPossible=false)
     battler = @battle.battlers[idxBattler]
+    side  = battler.idxOwnSide
+    owner = @battle.pbGetOwnerIndexFromBattlerIndex(idxBattler)
     cw = @sprites["fightWindow"]
     cw.battler = battler
     moveIndex = 0
@@ -85,8 +87,16 @@ class PokeBattle_Scene
         needFullRefresh = false
       end
       if needRefresh
+        side  = battler.idxOwnSide
+        owner = @battle.pbGetOwnerIndexFromBattlerIndex(idxBattler)
         if megaEvoPossible
           newMode = (@battle.pbRegisteredMegaEvolution?(idxBattler)) ? 2 : 1
+          cw.mode = newMode if newMode!=cw.mode
+        elsif (battler.hasActiveItem?(:DXORB) && $dx_orb.temp_stat != ([] || nil)) && @battle.dx_temp_stat[side][owner] >= 0
+          newMode = (@battle.pbRegisteredDXTempStat?(idxBattler)) ? 2 : 1
+          cw.mode = newMode if newMode!=cw.mode
+        elsif battler.hasActiveItem?(:DXORB) && $dx_orb.dx_form == true && battler.pokemon.hasDXForm?
+          newMode = (@battle.pbRegisteredDXForm?(idxBattler)) ? 2 : 1
           cw.mode = newMode if newMode!=cw.mode
         end
         needRefresh = false
@@ -130,7 +140,7 @@ class PokeBattle_Scene
         break if yield -1
         needRefresh = true
       elsif Input.trigger?(Input::ACTION)   # Toggle Mega Evolution
-        if megaEvoPossible
+        if megaEvoPossible || (battler.hasActiveItem?(:DXORB) && $dx_orb.temp_stat != ([] || nil))
           pbPlayDecisionSE
           break if yield -2
           needRefresh = true
@@ -215,7 +225,7 @@ class PokeBattle_Scene
     itemScene = PokemonBag_Scene.new
     itemScene.pbStartScene($PokemonBag,true,Proc.new { |item|
       useType = GameData::Item.get(item).battle_use
-      next useType && useType>0
+      next useType && useType==(4||9)
       },false)
     # Loop while in Bag screen
     wasTargeting = false

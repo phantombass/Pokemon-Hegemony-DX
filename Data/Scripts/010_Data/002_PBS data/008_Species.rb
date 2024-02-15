@@ -39,6 +39,8 @@ module GameData
     attr_reader :mega_stone
     attr_reader :mega_move
     attr_reader :unmega_form
+    attr_reader :dx_form
+    attr_reader :unDX_form
     attr_reader :mega_message
     attr_accessor :back_sprite_x
     attr_accessor :back_sprite_y
@@ -113,6 +115,8 @@ module GameData
         ret["Evolutions"]   = [0, "*ees", :Species, :Evolution, nil]
         ret["MegaStone"]    = [0, "e", :Item]
         ret["MegaMove"]     = [0, "e", :Move]
+        ret["DXForm"]       = [0, "u"]
+        ret["UnDXForm"]     = [0, "u"]
         ret["UnmegaForm"]   = [0, "u"]
         ret["MegaMessage"]  = [0, "u"]
       else
@@ -169,6 +173,8 @@ module GameData
       @generation            = hash[:generation]            || 0
       @mega_stone            = hash[:mega_stone]
       @mega_move             = hash[:mega_move]
+      @unDX_form             = hash[:unDX_form]           || 0
+      @dx_form               = hash[:dx_form]           || 0
       @unmega_form           = hash[:unmega_form]           || 0
       @mega_message          = hash[:mega_message]          || 0
       @back_sprite_x         = hash[:back_sprite_x]         || 0

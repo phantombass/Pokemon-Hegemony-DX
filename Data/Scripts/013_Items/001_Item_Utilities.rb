@@ -583,8 +583,8 @@ def pbUseItem(bag,item,bagscene=nil)
     pbMessage(_INTL("\\se[PC access]You booted up {1}.\1",itm.name))
     if !pbConfirmMessage(_INTL("Do you want to teach {1} to a Pokémon?",movename))
       return 0
-    elsif pbMoveTutorChoose(machine,nil,true,itm.is_TR?)
-      bag.pbDeleteItem(item) if itm.is_TR?
+    elsif pbMoveTutorChoose(machine,nil,true,itm.is_TM?)
+      bag.pbDeleteItem(item) if itm.is_TM?
       return 1
     end
     return 0

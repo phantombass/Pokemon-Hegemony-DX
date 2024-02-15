@@ -875,6 +875,7 @@ class PBAI
     def get_item_score
       # Yields [score, item, optional_target, healing_item]
       items = @battle.pbGetOwnerItems(@battler.index)
+      return [0, 0] if items.nil?
       # Item categories
       hpItems = {
           :POTION       => 20,
@@ -945,110 +946,112 @@ class PBAI
           :XACCURACY3 => [:ACCURACY, 3],
           :XACCURACY6 => [:ACCURACY, 6]
       }
-      scores = items.map do |item|
-        if item != :REVIVE && item != :MAXREVIVE
-          # Don't try to use the item if we can't use it on this Pokémon (e.g. due to Embargo)
-          next [0, item] if !@battle.pbCanUseItemOnPokemon?(item, @battler.pokemon, @battler, nil, false)
-          # Don't try to use the item if it doesn't have any effect, or some other condition that is not met
-          next [0, item] if !ItemHandlers.triggerCanUseInBattle(item, @battler.pokemon, @battler, nil, false, @battle, nil, false)
-        end
-
-        score = 0
-        # The item is a healing item
-        if hpToGain = hpItems[item]
-          hpLost = self.totalhp - self.hp
-          hpToGain = hpLost if hpToGain == -1 || hpToGain > hpLost
-          hpFraction = hpToGain / self.totalhp.to_f
-          # If hpFraction is high, then this item will heal almost all our HP.
-          # If it is low, then this item will heal very little of our total HP.
-          # We now factor the effectiveness of using this item into this fraction.
-          # Because using HP items at full health should not be an option, whereas
-          # using it at 1 HP should always be preferred.
-          itemEff = hpToGain / hpLost.to_f
-          itemEff = 0 if hpLost == 0
-          delayEff = 1.0
-          if !may_die_next_round?
-            # If we are likely to survive another hit of the last-used move,
-            # then we should discourage using healing items this turn because
-            # we can heal more if we use it later.
-            delayEff = 0.3
-          else
-            # If we are likely to die next round, we have a choice to make.
-            # It can occur that the target is also a one-shot from this point,
-            # which will make move scores skyrocket which can mean we won't use our item.
-            # So, if we are slower than our opponent, we will likely die first without using
-            # our item and without using our move. So if this is the case, we dramatically increase
-            # the score of using our item.
-            last_dmg = last_damage_taken
-            if last_dmg && !self.faster_than?(last_dmg[0])
-              delayEff = 2.5
-            end
+      if !items.nil?
+        scores = items.map do |item|
+          if item != :REVIVE && item != :MAXREVIVE
+            # Don't try to use the item if we can't use it on this Pokémon (e.g. due to Embargo)
+            next [0, item] if !@battle.pbCanUseItemOnPokemon?(item, @battler.pokemon, @battler, nil, false)
+            # Don't try to use the item if it doesn't have any effect, or some other condition that is not met
+            next [0, item] if !ItemHandlers.triggerCanUseInBattle(item, @battler.pokemon, @battler, nil, false, @battle, nil, false)
           end
-          finalFrac = hpFraction * itemEff * delayEff
-          score = (finalFrac * 200).round
-        end
 
-        # Single-status-curing items
-        if statusToCure = singleStatusCuringItems[item]
-          if self.status == statusToCure
-            factor = 1.0
-            factor = 0.5 if statusToCure == :PARALYSIS # Paralysis is not that serious
-            factor = 1.5 if statusToCure == :BURN && self.is_physical_attacker? # Burned while physical attacking
-            factor = 2.0 if statusToCure == :POISON && self.statusCount > 0 # Toxic
-            score += (140 * factor).round
-          end
-        end
-
-        # All-status-curing items
-        if allStatusCuringItems.include?(item)
-          if self.status != :NONE
-            factor = 1.0
-            factor = 0.5 if self.status == :PARALYSIS # Paralysis is not that serious
-            factor = 1.5 if self.status == :BURN && self.is_physical_attacker? # Burned while physical attacking
-            factor = 2.0 if self.status == :POISON && self.statusCount > 0 # Toxic
-            score += (120 * factor).round
-          end
-        end
-
-        # X-Items
-        if xStatus = xItems[item]
-          stat, increase = xStatus
-          # Only use X-Items on the battler's first turn
-          if @battler.turnCount == 0
-            factor = 1.0
-            factor = 2.0 if stat == :ATTACK && self.is_physical_attacker? ||
-                            stat == :SPECIAL_ATTACK && self.is_special_attacker?
-            score = (80 * factor * increase).round
-          end
-        end
-
-        # Revive
-        if item == :REVIVE || item == :MAXREVIVE
-          party = @battle.pbParty(@battler.index)
-          candidate = nil
-          party.each do |pkmn|
-            if pkmn.fainted?
-              if candidate
-                if pkmn.level > candidate.level
-                  candidate = pkmn
-                end
-              else
-                candidate = pkmn
+          score = 0
+          # The item is a healing item
+          if hpToGain = hpItems[item]
+            hpLost = self.totalhp - self.hp
+            hpToGain = hpLost if hpToGain == -1 || hpToGain > hpLost
+            hpFraction = hpToGain / self.totalhp.to_f
+            # If hpFraction is high, then this item will heal almost all our HP.
+            # If it is low, then this item will heal very little of our total HP.
+            # We now factor the effectiveness of using this item into this fraction.
+            # Because using HP items at full health should not be an option, whereas
+            # using it at 1 HP should always be preferred.
+            itemEff = hpToGain / hpLost.to_f
+            itemEff = 0 if hpLost == 0
+            delayEff = 1.0
+            if !may_die_next_round?
+              # If we are likely to survive another hit of the last-used move,
+              # then we should discourage using healing items this turn because
+              # we can heal more if we use it later.
+              delayEff = 0.3
+            else
+              # If we are likely to die next round, we have a choice to make.
+              # It can occur that the target is also a one-shot from this point,
+              # which will make move scores skyrocket which can mean we won't use our item.
+              # So, if we are slower than our opponent, we will likely die first without using
+              # our item and without using our move. So if this is the case, we dramatically increase
+              # the score of using our item.
+              last_dmg = last_damage_taken
+              if last_dmg && !self.faster_than?(last_dmg[0])
+                delayEff = 2.5
               end
             end
+            finalFrac = hpFraction * itemEff * delayEff
+            score = (finalFrac * 200).round
           end
-          if candidate
-            if items.include?(:MAXREVIVE) && item == :REVIVE
-              score = 200
-            else
-              score = 400
-            end
-            index = party.index(candidate)
-            next [score, item, index]
-          end
-        end
 
-        next [score, item]
+          # Single-status-curing items
+          if statusToCure = singleStatusCuringItems[item]
+            if self.status == statusToCure
+              factor = 1.0
+              factor = 0.5 if statusToCure == :PARALYSIS # Paralysis is not that serious
+              factor = 1.5 if statusToCure == :BURN && self.is_physical_attacker? # Burned while physical attacking
+              factor = 2.0 if statusToCure == :POISON && self.statusCount > 0 # Toxic
+              score += (140 * factor).round
+            end
+          end
+
+          # All-status-curing items
+          if allStatusCuringItems.include?(item)
+            if self.status != :NONE
+              factor = 1.0
+              factor = 0.5 if self.status == :PARALYSIS # Paralysis is not that serious
+              factor = 1.5 if self.status == :BURN && self.is_physical_attacker? # Burned while physical attacking
+              factor = 2.0 if self.status == :POISON && self.statusCount > 0 # Toxic
+              score += (120 * factor).round
+            end
+          end
+
+          # X-Items
+          if xStatus = xItems[item]
+            stat, increase = xStatus
+            # Only use X-Items on the battler's first turn
+            if @battler.turnCount == 0
+              factor = 1.0
+              factor = 2.0 if stat == :ATTACK && self.is_physical_attacker? ||
+                              stat == :SPECIAL_ATTACK && self.is_special_attacker?
+              score = (80 * factor * increase).round
+            end
+          end
+
+          # Revive
+          if item == :REVIVE || item == :MAXREVIVE
+            party = @battle.pbParty(@battler.index)
+            candidate = nil
+            party.each do |pkmn|
+              if pkmn.fainted?
+                if candidate
+                  if pkmn.level > candidate.level
+                    candidate = pkmn
+                  end
+                else
+                  candidate = pkmn
+                end
+              end
+            end
+            if candidate
+              if items.include?(:MAXREVIVE) && item == :REVIVE
+                score = 200
+              else
+                score = 400
+              end
+              index = party.index(candidate)
+              next [score, item, index]
+            end
+          end
+
+          next [score, item]
+        end
       end
       max_score = 0
       chosen_item = 0

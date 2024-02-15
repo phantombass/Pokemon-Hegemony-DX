@@ -470,24 +470,6 @@ def useMoveFly
     $game_temp.player_new_map_id    = $PokemonTemp.flydata[0]
     $game_temp.player_new_x         = $PokemonTemp.flydata[1]
     $game_temp.player_new_y         = $PokemonTemp.flydata[2]
-#    for i in 115..121
-#      $game_switches[i] = false
-#    end
-    $game_switches[119] = false
-    $game_switches[94] = false
-    $game_switches[209] = false
-      $game_switches[899] = false
-      for i in 197..203
-        $game_switches[i] = false
-      end
-    if $game_switches[231] == true
-      $game_switches[241] = true
-    end
-    if $game_switches[283] == true && $game_switches[239] == true
-      $game_switches[283] = false
-    end
-    $game_switches[150] = false
-    randomizer_on
     $CanToggle = true
     $game_temp.player_new_direction = 2
     $PokemonTemp.flydata = nil
@@ -903,6 +885,9 @@ ItemHandlers::UseFromBag.add(:ESCAPEROPE,proc { |item|
     next 0
   end
   if ($PokemonGlobal.escapePoint rescue false) && $PokemonGlobal.escapePoint.length>0
+    $game_switches[926] = false
+    $game_switches[927] = false
+    $game_system.save_disabled = false
     next 2   # End screen and consume item
   end
   pbMessage(_INTL("Can't use that here."))
@@ -929,6 +914,9 @@ ItemHandlers::UseInField.add(:ESCAPEROPE,proc { |item|
     $scene.transfer_player
     $game_map.autoplay
     $game_map.refresh
+    $game_switches[926] = false
+    $game_switches[927] = false
+    $game_system.save_disabled = false
   }
   pbEraseEscapePoint
   next 2
@@ -1038,7 +1026,7 @@ BattleHandlers::WeatherExtenderItem.add(:WEATHERROCK,
 
 BattleHandlers::TerrainStatBoostItem.add(:TOXICSEED,
   proc { |item,battler,battle|
-    next false if battle.field.terrain != :Poison
+    next false if ![:Wasteland,:Swamp,:Poison].include?(battle.field.field_effects)
     next false if !battler.pbCanRaiseStatStage?(:SPEED,battler)
     itemName = GameData::Item.get(item).name
     battle.pbCommonAnimation("UseItem",battler)

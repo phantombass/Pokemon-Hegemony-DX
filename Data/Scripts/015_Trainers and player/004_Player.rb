@@ -30,6 +30,7 @@ class Player < Trainer
   attr_accessor :mystery_gift_unlocked
   # @return [Array<Array>] downloaded Mystery Gift data
   attr_accessor :mystery_gifts
+  attr_accessor :has_dx_orb
 
   def trainer_type
     if @trainer_type.is_a?(Integer)
@@ -101,6 +102,7 @@ class Player < Trainer
     @has_pokedex           = false
     @has_pokegear          = false
     @has_running_shoes     = false
+    @has_dx_orb            = false
     @seen_storage_creator  = false
     @mystery_gift_unlocked = false
     @mystery_gifts         = []

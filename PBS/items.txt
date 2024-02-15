@@ -797,7 +797,7 @@
 778,TM280,TM280,TM280s,4,6000,"The user hurls an electric orb. The faster the user is than the foe, the greater the move's power.",3,0,0,ELECTROBALL,
 779,TM281,TM281,TM281s,4,6000,"The user turns the foe's power against it. The higher the foe's Attack stat, the greater the damage.",3,0,0,FOULPLAY,
 780,TM282,TM282,TM282s,4,4000,"The user attacks with stored power. The more the user's stats are raised, the greater the move's power.",3,0,0,STOREDPOWER,
-781,TM283,TM283,TM283s,4,4000,"The user teleports using a strange power and switches places with one of its allies.",3,0,0,ALLYSWITCH,
+781,TM283,TM283,TM283s,4,4000,"The user draws attention to itself, making all targets take aim only at the user.",3,0,0,FOLLOWME,
 782,TM284,TM284,TM284s,4,6000,"The user shoots boiling hot water at its target. This may also leave the target with a burn.",3,0,0,SCALD,
 783,TM285,TM285,TM285s,4,2000,"The user is roused, and its Attack and Sp. Atk stats increase.",3,0,0,WORKUP,
 784,TM286,TM286,TM286s,4,10000,"The user shrouds itself in electricity and smashes into its foe. This also damages the user a little.",3,0,0,WILDCHARGE,
@@ -818,7 +818,7 @@
 798,TORTERRANITE,Torterranite,Torterranites,1,10000,"One variety of the mysterious Mega Stones. Have Torterra hold it, and this stone will enable it to Mega Evolve during battle.",0,0,12,
 799,INFERNITE,Infernite,Infernites,1,10000,"One variety of the mysterious Mega Stones. Have Infernape hold it, and this stone will enable it to Mega Evolve during battle.",0,0,12,
 800,EMPOLEONITE,Empoleonite,Empoleonites,1,10000,"One variety of the mysterious Mega Stones. Have Empoleon hold it, and this stone will enable it to Mega Evolve during battle.",0,0,12,
-801,FARFETCHDITE,Farfetch'dite,Farfetch'dites,1,0,"One variety of the mysterious Mega Stones. Have Farfetch'd hold it, and this stone will enable it to Mega Evolve during battle.",0,0,12,
+801,WFLYGONITE,Wartime Flygonite,Wartime Flygonites,1,0,"One variety of the mysterious Mega Stones. Have Wartime Flygon hold it, and this stone will enable it to Mega Evolve during battle.",0,0,12,
 802,BRONZITE,Bronzite,Bronzites,1,0,"One variety of the mysterious Mega Stones. Have Bronzong hold it, and this stone will enable it to Mega Evolve during battle.",0,0,12,
 803,JYNXINITE,Jynxinite,Jynxinites,1,0,"One variety of the mysterious Mega Stones. Have Jynx hold it, and this stone will enable it to Mega Evolve during battle.",0,0,12,
 804,MILOTITE,Milotite,Milotites,1,0,"One variety of the mysterious Mega Stones. Have Milotic hold it, and this stone will enable it to Mega Evolve during battle.",0,0,12,
@@ -840,10 +840,8 @@
 820,MEGANIUMITE,Meganiumite,Meganiumites,1,0,"One variety of the mysterious Mega Stones. Have Meganium hold it, and this stone will enable it to Mega Evolve during battle.",0,0,12,
 821,ARBOKINITE,Arbokinite,Arbokinites,1,0,"One variety of the mysterious Mega Stones. Have Arbok hold it, and this stone will enable it to Mega Evolve during battle.",0,0,12,
 822,BEARTINITE,Beartinite,Beartinites,1,0,"One variety of the mysterious Mega Stones. Have Beartic hold it, and this stone will enable it to Mega Evolve during battle.",0,0,12,
-823,ROTOMITE,Rotomite,Rotomites,1,0,"One variety of the mysterious Mega Stones. Have Rotom hold it, and this stone will enable it to Mega Evolve during battle.",0,0,12,
-824,PHIRENIXITE,Phirenixite,Phirenixites,1,0,"One variety of the mysterious Mega Stones. Have Phirenix hold it, and this stone will enable it to Mega Evolve during battle.",0,0,12,
-825,LUMINOUSORB,Luminous Orb,Luminous Orbs,1,10000,"A glowing orb to be held by Arceus. It allows Arceus to take its Corrupted Form outside the Distortion World.",0,0,0,
-826,DEVIANTORB,Deviant Orb,Deviant Orbs,1,10000,"A glowing orb to be held by certain Pokémon. It allows them to take their Corrupted or Origin Form outside the Distortion World.",0,0,0,
+
+
 827,STELLARPLATE,Stellar Plate,Stellar Plates,1,1000,"An item to be held by a Pokémon. It is a stone tablet that boosts the power of Cosmic-type moves.",0,0,13,
 828,CORRUPTEDDRIVE,Corrupted Drive,Corrupted Drives,1,2100,A computer drive that has been corrupted with a virus. Its producer is unknown.,1,0,7,
 829,ALLOYSTONE,Alloy Stone,Alloy Stones,1,2100,A peculiar stone that makes certain species of Pokémon evolve. It is hard as iron.,1,0,7,
@@ -861,19 +859,15 @@
 842,AQUAROCKET,Aqua Rocket,Aqua Rockets,8,0,A replacement for the HM Waterfall.,2,0,6,
 843,HIKINGGEAR,Hiking Gear,Hiking Gears,8,0,A replacement for the HM Rock Climb.,2,0,6,
 844,SCUBATANK,Scuba Tank,Scuba Tanks,8,0,A replacement for the HM Dive.,2,0,6,
-845,FORMETEONITE,Formeteonite,Formeteonites,1,0,"One variety of the mysterious Mega Stones. Have Formeteos hold it, and this stone will enable it to Mega Evolve during battle.",0,0,12,
+
 846,PIXIEDUST,Pixie Dust,Pixie Dusts,1,2100,"A peculiar powder that makes certain species of Pokémon evolve. It sparkles like glitter.",1,0,7,
 847,EXPALL,Exp. Share,Exp. Shares,8,0,"Currently ON. This allows all Pokémon in the party to gain experience from a battle.",2,0,6,
 848,EXPALLOFF,Exp. Share,Exp. Shares,8,0,"Currently OFF. This allows all Pokémon in the party to gain experience from a battle.",2,0,6,
 849,COSMICMEMORY,Cosmic Memory,Cosmic Memories,1,1000,"A memory disc containing Cosmic-type data. It changes the holder's type if held by a certain Pokémon.",0,0,0,
 850,LINKSTONE,Link Stone,Link Stones,1,2100,"A peculiar stone that makes certain species of Pokémon evolve. It takes an odd, rectangular shape.",1,0,7,
-851,ARCHAICSTONE,Archaic Stone,Archaic Stones,1,0,"A stone long since believed to have disappeared from Zharo. Its power and purpose are still unknown.",1,0,7,
-852,TEMPESTSTONE,Tempest Stone,Tempest Stones,1,0,"A stone said to be loved by one particular Pokémon. It changes color with the weather.",1,0,7,
+
 853,WEATHERROCK,Weather Rock,Weather Rocks,1,4000,"A Pokémon held item that extends the duration of the move any weather used by the holder.",0,0,0,
-854,TOMBSEAL,Tomb Seal,Tomb Seals,1,7000,"A remnant of an ancient Pokémon tomb found in the desert of Zharo. It has a sinister aura.",0,0,8,
-855,ANCIENTTOTEM,Ancient Totem,Ancient Totems,1,7000,"A remnant of an ancient Pokémon totem found in the desert of Zharo. It is said to be the part of the spirit of the earth.",0,0,8,
-856,SONARPLATE,Sonar Plate,Sonar Plates,1,1000,"An item to be held by a Pokémon. It is a stone tablet that boosts the power of Sound-type moves.",0,0,13,
-857,TEMPORALPLATE,Temporal Plate,Temporal Plates,1,1000,"An item to be held by a Pokémon. It is a stone tablet that boosts the power of Time-type moves.",0,0,13,
+
 858,TM101,TM101,TM101s,4,30000,"Pointed rocks are set on the opposing side.",3,0,0,STEALTHROCK
 859,TM102,TM102,TM102s,4,30000,"Sharp spikes are set on the ground on the opposing side.",3,0,0,SPIKES
 860,TM103,TM103,TM103s,4,30000,"Poisoned spikes are set on the ground on the opposing side.",3,0,0,TOXICSPIKES
@@ -882,13 +876,7 @@
 863,TM106,TM106,TM106s,4,30000,"The target is hit with a rainbow-colored beam. This may also lower the target's Attack stat.",3,0,0,AURORABEAM
 864,IVMAXSTONE,IV Max Stone,IV Max Stones,1,15000,"When a Pokémon touches this stone, a chosen stat will have its IVs maxed out.",1,0,0,
 865,IVMINSTONE,IV Min Stone,IV Min Stones,1,15000,"When a Pokémon touches this stone, a chosen stat will have its IVs set to 0.",1,0,0,
-866,NEFLORITE,Neflorite,Neflorites,1,0,"One variety of the mysterious Mega Stones. Have Neflora hold it, and this stone will enable it to Mega Evolve during battle.",0,0,12,
-867,SATURABTITE,Saturabtite,Saturabtites,1,0,"One variety of the mysterious Mega Stones. Have Saturabtu hold it, and this stone will enable it to Mega Evolve during battle.",0,0,12,
-868,TM107,TM107,TM107s,4,30000,"This move's type and power are based upon the weather.",3,0,0,WEATHERBALL
-869,TIMESTONE,Time Stone,Time Stones,1,2100,A peculiar stone that makes certain species of Pokémon evolve. It feels as though it is older than time itself.,1,0,7,
-870,SOUNDSTONE,Sound Stone,Sound Stones,1,2100,A peculiar stone that makes certain species of Pokémon evolve. It makes a slight hum.,1,0,7,
-871,APOPHITE,Apophite,Apophites,1,0,"One variety of the mysterious Mega Stones. Have Apophicary hold it, and this stone will enable it to Mega Evolve during battle.",0,0,12,
-872,FALKMUNRITE,Falkmunrite,Falkmunrites,1,0,"One variety of the mysterious Mega Stones. Have Falkmunra hold it, and this stone will enable it to Mega Evolve during battle.",0,0,12,
+
 873,TM108,TM108,TM108s,4,30000,"The user attacks with a powerfully projected voice.",3,0,0,HYPERVOICE
 874,TM115,TM115,TM115s,4,30000,"After making its attack, the user rushes back to switch places with a party Pokémon in waiting.",3,0,0,FLIPTURN
 875,TM116,TM116,TM116s,4,30000,"The user attacks with the crushing weight of time itself.",3,0,0,STRUGGLE
@@ -986,8 +974,44 @@
 967,CENTISKORCHITE,Centiskorchite,Centiskorchites,1,10000,"One of a variety of mysterious Mega Stones. Have Centiskorch hold it, and it will be able to Mega Evolve.",0,0,12,
 968,AUSPICIOUSARMOR,Auspicious Armor,Auspicious Armors,1,2100,A peculiar set of armor that can make a certain species of Pokémon evolve. Auspicious wishes live within it.,1,0,7,
 969,MALICIOUSARMOR,Malicious Armor,Malicious Armors,1,2100,A peculiar set of armor that can make a certain species of Pokémon evolve. Malicious will lurks within it.,1,0,7,
-970,BOOSTERENERGY,Booster Energy,Booster Energys,1,0,"An item to be held by Pokémon with certain Abilities. It boosts the strength of the Pokémon.",0,0,0,
-971,LEADERSCREST,Leaders's Crest,Leaders's Crests,1,0,"A shard of what appears to be an old blade of some sort. It is held only by Bisharp that head up a group of Pawniard.",0,0,0,
-972,GIMMIGHOULCOIN,Gimmighoul Coin,Gimmighoul Coins,1,0,"An item that accidentally dropped by a Pokémon. It seems that Gimmighoul treasure and hoard these.",0,0,0,
+970,BOOSTERENERGY,Booster Energy,Booster Energys,1,50000,"An item to be held by Pokémon with certain Abilities. It boosts the strength of the Pokémon.",0,0,0,
+971,LEADERSCREST,Leaders's Crest,Leaders's Crests,1,5000,"A shard of what appears to be an old blade of some sort. It is held only by Bisharp that head up a group of Pawniard.",0,0,0,
+972,GIMMIGHOULCOIN,Gimmighoul Coin,Gimmighoul Coins,1,5000,"An item that accidentally dropped by a Pokémon. It seems that Gimmighoul treasure and hoard these.",0,0,0,
 973,EARTHEATERORB,Earth Eater Orb,Earth Eater Orbs,1,0,"A glowing orb that gives the holder Earth Eater as a second ability.",0,0,0,
 974,WATERABSORBORB,Water Absorb Orb,Water Absorb Orbs,1,0,"A glowing orb that gives the holder Water Absorb as a second ability.",0,0,0,
+975,TOXICSEED,Toxic Seed,Toxic Seeds,1,4000,"An item to be held by a Pokémon. It boosts Speed on Poison Terrain. It can only be used once.",0,0,0,
+976,WISHINGSTAR,Wishing Star,Wishing Stars,8,0,"A star that holds great power.",0,0,6,
+977,TM135,TM135,TM135s,4,10000,"This move's power doubles when the target is on Electric Terrain.",3,0,0,RISINGVOLTAGE
+978,TM136,TM136,TM136s,4,10000,"This move's power doubles when the target is on Misty Terrain.",3,0,0,ROLLINGFOG
+979,TM137,TM137,TM137s,4,10000,"Power goes up and damages all opposing Pokémon on Psychic Terrain.",3,0,0,EXPANDINGFORCE
+980,TM138,TM138,TM138s,4,10000,"The user utilizes the power of the terrain to attack.",3,0,0,TERRAINPULSE
+981,TM139,TM139,TM139s,4,10000,"The target is hit twice in a row.",3,0,0,DUALWINGBEAT
+982,TM140,TM140,TM140s,4,10000,"A consecutive three-kick attack that becomes more powerful with each successful hit.",3,0,0,TRIPLEAXEL
+#---------------------------------------------
+# Gen 9 Items
+#---------------------------------------------
+983,ABILITYSHIELD,Ability Shield,Ability Shields,1,20000,"This shield protects the holder from having its Ability changed by others.",0,0,0,
+984,CLEARAMULET,Clear Amulet,Clear Amulets,1,30000,"It protects the holder from having its stats lowered.",0,0,0,
+985,MIRRORHERB,Mirror Herb,Mirror Herbs,1,30000,"This herb will allow the holder to mirror an opponent's stat increases once.",0,0,0,
+986,PUNCHINGGLOVE,Punching Glove,Punching Gloves,1,15000,"It boosts the holder's punching moves and prevents direct contact.",0,0,0,
+987,COVERTCLOAK,Covert Cloak,Covert Cloaks,1,20000,"It conceals the holder, protecting it from move's additional effects.",0,0,0,
+988,LOADEDDICE,Loaded Dice,Loaded Dices,1,20000,"It ensures the holder's multistrike moves hit more times.",0,0,0,
+989,SHEATH,Sheath,Sheaths,1,20000,"Boost the power of slicing moves.",0,0,0,
+990,MJOLNIR,Mjolnir,Mjolnirs,1,20000,"Boosts the power of hammer moves.",0,0,0,
+991,FOCUSPOLICY,Focus Policy,Focus Policies,1,20000,"Boosts Speed if the holder flinches.",0,0,0,
+992,MITHRILSHIELD,Mithril Shield,Mithril Shields,1,20000,"The holder is protected from critical hits.",0,0,0,
+993,LEGENDPLATE,Legend Plate,Legend Plates,1,1000,"An item to be held by Arceus. It is a stone tablet that boosts the power of all moves Arceus uses.",0,0,0,
+994,DAZZLINGORB,Dazzling Orb,Dazzling Orbs,1,0,"A glowing orb that gives the holder Dazzling as a second ability.",0,0,0,
+995,TM141,TM141,TM141s,4,10000,"The user attacks the foe with fire. The target's held Berry becomes burnt up and unusable.",3,0,0,INCINERATE
+996,TM142,TM142,TM142s,4,10000,"A full-power attack that grows more powerful the less the user likes its Trainer.",3,0,0,FRUSTRATION
+997,TM143,TM143,TM143s,4,10000,"The user attacks by shooting scales two to five times. It boosts the user's Speed stat but lowers its Defense stat.",3,0,0,SCALESHOT
+998,TM144,TM144,TM144s,4,10000,"The user skitters behind the target to attack. This also lowers the target's Sp. Atk stat.",3,0,0,SKITTERSMACK
+999,TM145,TM145,TM145s,4,10000,"The user attacks the target by controlling the target's item. The move fails if the target doesn't have an item.",3,0,0,POLTERGEIST
+1000,TM146,TM146,TM146s,4,10000,"The user gathers space power and boosts its Sp. Atk stat, then attacks the target on the next turn.",3,0,0,METEORBEAM
+1001,TM147,TM147,TM147s,4,10000,"The user slaps down the target's held item, preventing that item from being used in the battle.",3,0,0,KNOCKOFF
+1002,DXORB,DX Orb,DX Orbs,1,0,"A device made from an ancient crystal. It is said to hold many powers from the Queen of Parthenia.",0,0,0,
+1003,DXORB1,DX Orb,DX Orbs,1,0,"A device made from an ancient crystal. It is said to hold many powers from the Queen of Parthenia.",0,0,0,
+1004,DXORB2,DX Orb,DX Orbs,1,0,"A device made from an ancient crystal. It is said to hold many powers from the Queen of Parthenia.",0,0,0,
+1005,DXORB3,DX Orb,DX Orbs,1,0,"A device made from an ancient crystal. It is said to hold many powers from the Queen of Parthenia.",0,0,0,
+1006,DXORB4,DX Orb,DX Orbs,1,0,"A device made from an ancient crystal. It is said to hold many powers from the Queen of Parthenia.",0,0,0,
+1007,DXORB5,DX Orb,DX Orbs,1,0,"A device made from an ancient crystal. It is said to hold many powers from the Queen of Parthenia.",0,0,0,

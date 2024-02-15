@@ -1457,7 +1457,7 @@ BattleHandlers::TerrainExtenderItem.add(:TERRAINEXTENDER,
 
 BattleHandlers::TerrainStatBoostItem.add(:ELECTRICSEED,
   proc { |item,battler,battle|
-    next false if battle.field.terrain != :Electric
+    next false unless [:Electric,:Magnetic,:Digital].include?(battle.field.field_effects)
     next false if !battler.pbCanRaiseStatStage?(:DEFENSE,battler)
     itemName = GameData::Item.get(item).name
     battle.pbCommonAnimation("UseItem",battler)
@@ -1467,7 +1467,7 @@ BattleHandlers::TerrainStatBoostItem.add(:ELECTRICSEED,
 
 BattleHandlers::TerrainStatBoostItem.add(:GRASSYSEED,
   proc { |item,battler,battle|
-    next false if battle.field.terrain != :Grassy
+    next false unless [:Grassy,:Garden].include?(battle.field.field_effects)
     next false if !battler.pbCanRaiseStatStage?(:DEFENSE,battler)
     itemName = GameData::Item.get(item).name
     battle.pbCommonAnimation("UseItem",battler)
@@ -1477,7 +1477,7 @@ BattleHandlers::TerrainStatBoostItem.add(:GRASSYSEED,
 
 BattleHandlers::TerrainStatBoostItem.add(:MISTYSEED,
   proc { |item,battler,battle|
-    next false if battle.field.terrain != :Misty
+    next false unless [:Misty,:FairyLights].include?(battle.field.field_effects)
     next false if !battler.pbCanRaiseStatStage?(:SPECIAL_DEFENSE,battler)
     itemName = GameData::Item.get(item).name
     battle.pbCommonAnimation("UseItem",battler)
@@ -1487,7 +1487,7 @@ BattleHandlers::TerrainStatBoostItem.add(:MISTYSEED,
 
 BattleHandlers::TerrainStatBoostItem.add(:PSYCHICSEED,
   proc { |item,battler,battle|
-    next false if battle.field.terrain != :Psychic
+    next false unless [:Psychic,:Dream].include?(battle.field.field_effects)
     next false if !battler.pbCanRaiseStatStage?(:SPECIAL_DEFENSE,battler)
     itemName = GameData::Item.get(item).name
     battle.pbCommonAnimation("UseItem",battler)

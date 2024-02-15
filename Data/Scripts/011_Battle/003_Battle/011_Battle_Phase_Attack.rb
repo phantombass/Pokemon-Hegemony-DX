@@ -36,6 +36,7 @@ class PokeBattle_Battle
       if !wildBattle? || !b.opposes?
         owner = pbGetOwnerIndexFromBattlerIndex(b.index)
         pbMegaEvolve(b.index) if @megaEvolution[b.idxOwnSide][owner]==b.index
+        pbDXForm(b.index) if @dx_form[b.idxOwnSide][owner]==b.index
       end
       # Use Pursuit
       @choices[b.index][3] = idxSwitcher   # Change Pursuit's target
@@ -96,6 +97,35 @@ class PokeBattle_Battle
       owner = pbGetOwnerIndexFromBattlerIndex(b.index)
       next if @megaEvolution[b.idxOwnSide][owner]!=b.index
       pbMegaEvolve(b.index)
+    end
+  end
+
+  def pbAttackPhaseDXForm
+    pbPriority.each do |b|
+      next if wildBattle? && b.opposes?
+      next unless @choices[b.index][0]==:UseMove && !b.fainted?
+      owner = pbGetOwnerIndexFromBattlerIndex(b.index)
+      next if @dx_form[b.idxOwnSide][owner]!=b.index
+      pbDXForm(b.index)
+    end
+  end
+
+  def pbAttackPhaseDXStatBoost
+    pbPriority.each do |b|
+      next if wildBattle? && b.opposes?
+      next unless @choices[b.index][0]==:UseMove && !b.fainted?
+      owner = pbGetOwnerIndexFromBattlerIndex(b.index)
+      next if @dx_temp_stat[b.idxOwnSide][owner]!=0
+      idx = @battlers[b.index].hasActiveItem?(:DXORB) ? b.index : -1
+      next if idx == -1
+      trainerName = pbGetOwnerName(b.index)
+      pbDisplay(_INTL("{1}'s DX Orb is glowing!",trainerName))
+      if b.pbOwnedByPlayer?
+        @battlers[idx].pbRaiseStatStage($dx_orb.temp_stat[0],$dx_orb.temp_stat[1],battlers[idx])
+      else
+        @battlers[b.index].pbRaiseStatStage(battlers[b.index].dx_temp_stat,1,battlers[b.index])
+      end
+      @dx_temp_stat[b.idxOwnSide][owner] = -1
     end
   end
 
@@ -187,6 +217,8 @@ class PokeBattle_Battle
     pbAttackPhaseItems
     return if @decision>0
     pbAttackPhaseMegaEvolution
+    pbAttackPhaseDXForm
+    pbAttackPhaseDXStatBoost
     pbAttackPhaseMoves
   end
 end

@@ -89,6 +89,10 @@ class Pokemon
   # @return [Boolean] whether the Pokemon is a Brilliant Pokemon or no
   attr_accessor :brilliant
   attr_accessor :roles
+  attr_accessor :dx_temp_stat
+  attr_accessor :dx_type_boost
+  attr_accessor :dx_perm_stat
+  attr_accessor :dx_type3
 
   # Max total IVs
   IV_STAT_LIMIT = 31
@@ -1251,6 +1255,10 @@ class Pokemon
     @damage_done      = 0
     @critical_hits    = 0
     @candies_fed      = 0
+    @dx_type3 = nil
+    @dx_perm_stat = nil
+    @dx_temp_stat = nil
+    @dx_type_boost = nil
     calc_stats
     if @form == 0 && recheck_form
       f = MultipleForms.call("getFormOnCreation", self)

@@ -94,6 +94,10 @@ class PokeBattle_Battler
     @status        = pkmn.status
     @statusCount   = pkmn.statusCount
     @pokemon       = pkmn
+    @dx_type3 = pkmn.dx_type3
+    @dx_perm_stat = pkmn.dx_perm_stat
+    @dx_temp_stat = pkmn.dx_temp_stat
+    @dx_type_boost = pkmn.dx_type_boost
     @pokemonIndex  = idxParty
     @participants  = []   # Participants earn Exp. if this battler is defeated
     @moves         = []

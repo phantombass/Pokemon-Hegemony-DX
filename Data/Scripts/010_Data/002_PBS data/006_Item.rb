@@ -106,15 +106,23 @@ module GameData
     def is_mega_stone?;      return @type == 12; end   # Does NOT include Red Orb/Blue Orb
 
     def is_important?
-      return true if is_key_item? || is_HM? || is_TM?
+      return true if is_key_item? || is_HM? || is_TM? || @id == :DXORB
       return false
     end
 
-    def can_hold?;           return !is_important?; end
+    def can_hold?
+      if @id == :DXORB
+        return true
+      else 
+        return !is_important?
+      end
+    end
 
     def unlosable?(species, ability)
       return false if species == :ARCEUS && ability != :MULTITYPE
       return false if species == :SILVALLY && ability != :RKSSYSTEM
+      dx = [:DXORB,:DXORB1,:DXORB2,:DXORB3,:DXORB4,:DXORB5]
+      return true if dx.include?(@id)
       combos = {
          :ARCEUS   => [:FISTPLATE,   :FIGHTINIUMZ,
                        :SKYPLATE,    :FLYINIUMZ,
@@ -150,6 +158,8 @@ module GameData
                        :DRAGONMEMORY,
                        :DARKMEMORY,
                        :FAIRYMEMORY],
+         :DIALGA   => [:ADAMANTORB],
+         :PALKIA   => [:LUSTROUSORB],
          :GIRATINA => [:GRISEOUSORB],
          :GENESECT => [:BURNDRIVE, :CHILLDRIVE, :DOUSEDRIVE, :SHOCKDRIVE],
          :KYOGRE   => [:BLUEORB],

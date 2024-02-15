@@ -40,6 +40,7 @@ FIELD_EFFECTS = {
 			#structure: newType => [oldType]
 			:type_change_message => {}, #the message that shows if a type of move changes type
 			#structure: "message" => [oldType]
+			:type_accuracy_change => {},
 			:side_effects => {}, #special effects activated when using certain moves or types, using flags as condition references
 			#structure: "flag" => [move or type]
 			:field_changers => {}, #moves or types that change the field
@@ -67,19 +68,25 @@ FIELD_EFFECTS = {
 			:move_damage_boost => {
 			1.2 => [Fields::WIND_MOVES]
 			},
-			:move_messages => {"The wind blew through the trees." => [Fields::WIND_MOVES]},
+			:move_messages => {"The forest bugs are riding the wind!" => [Fields::WIND_MOVES]},
 			:move_type_change => {},
-			:move_type_mod => {},
+			:move_type_mod => {
+				:BUG => [Fields::WIND_MOVES]
+			},
 			:move_accuracy_change => {},
 			:defensive_modifiers => {},
 			:type_damage_change => {
-			1.2 => [:BUG]
+			1.2 => [:BUG,:DARK]
 			},
-			:type_messages => {"The bugs of the forest joined in!" => [:BUG]},
+			:type_messages => {
+				"The bugs of the forest joined in!" => [:BUG],
+				"The darkness of the forest joined the attack!" => [:DARK]
+			},
 			:type_type_mod => {},
 			:type_mod_message => {},
 			:type_type_change => {},
 			:type_change_message => {},
+			:type_accuracy_change => {},
 			:side_effects => {},
 			:field_changers => {:None => [Fields::IGNITE_MOVES]},
 			:change_message => {"The forest burned down!" => [Fields::IGNITE_MOVES]},
@@ -115,6 +122,7 @@ FIELD_EFFECTS = {
 			:type_mod_message => {},
 			:type_type_change => {},
 			:type_change_message => {},
+			:type_accuracy_change => {},
 			:side_effects => {},
 			:field_changers => {:None => [Fields::IGNITE_MOVES]},
 			:change_message => {"The garden burned down!" => [Fields::IGNITE_MOVES]},
@@ -147,6 +155,7 @@ FIELD_EFFECTS = {
 			:type_mod_message => {},
 			:type_type_change => {},
 			:type_change_message => {},
+			:type_accuracy_change => {},
 			:side_effects => {},
 			:field_changers => {
 				:Wildfire => [Fields::IGNITE_MOVES],
@@ -181,6 +190,7 @@ FIELD_EFFECTS = {
 			:type_mod_message => {},
 			:type_type_change => {},
 			:type_change_message => {},
+			:type_accuracy_change => {},
 			:side_effects => {},
 			:field_changers => {
 				:None => [Fields::QUAKE_MOVES],
@@ -223,6 +233,7 @@ FIELD_EFFECTS = {
 			:type_change_message => {
 				"The grass caught fire!" => [:GRASS]
 			},
+			:type_accuracy_change => {},
 			:side_effects => {"cinders" => Fields::WIND_MOVES},
 			:field_changers => {:None => [Fields::DOUSERS]},
 			:change_message => {"The wildfire was doused!" => [Fields::DOUSERS]},
@@ -255,6 +266,7 @@ FIELD_EFFECTS = {
 			:type_mod_message => {},
 			:type_type_change => {},
 			:type_change_message => {},
+			:type_accuracy_change => {},
 			:side_effects => {},
 			:field_changers => {:None => [Fields::REMOVAL]},
 			:change_message => {"The mist got blown away!" => [Fields::REMOVAL]},
@@ -283,6 +295,7 @@ FIELD_EFFECTS = {
 			:type_mod_message => {},
 			:type_type_change => {},
 			:type_change_message => {},
+			:type_accuracy_change => {},
 			:side_effects => {},
 			:field_changers => {:None => [Fields::REMOVAL]},
 			:change_message => {"The weird terrain got blown away!" => [Fields::REMOVAL]},
@@ -317,6 +330,7 @@ FIELD_EFFECTS = {
 			:type_mod_message => {},
 			:type_type_change => {},
 			:type_change_message => {},
+			:type_accuracy_change => {},
 			:side_effects => {},
 			:field_changers => {
 				:Wildfire => [Fields::IGNITE_MOVES],
@@ -333,27 +347,281 @@ FIELD_EFFECTS = {
 			:nature_power => :HYPERVOICE,
 			:mimicry => :NORMAL,
 			:intro_script => nil,
-			:abilities => [:SOUNDPROOF,:CACOPHONY,:PUNKROCK],
+			:abilities => [:SOUNDPROOF,:CACOPHONY,:PUNKROCK,:LIQUIDVOICE],
 			:ability_effects => {
 				:SOUNDPROOF => [[:SPECIAL_DEFENSE,1]],
 				:CACOPHONY => [[:DEFENSE,1],[:SPECIAL_DEFENSE,1]],
-				:PUNKROCK => [[:SPECIAL_ATTACK,1]]
+				:PUNKROCK => [[:SPECIAL_ATTACK,1]],
+				:LIQUIDVOICE => [[:SPECIAL_ATTACK,1]]
 			},
 			:move_damage_boost => {
-			1.2 => [Fields::ECHO_MOVES]
+			1.3 => [Fields::ECHO_MOVES]
 			},
 			:move_messages => {"The cave echoed loudly!" => [Fields::ECHO_MOVES]},
 			:move_type_change => {},
 			:move_type_mod => {},
 			:move_accuracy_change => {},
 			:defensive_modifiers => {},
-			:type_damage_change => {},
-			:type_messages => {},
+			:type_damage_change => {
+				1.2 => [:ROCK,:DARK,:GHOST],
+				0.8 => [:FIRE,:GRASS]
+			},
+			:type_messages => {
+				"The cave boosted the attack!" => [:ROCK],
+				"The cave darkness boosted the attack!" => [:DARK,:GHOST],
+				"The cave darkness weakened the attack!" => [:FIRE,:GRASS]
+			},
 			:type_type_mod => {},
 			:type_mod_message => {},
 			:type_type_change => {},
 			:type_change_message => {},
-			:side_effects => {"echo" => Fields::ECHO_MOVES},
+			:type_accuracy_change => {},
+			:side_effects => {},
+			:field_changers => {},
+			:change_message => {},
+			:field_change_conditions => {} 
+		},
+		:Desert => {
+			:field_name => "Desert",
+			:intro_message => "The sand is everywhere...",
+			:field_gfx => "sand",
+			:nature_power => :EARTHPOWER,
+			:mimicry => :GROUND,
+			:intro_script => nil,
+			:abilities => [:SANDRUSH,:SANDVEIL,:SANDFORCE],
+			:ability_effects => {},
+			:move_damage_boost => {
+			1.2 => [Fields::WIND_MOVES]
+			},
+			:move_messages => {"The sand kicked up!" => [Fields::WIND_MOVES]},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {
+				1.2 => [:FIRE,:GROUND],
+				0.8 => [:WATER,:GRASS]
+			},
+			:type_messages => {
+				"The desert boosted the attack!" => [:GROUND,:FIRE],
+				"The desert weakened the attack!" => [:WATER,:GRASS]
+			},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:type_accuracy_change => {},
+			:side_effects => {"sand" => Fields::WIND_MOVES},
+			:field_changers => {},
+			:change_message => {},
+			:field_change_conditions => {} 
+		},
+		:Ruins => {
+			:field_name => "Ruins",
+			:intro_message => "A mysterious presence surrounds you...",
+			:field_gfx => "rocky_eve",
+			:nature_power => :PSYCHIC,
+			:mimicry => :PSYCHIC,
+			:intro_script => nil,
+			:abilities => [:SANDRUSH,:SANDVEIL,:SANDFORCE],
+			:ability_effects => {},
+			:move_damage_boost => {},
+			:move_messages => {},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {
+				2 => [:PSYCHIC,"fullhp"]
+			},
+			:type_damage_change => {
+				1.2 => [:PSYCHIC,:FIRE,:GRASS,:WATER]
+			},
+			:type_messages => {
+				"The ruins boosted the attack!" => [:PSYCHIC,:FIRE,:GRASS,:WATER]
+			},
+			:type_type_mod => {
+				:ROCK => [:PSYCHIC]
+			},
+			:type_mod_message => {
+				"The rubble joined the telekenetic strike!" => [:PSYCHIC]
+			},
+			:type_type_change => {},
+			:type_change_message => {},
+			:type_accuracy_change => {},
+			:side_effects => {},
+			:field_changers => {:None => [Fields::QUAKE_MOVES]},
+			:change_message => {"The quake leveled the ruins!" => [Fields::QUAKE_MOVES]},
+			:field_change_conditions => {} 
+		},
+		:Swamp => {
+			:field_name => "Swamp",
+			:intro_message => "The swamp feels unstable...",
+			:field_gfx => "field_night",
+			:nature_power => :SLUDGEWAVE,
+			:mimicry => :POISON,
+			:intro_script => "swamp",
+			:abilities => [:POISONPOINT,:POISONTOUCH,:FEVERPITCH,:CORROSION,:NITRIC],
+			:ability_effects => {
+				:POISONPOINT => [[:DEFENSE,1]],
+				:POISONTOUCH => [[:ATTACK,1]],
+				:FEVERPITCH => [[:SPECIAL_ATTACK,1],[:SPECIAL_DEFENSE,1]],
+				:CORROSION => [[:SPECIAL_ATTACK,1]],
+				:NITRIC => [[:ATTACK,1],[:SPECIAL_ATTACK,1]]
+			},
+			:move_damage_boost => {},
+			:move_messages => {},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {
+				1.2 => [:WATER,:GRASS,:POISON],
+				0.8 => [:FIRE,:ROCK,:FIGHTING]
+			},
+			:type_messages => {
+				"The swamp boosted the attack!" => [:WATER,:GRASS,:POISON],
+				"The swamp weakened the attack!" => [:FIGHTING,:FIRE,:ROCK]
+			},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:type_accuracy_change => {
+				0 => [:WATER,:POISON]
+			},
+			:side_effects => {},
+			:field_changers => {:None => [Fields::SWAMP_REMOVAL]},
+			:change_message => {"The rocks filled in the swamp!" => [Fields::SWAMP_REMOVAL]},
+			:field_change_conditions => {} 
+		},
+		:Lava => {
+			:field_name => "Lava",
+			:intro_message => "Lava flows underfoot...",
+			:field_gfx => "water_eve",
+			:nature_power => :LAVAPLUME,
+			:mimicry => :FIRE,
+			:intro_script => nil,
+			:abilities => [:FLASHFIRE,:WELLBAKEDBODY,:THERMALEXCHANGE,:HEATPROOF,:MAGMAARMOR,:STEAMENGINE,:SOLARPOWER,:PROTOSYNTHESIS],
+			:ability_effects => {
+				:THERMALEXHCANGE => [[:ATTACK,1]],
+				:HEATPROOF => [[:DEFENSE,1],[:SPECIAL_DEFENSE,1]],
+				:MAGMAARMOR => [[:DEFENSE,1],[:SPECIAL_DEFENSE,1]],
+				:SOLARPOWER => [[:SPECIAL_ATTACK,1]]
+			},
+			:move_damage_boost => {
+				0.0 => [Fields::WEAK_WATER]
+			},
+			:move_messages => {
+				"The water fizzled out!" => [Fields::WEAK_WATER]
+			},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {
+				1.2 => [:FIRE],
+				0.8 => [:WATER,:ICE]
+			},
+			:type_messages => {
+				"The lava boosted the heat!" => [:FIRE],
+				"The ice melted!" => [:ICE]
+			},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {
+				:WATER => [:ICE]
+			},
+			:type_change_message => {
+				"The heat weakened the water" => [:ICE]
+			},
+			:type_accuracy_change => {},
+			:side_effects => {},
+			:field_changers => {
+				:Mountainside => [Fields::SWAMP_REMOVAL],
+				:None => [Fields::LAVA_REMOVAL]
+			},
+			:change_message => {
+				"The lava flow was stopped!" => [Fields::SWAMP_REMOVAL],
+				"The lava was cooled by the water!" => [Fields::LAVA_REMOVAL]
+			},
+			:field_change_conditions => {:None => PokeBattle_Battle.douse?} 
+		},
+		:SnowyMountainside => {
+			:field_name => "Snowy Mountainside",
+			:intro_message => "A chilling wind blows by...",
+			:field_gfx => "snow",
+			:nature_power => :ICE,
+			:mimicry => :BLIZZARD,
+			:intro_script => nil,
+			:abilities => [:SLUSHRUSH,:SNOWCLOAK,:ICEBODY],
+			:ability_effects => {
+				:SNOWCLOAK => [[:DEFENSE,1]]
+			},
+			:move_damage_boost => {
+			1.2 => [Fields::WIND_MOVES]
+			},
+			:move_messages => {
+				"The chilling winds kicked up!" => [Fields::WIND_MOVES],
+				"The rocks picked up ice!" => [:ROCKSLIDE],
+				"AVALANCHE!" => [Fields::ECHO_MOVES]
+			},
+			:move_type_change => {},
+			:move_type_mod => {
+				:ICE => [:ROCKSLIDE,Fields::ECHO_MOVES]
+			},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {
+				1.2 => [:ICE,:ROCK]},
+			:type_messages => {
+				"The frozen mountain boosted the attack!" => [:ICE]
+			},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:type_accuracy_change => {},
+			:side_effects => {},
+			:field_changers => {},
+			:change_message => {},
+			:field_change_conditions => {} 
+		},
+		:Mountainside => {
+			:field_name => "Mountainside",
+			:intro_message => "These rocks seem unsteady...",
+			:field_gfx => "rocky",
+			:nature_power => :ROCK,
+			:mimicry => :ROCKSLIDE,
+			:intro_script => nil,
+			:abilities => [:SCALER,:SPLINTER,:SOLIDROCK,:ROCKHEAD],
+			:ability_effects => {
+				:SCALER => [[:DEFENSE,1]],
+				:SPLINTER => [[:SPECIAL_DEFENSE,1]],
+				:SOLIDROCK => [[:DEFENSE,1],[:SPECIAL_DEFENSE,1]],
+				:ROCKHEAD => [[:ATTACK,1]]
+			},
+			:move_damage_boost => {
+			1.2 => [Fields::QUAKE_MOVES]
+			},
+			:move_messages => {
+				"LANDSLIDE!" => [Fields::QUAKE_MOVES]},
+			:move_type_change => {},
+			:move_type_mod => {
+				:ROCK => [Fields::QUAKE_MOVES]
+			},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {
+				1.2 => [:ROCK]},
+			:type_messages => {
+				"The mountain boosted the attack!" => [:ROCK]
+			},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:type_accuracy_change => {},
+			:side_effects => {},
 			:field_changers => {},
 			:change_message => {},
 			:field_change_conditions => {} 

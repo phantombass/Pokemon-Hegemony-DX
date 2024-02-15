@@ -27,6 +27,43 @@ module GameData
   end
 end
 
+module Fields
+  sound = []
+  pulse = []
+  wind = []
+  slicing = []
+  punching = []
+  kicking = []
+  water = []
+  weakwater = []
+  swamp = []
+  moves = load_data("Data/moves.dat")
+  for move in moves
+    next if move[0].is_a?(Integer)
+    mv = move[1]
+    sound.push(GameData::Move.get(mv).id) if mv.flags[/k/]
+    pulse.push(GameData::Move.get(mv).id) if mv.flags[/m/]
+    wind.push(GameData::Move.get(mv).id) if mv.flags[/r/]
+    slicing.push(GameData::Move.get(mv).id) if mv.flags[/q/]
+    punching.push(GameData::Move.get(mv).id) if mv.flags[/j/]
+    kicking.push(GameData::Move.get(mv).id) if mv.flags[/t/]
+    water.push(GameData::Move.get(mv).id) if (mv.type == :WATER && mv.category != 2 && mv.base_damage >= 65)
+    weakwater.push(GameData::Move.get(mv).id) if (mv.type == :WATER && mv.category != 2 && mv.base_damage < 65)
+    swamp.push(GameData::Move.get(mv).id) if (mv.type == :ROCK && mv.base_damage >= 80)
+  end
+  SOUND_MOVES = sound
+  WIND_MOVES = wind
+  ECHO_MOVES = slicing + kicking + sound + punching
+  IGNITE_MOVES = [:FLAMEBURST,:INCINERATE,:LAVAPLUME,:FLAMETHROWER,:MAGMATREK,:FLAREBLITZ,:FLAMEWHEEL,:ERUPTION]
+  QUAKE_MOVES = [:EARTHQUAKE,:BULLDOZE,:STOMPINGTANTRUM,:FISSURE,:STEAMROLLER,:STEELROLLER,:ICESPINNER]
+  DOUSERS = [:RAINDANCE,:DRIZZLE,:PRIMORDIALSEA] + water
+  WEAK_WATER = weakwater
+  REMOVAL = [:DEFOG,:TIDYUP,:GALEFORCE,:TAILWIND] + wind
+  SWAMP_REMOVAL = swamp
+  LAVA_REMOVAL = [:ICEBEAM,:BLIZZARD,:GLACIALLANCE,:SHEERCOLD,:ICESPINNER,:ICICLECRASH,:ICEHAMMER] + water
+  #These are examples of arrays you can make for moves that will affect or be affected by a field effect
+end
+
 #Define all your Field Effects here
 
 GameData::FieldEffects.register({
@@ -77,6 +114,116 @@ GameData::FieldEffects.register({
 GameData::FieldEffects.register({
   :id   => :Poison,
   :name => _INTL("Poison Terrain")
+})
+
+GameData::FieldEffects.register({
+  :id   => :Desert,
+  :name => _INTL("Desert")
+})
+
+GameData::FieldEffects.register({
+  :id   => :Swamp,
+  :name => _INTL("Swamp")
+})
+
+GameData::FieldEffects.register({
+  :id   => :Lava,
+  :name => _INTL("Lava")
+})
+
+GameData::FieldEffects.register({
+  :id   => :Ruins,
+  :name => _INTL("Ruins")
+})
+
+GameData::FieldEffects.register({
+  :id   => :City,
+  :name => _INTL("City")
+})
+
+GameData::FieldEffects.register({
+  :id   => :Outage,
+  :name => _INTL("Outage")
+})
+
+GameData::FieldEffects.register({
+  :id   => :Mountainside,
+  :name => _INTL("Mountainside")
+})
+
+GameData::FieldEffects.register({
+  :id   => :Icy,
+  :name => _INTL("Icy")
+})
+
+GameData::FieldEffects.register({
+  :id   => :SnowyMountainside,
+  :name => _INTL("Snowy Mountainside")
+})
+
+GameData::FieldEffects.register({
+  :id   => :Water,
+  :name => _INTL("Water")
+})
+
+GameData::FieldEffects.register({
+  :id   => :Underwater,
+  :name => _INTL("Underwater")
+})
+
+GameData::FieldEffects.register({
+  :id   => :Dream,
+  :name => _INTL("Dream")
+})
+
+GameData::FieldEffects.register({
+  :id   => :Magnetic,
+  :name => _INTL("Magnetic")
+})
+
+GameData::FieldEffects.register({
+  :id   => :Mirror,
+  :name => _INTL("Mirror")
+})
+
+GameData::FieldEffects.register({
+  :id   => :Space,
+  :name => _INTL("Space")
+})
+
+GameData::FieldEffects.register({
+  :id   => :Dojo,
+  :name => _INTL("Dojo")
+})
+
+GameData::FieldEffects.register({
+  :id   => :Distortion,
+  :name => _INTL("Distortion")
+})
+
+GameData::FieldEffects.register({
+  :id   => :FairyLights,
+  :name => _INTL("Fairy Lights")
+})
+
+GameData::FieldEffects.register({
+  :id   => :DarkRoom,
+  :name => _INTL("Dark Room")
+})
+
+GameData::FieldEffects.register({
+  :id   => :Castle,
+  :name => _INTL("Castle")
+})
+
+GameData::FieldEffects.register({
+  :id   => :WindTunnel,
+  :name => _INTL("Wind Tunnel")
+})
+
+GameData::FieldEffects.register({
+  :id   => :DragonsDen,
+  :name => _INTL("Dragon's Den")
 })
 
 #Define Environments to match your Field Effects here
@@ -135,35 +282,137 @@ GameData::Environment.register({
   :battle_base => "cave1"
 })
 
-module Fields
-  sound = []
-  pulse = []
-  wind = []
-  slicing = []
-  punching = []
-  kicking = []
-  water = []
-  moves = load_data("Data/moves.dat")
-  for move in moves
-    next if move[0].is_a?(Integer)
-    mv = move[1]
-    sound.push(GameData::Move.get(mv).id) if mv.flags[/k/]
-    pulse.push(GameData::Move.get(mv).id) if mv.flags[/m/]
-    wind.push(GameData::Move.get(mv).id) if mv.flags[/r/]
-    slicing.push(GameData::Move.get(mv).id) if mv.flags[/q/]
-    punching.push(GameData::Move.get(mv).id) if mv.flags[/j/]
-    kicking.push(GameData::Move.get(mv).id) if mv.flags[/t/]
-    water.push(GameData::Move.get(mv).id) if (mv.type == :WATER && mv.category != 2)
-  end
-  SOUND_MOVES = sound
-  WIND_MOVES = wind
-  ECHO_MOVES = slicing + kicking + sound + punching
-  IGNITE_MOVES = [:FLAMEBURST,:INCINERATE,:LAVAPLUME,:FLAMETHROWER,:MAGMATREK,:FLAREBLITZ,:FLAMEWHEEL,:ERUPTION]
-  QUAKE_MOVES = [:EARTHQUAKE,:BULLDOZE,:STOMPINGTANTRUM,:FISSURE,:STEAMROLLER,:STEELROLLER,:ICESPINNER]
-  DOUSERS = [:RAINDANCE,:DRIZZLE,:PRIMORDIALSEA] + water
-  REMOVAL = [:DEFOG,:TIDYUP,:GALEFORCE,:TAILWIND] + wind
-  #These are examples of arrays you can make for moves that will affect or be affected by a field effect
-end
+GameData::Environment.register({
+  :id          => :Desert,
+  :name        => _INTL("Desert"),
+  :battle_base => "sand"
+})
+
+GameData::Environment.register({
+  :id          => :Swamp,
+  :name        => _INTL("Swamp"),
+  :battle_base => "field_night"
+})
+
+GameData::Environment.register({
+  :id          => :Lava,
+  :name        => _INTL("Lava"),
+  :battle_base => "water_eve"
+})
+
+GameData::Environment.register({
+  :id          => :Ruins,
+  :name        => _INTL("Ruins"),
+  :battle_base => "rocky_eve"
+})
+
+GameData::Environment.register({
+  :id          => :City,
+  :name        => _INTL("City"),
+  :battle_base => "city"
+})
+
+GameData::Environment.register({
+  :id          => :Outage,
+  :name        => _INTL("Outage"),
+  :battle_base => "city_night"
+})
+
+GameData::Environment.register({
+  :id          => :Mountainside,
+  :name        => _INTL("Mountainside"),
+  :battle_base => "rocky"
+})
+
+GameData::Environment.register({
+  :id          => :Icy,
+  :name        => _INTL("Icy"),
+  :battle_base => "ice"
+})
+
+GameData::Environment.register({
+  :id          => :SnowyMountainside,
+  :name        => _INTL("Snowy Mountainside"),
+  :battle_base => "snow"
+})
+
+GameData::Environment.register({
+  :id          => :Water,
+  :name        => _INTL("Water"),
+  :battle_base => "water"
+})
+
+GameData::Environment.register({
+  :id          => :Underwater,
+  :name        => _INTL("Underwater"),
+  :battle_base => "underwater"
+})
+
+GameData::Environment.register({
+  :id          => :Dream,
+  :name        => _INTL("Dream"),
+  :battle_base => "dream"
+})
+
+GameData::Environment.register({
+  :id          => :Magnetic,
+  :name        => _INTL("Magnetic"),
+  :battle_base => "champion2"
+})
+
+GameData::Environment.register({
+  :id          => :Mirror,
+  :name        => _INTL("Mirror"),
+  :battle_base => "cave1_ice"
+})
+
+GameData::Environment.register({
+  :id          => :Space,
+  :name        => _INTL("Space"),
+  :battle_base => "elite1"
+})
+
+GameData::Environment.register({
+  :id          => :Dojo,
+  :name        => _INTL("Dojo"),
+  :battle_base => "elite6"
+})
+
+GameData::Environment.register({
+  :id          => :Distortion,
+  :name        => _INTL("Distortion"),
+  :battle_base => "distortion"
+})
+
+GameData::Environment.register({
+  :id          => :FairyLights,
+  :name        => _INTL("Fairy Lights"),
+  :battle_base => "snow_eve"
+})
+
+GameData::Environment.register({
+  :id          => :DarkRoom,
+  :name        => _INTL("Dark Room"),
+  :battle_base => "elite3"
+})
+
+GameData::Environment.register({
+  :id          => :Castle,
+  :name        => _INTL("Castle"),
+  :battle_base => "castle"
+})
+
+GameData::Environment.register({
+  :id          => :WindTunnel,
+  :name        => _INTL("Wind Tunnel"),
+  :battle_base => "snow_night"
+})
+
+GameData::Environment.register({
+  :id          => :DragonsDen,
+  :name        => _INTL("Dragon's Den"),
+  :battle_base => "dragon"
+})
 
 class PokemonTemp
   def recordBattleRule(rule, var = nil)
@@ -354,6 +603,11 @@ class PokeBattle_Battle
   	return false if [:Rain,:HeavyRain,:AcidRain].include?(@field.pbWeather)
   	return true
   end
+  def self.douse?
+    return false if @field.nil?
+    return false if [:Sun,:HarshSun].include?(@field.pbWeather)
+    return true
+  end
   def pbStartBattleCore
     # Set up the battlers on each side
     if $game_switches[899] && $game_switches[900]
@@ -427,9 +681,13 @@ class PokeBattle_Battle
     if fe[:intro_message] != nil
       pbDisplay(_INTL(fe[:intro_message]))
     end
-    #case fe[:intro_script]
-    #add your intro scripts here for certain gimmicks the field effect can start the battle with, like weather or terrain
-    #end
+    case fe[:intro_script]
+    when "swamp"
+      @battlers.each do |battler|
+        battler.pbLowerStatStage(:SPEED,1,nil) if battler.affectedBySwamp? && battler.pbCanLowerStatStage?(:SPEED) && @field.field_effects == :Swamp
+        pbDisplay(_INTL("{1} was caught in the swamp!",battler.pbThis))
+      end
+    end
     # Abilities upon entering battle
     pbOnActiveAll
     # Main battle loop
@@ -559,6 +817,16 @@ class PokeBattle_Battle
         end
       end
     end
+    if fe[:abilities] != nil
+      if fe[:abilities].include?(battler.ability) && !fe[:ability_effects].keys.include?(battler.ability)
+        BattleHandlers.triggerAbilityOnSwitchIn(battler.ability,battler,@battle)
+      end
+    end
+    if battler.affectedBySwamp? && !battler.fainted? && @field.field_effects == :Swamp
+      pbDisplay(_INTL("{1} was caught in the swamp!",battler.pbThis))
+      battler.pbLowerStatStage(:SPEED,1,battler) if battler.pbCanLowerStatStage?(:SPEED)
+      battler.pbItemStatRestoreCheck
+    end
     return true
   end
 
@@ -585,8 +853,8 @@ class PokeBattle_Battle
         end
         @opponent.each_with_index do |_t,i|
           @scene.pbShowOpponent(i)
-          msg = (@endSpeeches[i] && @endSpeeches[i]!="") ? @endSpeeches[i] : "..."
-          pbDisplayPaused(msg.gsub(/\\[Pp][Nn]/,pbPlayer.name))
+          msg = (@endSpeeches[i]!=0) ? @endSpeeches[i] : "..."
+          pbDisplayPaused(msg)
         end
       end
       # Gain money from winning a trainer battle, and from Pay Day
@@ -742,6 +1010,24 @@ class PokeBattle_Battle
         battler.pbRecoverHP(battler.totalhp / 16)
         pbDisplay(_INTL("{1}'s HP was restored.", battler.pbThis))
       end
+    when :Lava
+      if battler.affectedByTerrain? && battler.canHeal? && battler.affectedByLava?
+        if battler.hasActiveAbility?(:FLAMEBODY)
+          PBDebug.log("[Lingering effect] Lava Field heals #{battler.pbThis(true)}")
+          battler.pbRecoverHP(battler.totalhp / 16)
+          pbDisplay(_INTL("{1}'s HP was restored.", battler.pbThis))
+        end
+      elsif battler.affectedByLava? && battler.takesIndirectDamage?
+        PBDebug.log("[Lingering effect] Lava Field hurts #{battler.pbThis(true)}")
+        battler.pbReduceHP(battler.totalhp / 16)
+        pbDisplay(_INTL("{1}'s was scorched.", battler.pbThis))
+      end
+    when :SnowyMountainside
+      if battler.affectedByTerrain? && battler.canHeal? && battler.hasActiveAbility?(:ICEBODY)
+        PBDebug.log("[Lingering effect] Snowy Mountainside field heals #{battler.pbThis(true)}")
+        battler.pbRecoverHP(battler.totalhp / 16)
+        pbDisplay(_INTL("{1}'s HP was restored.", battler.pbThis))
+      end
     end
     #add damage done at the end of the field by field effects
     return if amt < 0
@@ -757,9 +1043,25 @@ class PokeBattle_Battler
   def affectedByGarden?
     return pbHasType?([:BUG,:FAIRY,:GRASS])
   end
+  def affectedBySwamp?
+    return true if !pbHasType?([:BUG,:GRASS,:WATER,:POISON])
+    return false if airborne?
+  end
+  def affectedByLava?
+    return true if !pbHasType?([:FIRE,:DRAGON,:FLYING,:WATER,:GROUND])
+    return false if airborne?
+  end
+  def affectedByCinders?
+    return true if !pbHasType?([:FIRE,:DRAGON])
+    return false if !takesIndirectDamage?
+  end
+  def activeField
+    return @battle.field.field_effects
+  end
 end
 
 def pbSetField(terrain)
+  terrain = :EchoChamber if $dungeon.reward_locations.include?($game_map.map_id)
   setBattleRule("field",terrain)
   setBattleRule("environment",terrain)
   name = GameData::Environment.get(terrain).name
@@ -769,8 +1071,8 @@ end
 #Field Changes due to Move Usage
 class PokeBattle_Scene
   def pbChangeField(terrain)
-    terrain = :EchoChamber if $game_map.map_id > 375
-    name = GameData::Environment.get(terrain).battle_base
+    terrain = :EchoChamber if $dungeon.reward_locations.include?($game_map.map_id)
+    name = FIELD_EFFECTS[@battle.field.field_effects][:field_gfx]
     @battle.field.field_effects = terrain
     back = name
     base = name
@@ -786,10 +1088,7 @@ class PokeBattle_Scene
     2.times do
       default.push(GameData::Environment.get(@battle.field.defaultField).battle_base)
     end
-    change = []
-    2.times do
-      change.push(GameData::Environment.get(@battle.field.field_effects).battle_base)
-    end
+    change = pbChangeField(@battle.field.field_effects)
     if @battle.field.field_effects != :None
       @battle.backdrop = change[0]
       @battle.backdropBase = change[1]
@@ -868,7 +1167,6 @@ class PokeBattle_Move
     modifiers[:evasion_multiplier]  = 1.0
     pbCalcAccuracyModifiers(user, target, modifiers)
     # Check if move can't miss
-    return true if modifiers[:base_accuracy] == 0
   	fe = FIELD_EFFECTS[@battle.field.field_effects]
   	if fe[:move_accuracy_change] != nil
   		for key in fe[:move_accuracy_change].keys
@@ -879,6 +1177,16 @@ class PokeBattle_Move
   			end
   		end
   	end
+    if fe[:type_accuracy_change] != nil
+      for key in fe[:type_accuracy_change].keys
+        if fe[:type_accuracy_change][key].is_a?(Array)
+          modifiers[:base_accuracy] = key if fe[:type_accuracy_change][key].include?(self.type)
+        else
+          modifiers[:base_accuracy] = key if fe[:type_accuracy_change][key] == self.type
+        end
+      end
+    end
+    return true if modifiers[:base_accuracy] == 0
 	# Calculation
     accStage = [[modifiers[:accuracy_stage], -6].max, 6].min + 6
     evaStage = [[modifiers[:evasion_stage], -6].max, 6].min + 6
@@ -924,16 +1232,301 @@ class PokeBattle_Move
   						msg = message
   					end
   				end
-  				@battle.pbDisplay(_INTL("#{msg}"))
+  				@battle.pbDisplay(_INTL("#{msg}")) if $test_trigger == false
   				@powerBoost = false
   			end
   		end
   	end
     return ret
   end
-  alias fe_pbCalcDamageMultipliers pbCalcDamageMultipliers
-  def pbCalcDamageMultipliers(*args)
-    fe_pbCalcDamageMultipliers(*args)
+
+  def pbCalcDamageMultipliers(user,target,numTargets,type,baseDmg,multipliers)
+    # Global abilities
+    if (@battle.pbCheckGlobalAbility(:DARKAURA) && type == :DARK) ||
+       (@battle.pbCheckGlobalAbility(:FAIRYAURA) && type == :FAIRY) ||
+       (@battle.pbCheckGlobalAbility(:GAIAFORCE) && type == :GROUND) ||
+       (@battle.pbCheckGlobalAbility(:FEVERPITCH) && type == :POISON)
+      if @battle.pbCheckGlobalAbility(:AURABREAK)
+        multipliers[:base_damage_multiplier] *= 2 / 3.0
+      else
+        multipliers[:base_damage_multiplier] *= 4 / 3.0
+      end
+    end
+    # Ability effects that alter damage
+    if user.abilityActive?
+      BattleHandlers.triggerDamageCalcUserAbility(user.ability,
+         user,target,self,multipliers,baseDmg,type)
+    end
+    if !@battle.moldBreaker
+      # NOTE: It's odd that the user's Mold Breaker prevents its partner's
+      #       beneficial abilities (i.e. Flower Gift boosting Atk), but that's
+      #       how it works.
+      user.eachAlly do |b|
+        next if !b.abilityActive?
+        BattleHandlers.triggerDamageCalcUserAllyAbility(b.ability,
+           user,target,self,multipliers,baseDmg,type)
+      end
+      if target.abilityActive?
+        BattleHandlers.triggerDamageCalcTargetAbility(target.ability,
+           user,target,self,multipliers,baseDmg,type) if !@battle.moldBreaker
+        BattleHandlers.triggerDamageCalcTargetAbilityNonIgnorable(target.ability,
+           user,target,self,multipliers,baseDmg,type)
+      end
+      target.eachAlly do |b|
+        next if !b.abilityActive?
+        BattleHandlers.triggerDamageCalcTargetAllyAbility(b.ability,
+           user,target,self,multipliers,baseDmg,type)
+      end
+    end
+    # Item effects that alter damage
+    if user.itemActive?
+      BattleHandlers.triggerDamageCalcUserItem(user.item,
+         user,target,self,multipliers,baseDmg,type)
+    end
+    if target.itemActive?
+      BattleHandlers.triggerDamageCalcTargetItem(target.item,
+         user,target,self,multipliers,baseDmg,type)
+    end
+    # Parental Bond's second attack
+    if user.effects[PBEffects::ParentalBond]==1
+      multipliers[:base_damage_multiplier] /= 4
+    end
+    if user.effects[PBEffects::Ambidextrous]==1
+      multipliers[:base_damage_multiplier] /= 4
+    end
+    if user.effects[PBEffects::EchoChamber]==1
+      multipliers[:base_damage_multiplier] /= 4
+    end
+    # Other
+    if user.effects[PBEffects::MeFirst]
+      multipliers[:base_damage_multiplier] *= 1.5
+    end
+    if user.effects[PBEffects::HelpingHand] && !self.is_a?(PokeBattle_Confusion)
+      multipliers[:base_damage_multiplier] *= 1.5
+    end
+    if user.effects[PBEffects::Charge]>0 && type == :ELECTRIC
+      multipliers[:base_damage_multiplier] *= 2
+    end
+    # Mud Sport
+    if type == :ELECTRIC
+      @battle.eachBattler do |b|
+        next if !b.effects[PBEffects::MudSport]
+        multipliers[:base_damage_multiplier] /= 3
+        break
+      end
+      if @battle.field.effects[PBEffects::MudSportField]>0
+        multipliers[:base_damage_multiplier] /= 3
+      end
+    end
+    # Water Sport
+    if type == :FIRE
+      @battle.eachBattler do |b|
+        next if !b.effects[PBEffects::WaterSport]
+        multipliers[:base_damage_multiplier] /= 3
+        break
+      end
+      if @battle.field.effects[PBEffects::WaterSportField]>0
+        multipliers[:base_damage_multiplier] /= 3
+      end
+    end
+    # Terrain moves
+    case @battle.field.field_effects
+    when :Electric
+      multipliers[:base_damage_multiplier] *= 1.5 if type == :ELECTRIC && user.affectedByTerrain?
+    when :Grassy
+      multipliers[:base_damage_multiplier] *= 1.5 if type == :GRASS && user.affectedByTerrain?
+    when :Psychic
+      multipliers[:base_damage_multiplier] *= 1.5 if type == :PSYCHIC && user.affectedByTerrain?
+    when :Misty
+      multipliers[:base_damage_multiplier] /= 2 if type == :DRAGON && target.affectedByTerrain?
+    when :Poison
+      multipliers[:base_damage_multiplier] *= 1.5 if type == :POISON && user.affectedByTerrain?
+    end
+    # Badge multipliers
+    if @battle.internalBattle
+      if user.pbOwnedByPlayer?
+        if physicalMove? && @battle.pbPlayer.badge_count >= Settings::NUM_BADGES_BOOST_ATTACK
+          multipliers[:attack_multiplier] *= 1.1
+        elsif specialMove? && @battle.pbPlayer.badge_count >= Settings::NUM_BADGES_BOOST_SPATK
+          multipliers[:attack_multiplier] *= 1.1
+        end
+      end
+      if target.pbOwnedByPlayer?
+        if physicalMove? && @battle.pbPlayer.badge_count >= Settings::NUM_BADGES_BOOST_DEFENSE
+          multipliers[:defense_multiplier] *= 1.1
+        elsif specialMove? && @battle.pbPlayer.badge_count >= Settings::NUM_BADGES_BOOST_SPDEF
+          multipliers[:defense_multiplier] *= 1.1
+        end
+      end
+    end
+    # Multi-targeting attacks
+    if numTargets>1
+      multipliers[:final_damage_multiplier] *= 0.75
+    end
+    # Weather
+    case @battle.pbWeather
+    when :Sun, :HarshSun
+      if type == :FIRE
+        multipliers[:final_damage_multiplier] *= 1.5
+      elsif type == :WATER && !target.hasActiveAbility?(:STEAMPOWERED)
+        multipliers[:final_damage_multiplier] /= 2
+      end
+    when :Rain, :HeavyRain
+      if type == :FIRE && !target.hasActiveAbility?(:STEAMPOWERED)
+        multipliers[:final_damage_multiplier] /= 2
+      elsif type == :WATER
+        multipliers[:final_damage_multiplier] *= 1.5
+      end
+    when :Hail
+      if Settings::GEN_9_SNOW == true
+        if target.pbHasType?(:ICE) && (physicalMove? || @function="122")
+          multipliers[:defense_multiplier] *= 1.5
+        end
+     end
+    when :Starstorm
+     if type == :COSMIC
+       multipliers[:final_damage_multiplier] *= 1.5
+     elsif type == :STEEL
+       multipliers[:final_damage_multiplier] /= 2
+     elsif target.pbHasType?(:COSMIC) && (physicalMove? || @function="122")
+       multipliers[:defense_multiplier] *= 1.5
+     end
+    when :Windy
+      if type == :ROCK || type == :ICE
+        multipliers[:final_damage_multiplier] /= 2
+      end
+    when :Fog
+      if type == :DRAGON
+        multipliers[:final_damage_multiplier] /= 2
+      end
+    when :Eclipse
+      if type == :DARK
+        multipliers[:final_damage_multiplier] *= 1.5
+      elsif type == :GHOST
+        multipliers[:final_damage_multiplier] *= 1.5
+      elsif type == :FAIRY && !user.hasActiveAbility?(:NOCTEMBOOST)
+        multipliers[:final_damage_multiplier] /= 2
+      elsif type == :PSYCHIC
+        multipliers[:final_damage_multiplier] /= 2
+      end
+    when :Borealis
+      if type == :PSYCHIC
+        multipliers[:final_damage_multiplier] *= 1.5
+      elsif type == :DARK
+        multipliers[:final_damage_multiplier] /= 2
+      end
+    when :Rainbow
+      if type == :GRASS
+        multipliers[:final_damage_multiplier] *= 1.5
+      elsif type == :ICE
+        multipliers[:final_damage_multiplier] /= 2
+      end
+    when :Overcast
+      if type == :DARK
+        multipliers[:final_damage_multiplier] *= 1.5
+      elsif type == :GHOST
+        multipliers[:final_damage_multiplier] *= 1.5
+      elsif type == :FAIRY
+        multipliers[:final_damage_multiplier] /= 2
+      elsif type == :PSYCHIC
+        multipliers[:final_damage_multiplier] /= 2
+      end
+    when :VolcanicAsh
+      if type == :STEEL
+        multipliers[:final_damage_multiplier] *= 1.5
+      end
+    when :Storm
+      if type == :FIRE && !target.hasActiveAbility?(:STEAMPOWERED)
+        multipliers[:final_damage_multiplier] /= 2
+      elsif type == :WATER
+        multipliers[:final_damage_multiplier] *= 1.5
+      elsif type == :ELECTRIC
+        multipliers[:final_damage_multiplier] *= 1.5
+      end
+    when :Humid
+      if type == :BUG
+        multipliers[:final_damage_multiplier] *= 1.5
+      elsif type == :FIRE
+        multipliers[:final_damage_multiplier] /= 2
+      end
+    when :Sleet
+      if type == :FIRE
+        multipliers[:final_damage_multiplier] /= 2
+      end
+    when :AcidRain
+      if target.pbHasType?(:POISON) && (physicalMove? || @function="122")
+        multipliers[:defense_multiplier] *= 1.5
+      end
+    when :Sandstorm
+      if target.pbHasType?(:ROCK) && specialMove? && @function != "122"   # Psyshock
+        multipliers[:defense_multiplier] *= 1.5
+      end
+    end
+    # Critical hits
+    if target.damageState.critical
+      if Settings::NEW_CRITICAL_HIT_RATE_MECHANICS
+        multipliers[:final_damage_multiplier] *= 1.5
+      else
+        multipliers[:final_damage_multiplier] *= 2
+      end
+    end
+    # Random variance
+    if !self.is_a?(PokeBattle_Confusion)
+      random = 85+@battle.pbRandom(16)
+      multipliers[:final_damage_multiplier] *= random / 100.0
+    end
+    # STAB
+    if type && user.pbHasType?(type)
+      if user.hasActiveAbility?(:ADAPTABILITY)
+        multipliers[:final_damage_multiplier] *= 2
+      else
+        multipliers[:final_damage_multiplier] *= 1.5
+      end
+    end
+    # Type effectiveness
+    multipliers[:final_damage_multiplier] *= target.damageState.typeMod.to_f / Effectiveness::NORMAL_EFFECTIVE
+    # Burn
+    if user.status == :BURN && physicalMove? && damageReducedByBurn? &&
+       !user.hasActiveAbility?(:GUTS)
+      multipliers[:final_damage_multiplier] /= 2
+    end
+    #Frostbite
+    if user.status == :FROZEN && specialMove? && damageReducedByFreeze?
+      multipliers[:final_damage_multiplier] /= 2
+    end
+    # Aurora Veil, Reflect, Light Screen
+    if !ignoresReflect? && !target.damageState.critical &&
+       !user.hasActiveAbility?(:INFILTRATOR)
+      if target.pbOwnSide.effects[PBEffects::AuroraVeil] > 0
+        if @battle.pbSideBattlerCount(target)>1
+          multipliers[:final_damage_multiplier] *= 2 / 3.0
+        else
+          multipliers[:final_damage_multiplier] /= 2
+        end
+      elsif target.pbOwnSide.effects[PBEffects::Reflect] > 0 && physicalMove?
+        if @battle.pbSideBattlerCount(target)>1
+          multipliers[:final_damage_multiplier] *= 2 / 3.0
+        else
+          multipliers[:final_damage_multiplier] /= 2
+        end
+      elsif target.pbOwnSide.effects[PBEffects::LightScreen] > 0 && specialMove?
+        if @battle.pbSideBattlerCount(target) > 1
+          multipliers[:final_damage_multiplier] *= 2 / 3.0
+        else
+          multipliers[:final_damage_multiplier] /= 2
+        end
+      end
+    end
+    # Minimize
+    if target.effects[PBEffects::Minimize] && tramplesMinimize?(2)
+      multipliers[:final_damage_multiplier] *= 2
+    end
+    # Glaive Rush
+    multipliers[:final_damage_multiplier] *= 2 if target.effects[PBEffects::GlaiveRush] > 0
+    # Move-specific base damage modifiers
+    multipliers[:base_damage_multiplier] = pbBaseDamageMultiplier(multipliers[:base_damage_multiplier], user, target)
+    # Move-specific final damage modifiers
+    multipliers[:final_damage_multiplier] = pbModifyDamage(multipliers[:final_damage_multiplier], user, target)
     # Field Effects
     fe = FIELD_EFFECTS[@battle.field.field_effects]
      if fe[:field_changers] != nil
@@ -946,7 +1539,7 @@ class PokeBattle_Move
               msg = message if fe[:change_message][message].include?(self.id)
             end
             @battle.pbDisplay(_INTL("#{msg}")) if msg != nil
-                      @battle.field.field_effects = fc
+            @battle.field.field_effects = fc
             fe = FIELD_EFFECTS[@battle.field.field_effects]
             @battle.scene.pbChangeField(@battle.field.field_effects)
             @battle.scene.pbRefreshEverything
@@ -983,9 +1576,9 @@ class PokeBattle_Move
           end
           if mesg == true
             for mess in fe[:type_messages].keys
-              msg = mess if fe[:type_messages][mess].include?(type)
+              msg1 = mess if fe[:type_messages][mess].include?(type)
             end
-            @battle.pbDisplay(_INTL("#{msg}"))
+            @battle.pbDisplay(_INTL("#{msg1}")) if $test_trigger == false
           end
          end
        end
@@ -1006,12 +1599,12 @@ class PokeBattle_Move
           if mesg == true
             for mess in fe[:move_messages].keys
               if fe[:move_messages][mess].is_a?(Array)
-                msg = mess if fe[move_messages][mess].include?(self.id)
+                msg2 = mess if fe[:move_messages][mess].include?(self.id)
               else
-                msg = mess if GameData::Type.get(fe[:move_messages][mess]).id == type
+                msg2 = mess if GameData::Type.get(fe[:move_messages][mess]).id == type
               end
             end
-            @battle.pbDisplay(INTL("#{msg}"))
+            @battle.pbDisplay(_INTL("#{msg2}")) if $test_trigger == false
           end
          end
        end
@@ -1040,9 +1633,15 @@ class PokeBattle_Move
       f = fe[:side_effects].keys
       for eff in fe[:side_effects].keys
         if (fe[:side_effects][eff].is_a?(Array) && fe[:side_effects][eff].include?(self.id)) || (!fe[:side_effects][eff].is_a?(Array) && type == GameData::Type.get(fe[:side_effects][eff]).id)
-          #case eff
-            #add side effects for fields here
-          #end
+          case eff
+          when "sand"
+            pbStartWeather(nil,:Sandstorm)
+          when "cinders"
+            if target.affectedByCinders?
+              target.effects[PBEffects::Cinders] = 3
+              @battle.pbDisplay(_INTL("{1} had cinders blown into their eyes!",target.pbThis)) if $test_trigger == false
+            end
+          end
         end
       end
     end
@@ -1086,7 +1685,7 @@ class PokeBattle_Move
     end
   	fe = FIELD_EFFECTS[@battle.field.field_effects]
   	if fe[:type_type_mod] != nil
-  		for key in fe[:type_type_mod]
+  		for key in fe[:type_type_mod].keys
   			if fe[:type_type_mod][key] == moveType
   				eff = Effectiveness.calculate_one(key,defType)
   				ret *= eff.to_f / Effectiveness::NORMAL_EFFECTIVE_ONE
@@ -1097,12 +1696,12 @@ class PokeBattle_Move
   		end
   	end
   	if fe[:move_type_mod] != nil
-  		for mv in fe[:move_type_mod]
+  		for mv in fe[:move_type_mod].keys
   			if fe[:move_type_mod][mv].include?(self.id)
   				eff = Effectiveness.calculate_one(mv,defType)
   				ret *= eff.to_f / Effectiveness::NORMAL_EFFECTIVE_ONE
-  				for msg in fe[:type_mod_message].keys
-  					pbDisplay(_INTL("#{msg}")) if fe[:type_mod_message][msg].include?(self.id)
+  				for msg in fe[:move_messages].keys
+  					pbDisplay(_INTL("#{msg}")) if fe[:move_messages][msg].include?(self.id)
   				end
   			end
   		end

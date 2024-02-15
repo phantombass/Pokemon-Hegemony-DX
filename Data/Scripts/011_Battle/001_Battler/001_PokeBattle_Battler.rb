@@ -47,6 +47,10 @@ class PokeBattle_Battler
   attr_accessor :damageState
   attr_accessor :initialHP     # Set at the start of each move's usage
   attr_accessor :droppedBelowHalfHP
+  attr_accessor :dx_temp_stat
+  attr_accessor :dx_type_boost
+  attr_accessor :dx_perm_stat
+  attr_accessor :dx_type3
   STAT_STAGE_MULTIPLIERS    = [2, 2, 2, 2, 2, 2, 2, 3, 4, 5, 6, 7, 8]
   STAT_STAGE_DIVISORS       = [8, 7, 6, 5, 4, 3, 2, 2, 2, 2, 2, 2, 2]
   ACC_EVA_STAGE_MULTIPLIERS = [3, 3, 3, 3, 3, 3, 3, 4, 5, 6, 7, 8, 9]
@@ -95,6 +99,22 @@ class PokeBattle_Battler
   def role=(value)
     new_role = GameData::Role.try_get(value)
     @roles.push(new_role) ? new_role.id : nil
+  end
+
+  def dx_temp_stat
+    return @dx_temp_stat
+  end
+
+  def dx_type_boost
+    return @dx_type_boost
+  end
+
+  def dx_perm_stat
+    return @dx_perm_stat
+  end
+
+  def dx_type3
+    return @dx_type3
   end
 
   def ability=(value)
@@ -371,7 +391,15 @@ class PokeBattle_Battler
   def pbHasType?(type)
     return false if !type
     activeTypes = pbTypes(true)
-    return activeTypes.include?(GameData::Type.get(type).id)
+    types = 0
+    if type.is_a?(Array)
+      for t in type
+        types += 1 if activeTypes.include?(GameData::Type.get(t).id)
+      end
+      return types > 0
+    else
+      return activeTypes.include?(GameData::Type.get(type).id)
+    end
   end
 
   def pbHasType(type)

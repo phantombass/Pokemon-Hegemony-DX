@@ -11,6 +11,12 @@ module Randomizer_Info
 	RandomizerOn = 960 #Switch
 end
 
+module Phantombass_Randomizer
+  VERSION = "2.0"
+end
+
+Essentials::ERROR_TEXT += "[Phantombass Randomizer v#{Phantombass_Randomizer::VERSION}]\r\n"
+
 class Randomizer
 	attr_accessor :randomized
 	attr_accessor :choices
@@ -40,7 +46,7 @@ class Randomizer
 	end
 
 	def self.abilities
-		return @abilities
+		return@abilities
 	end
 
 	def self.movesets
@@ -53,6 +59,21 @@ class Randomizer
     	return keys
   	end
 
+  	def self.all_available_species
+  		keys = []
+  		blacklist = [:MEWTWO,:HOOH,:LUGIA,:KYOGRE,:GROUDON,:RAYQUAZA,:DEOXYS,:DIALGA,:PALKIA,:GIRATINA,:ARCEUS,
+	    	:RESHIRAM,:ZEKROM,:XERNEAS,:YVELTAL,:ZYGARDE,:SOLGALEO,:LUNALA,:ZACIAN,:ZAMAZENTA,:ETERNATUS,:KORAIDON,:MIRAIDON,:ZYGARDE2,:REGIGIGAS2,
+	    	:TAPUKOKO2,:TAPUFINI2,:TAPULELE2,:TAPUBULU2,:DIANCIE,:HOOPA,:VOLCANION,:ZAPDOS,:MOLTRES,:ARTICUNO,:ENTEI,:RAIKOU,:SUICUNE,:MEW,:CELEBI,
+	    	:REGIROCK,:REGICE,:REGISTEEL,:LATIOS,:LATIAS,:JIRACHI,:REGIROCK2,:REGICE2,:REGISTEEL2,:REGIELEKI,:REGIDRAGO,:REGIELEKI2,:REGIDRAGO2,
+	    	:UXIE,:AZELF,:MESPRIT,:HEATRAN,:CRESSELIA,:MANAPHY,:SHAYMIN,:DARKRAI,:VICTINI,:LANDORUS,:TORNADUS,:THUNDURUS,:ENAMORUS,:COBALION,
+	    	:VIRIZION,:TERRAKION,:KELDEO,:KYUREM,:MAGEARNA,:MARSHADOW,:SPECTRIER,:GLASTIER,:CALYREX,:BLACEPHALON,:STAKATAKA,:NAGANADEL,:NIHILEGO,
+	    	:BUZZWOLE,:PHEROMOSA,:XURKITREE,:GUZZLORD,:KARTANA,:NECROZMA,:CELESTEELA,:OGERPON,:TERAPAGOS,:SHEDINJA,:SCREAMTAIL,:GREATTUSK,:FLUTTERMANE,
+	    	:ROARINGMOON,:WALKINGWAKE,:GOUGINGFIRE,:RAGINGBOLT,:SLITHERWING,:BRUTEBONNET,:SANDYSHOCKS,:IRONTREADS,:IRONMOTH,:IRONBUNDLE,:IRONJUGULIS,
+	    	:IRONTHORNS,:IRONHANDS,:IRONVALIANT,:IRONLEAVES,:IRONBOULDER,:IRONCROWN,:TAPUBULU,:TAPULELE,:TAPUFINI,:TAPUKOKO]
+	    GameData::Species.each { |species| keys.push(species.id) if species.form == 0 && !blacklist.include?(species.id) }
+    	return keys
+    end
+
   	def self.active?(type)
   	    return false if @choices.nil?
   	    return false if @choices == 0
@@ -60,7 +81,6 @@ class Randomizer
   	end
 
   	def self.setup
-  		PBAI.log("Setting up randomizer...")
   		@randomized = $game_switches[Randomizer_Info::RandomizerOn]
   		@choices = $game_variables[Randomizer_Info::Choices]
 		@trainers = $game_variables[Randomizer_Info::Trainers]
@@ -85,6 +105,11 @@ class Randomizer
 		$game_variables[Randomizer_Info::Base_Stats] = 0
 		$game_variables[Randomizer_Info::Abilities] = 0
 		$game_variables[Randomizer_Info::Movesets] = 0
+	end
+
+	def self.restricted
+		@abilities = Restrictions.abilities
+		@movesets = Restrictions.moves
 	end
 
 	def self.choose_options
@@ -176,11 +201,13 @@ class Randomizer
 	  #  randomizes compiled trainer data
 	  #-----------------------------------------------------------------------------
 	  def self.randomizeTrainers
+	  	PBAI.log("Randomizing trainers...")
+	  	pbMessage(_INTL("\\wtnp[1]Randomizing trainers..."))
 	  	return if !self.active?(:TRAINERS)
 	    # loads compiled data and creates new array
 	    data = load_data("Data/trainers.dat")
 	    trainer_exclusions = $game_switches[906] ? nil : [:RIVAL,:RIVAL2,:LEADER_Brock,:LEADER_Misty,:LEADER_Surge,:LEADER_Erika,:LEADER_Sabrina,:LEADER_Blaine,:LEADER_Winslow,:LEADER_Jackson,:OFFCORP,:DEFCORP,:PSYCORP,:ROCKETBOSS,:CHAMPION,:ARMYBOSS,:NAVYBOSS,:AIRFORCEBOSS,:GUARDBOSS,:CHANCELLOR,:DOJO_Luna,:DOJO_Apollo,:DOJO_Jasper,:DOJO_Maloki,:DOJO_Juliet,:DOJO_Adam,:DOJO_Wendy,:LEAGUE_Astrid,:LEAGUE_Winslow,:LEAGUE_Eugene,:LEAGUE_Armand,:LEAGUE_Winston,:LEAGUE_Vincent]
-	    species_exclusions = $game_switches[906] ? nil : [:SPINDA,:SUNKERN,:SUNFLORA]
+	    species_exclusions = $game_switches[906] ? nil : [:SPINDA]
 	    $new_trainers = {
 	      :trainer => [],
 	      :pokemon => {
@@ -221,6 +248,8 @@ class Randomizer
 	  #  randomizes abilities per pokemon
 	  #-----------------------------------------------------------------------------
 	  def self.randomizeAbilities
+	  	PBAI.log("Randomizing abilities...")
+	  	pbMessage(_INTL("\\wtnp[1]Randomizing abilities..."))
 	  	return if !self.active?(:ABILITIES)
 	    pkmn = load_data("Data/species.dat")
 	    ability = load_data("Data/abilities.dat")
@@ -249,6 +278,9 @@ class Randomizer
 	      :BAROMETRIC,
 	      :DESERTSTORM,
 	      :ASHCOVER,
+	      :SOOTSURGE,
+	      :WINDSURGE,
+	      :ASPIRANT,
 	      :ASHRUSH,
 	      :MUGGYAIR,
 	      :FIGHTERSWRATH,
@@ -266,7 +298,10 @@ class Randomizer
 	      :ZEROTOHERO,
 	      # Abilities intended to be inherent properties of a certain species
 	      :COMATOSE,
-	      :RKSSYSTEM
+	      :RKSSYSTEM,
+	      :GODLIKEPOWER,
+	      :HUNGERSWITCH,
+	      :AMPLIFIER
 	    ]
 	    return if !pkmn.is_a?(Hash)
 	    return if !ability.is_a?(Hash)
@@ -315,6 +350,8 @@ class Randomizer
 	  #  randomizes compiled pokemon base stats
 	  #-----------------------------------------------------------------------------
 	  def self.randomizeStats
+	  	PBAI.log("Randomizing base stats...")
+	  	pbMessage(_INTL("\\wtnp[1]Randomizing base stats..."))
 	  	return if !self.active?(:STATS)
 	    data = load_data("Data/species.dat")
 	    $new_stats = {
@@ -383,6 +420,8 @@ class Randomizer
 	  #-----------------------------------------------------------------------------
 
 	  def self.randomizeMoves
+	  	PBAI.log("Randomizing movesets...")
+	  	pbMessage(_INTL("\\wtnp[1]Randomizing movesets..."))
 	  	return if !self.active?(:MOVES)
 	    data = load_data("Data/species.dat")
 	    move_data = load_data("Data/moves.dat")
@@ -420,10 +459,11 @@ class Randomizer
 	  #  randomizes map encounters
 	  #-----------------------------------------------------------------------------
 	  def self.randomizeEncounters
+	  	PBAI.log("Randomizing encounters...")
+	  	pbMessage(_INTL("\\wtnp[1]Randomizing encounters..."))
 	  	return if !self.active?(:ENCOUNTERS)
 	    # loads map encounters
 	    data = load_data("Data/encounters.dat")
-	    species_exclusions = $game_switches[906] ? nil : [:SPINDA,:SUNKERN,:SUNFLORA]
 	    return if !data.is_a?(Hash) # failsafe
 	    # iterates through each map point
 	    for key in data.keys
@@ -432,8 +472,7 @@ class Randomizer
 	        # cycle each definition
 	        for i in 0...data[key].types[type].length
 	          # set randomized species
-	          next if !species_exclusions.nil? && species_exclusions.include?(data[key].types[type][i][1])
-	          data[key].types[type][i][1] = Randomizer.all_species.sample
+	          data[key].types[type][i][1] = Randomizer.all_available_species.sample
 	        end
 	      end
 	    end
@@ -445,10 +484,12 @@ class Randomizer
 	  #  randomizes static battles called through events
 	  #-----------------------------------------------------------------------------
 	  def self.randomizeStatic
+	  	PBAI.log("Randomizing static...")
+	  	pbMessage(_INTL("\\wtnp[1]Randomizing static..."))
 	  	new = {}
-	    array = Randomizer.all_species
+	    array = Randomizer.all_available_species
 	    # shuffles up species indexes to load a different one
-	    for org in Randomizer.all_species
+	    for org in Randomizer.all_available_species
 	      i = rand(array.length)
 	      new[org] = array[i]
 	      array.delete_at(i)
@@ -459,10 +500,12 @@ class Randomizer
 	  end
 
 	  def self.randomizeGift
+	  	PBAI.log("Randomizing gift...")
+	  	pbMessage(_INTL("\\wtnp[1]Randomizing gift..."))
 	  	new = {}
-	    array = Randomizer.all_species
+	    array = Randomizer.all_available_species
 	    # shuffles up species indexes to load a different one
-	    for org in Randomizer.all_species
+	    for org in Randomizer.all_available_species
 	      i = rand(array.length)
 	      new[org] = array[i]
 	      array.delete_at(i)
@@ -475,6 +518,8 @@ class Randomizer
 	  #  randomizes items received through events
 	  #-----------------------------------------------------------------------------
 	  def self.randomizeItems
+	  	PBAI.log("Randomizing items...")
+	  	pbMessage(_INTL("\\wtnp[1]Randomizing items..."))
 	  	@items = true
 	  	$game_switches[Randomizer_Info::Items] = true
 	    return @items
@@ -493,10 +538,8 @@ class Randomizer
 		    species = pokemon.species
 		  end
 		  # if defined as an exclusion rule, species will not be randomized
-		    excl = $game_switches[906] ? nil : [:SPINDA,:SUNKERN,:SUNFLORA]
 	  	for mon in @gift.keys
 	  		next if mon != species
-	  		next if excl.include?(mon)
 	  		species = @gift[mon]
 	  	end
 	    if !pokemon.nil?
@@ -516,7 +559,6 @@ class Randomizer
 		    species = pokemon.species
 		  end
 		# if defined as an exclusion rule, species will not be randomized
-		excl = $game_switches[906] ? nil : [:SPINDA,:SUNKERN,:SUNFLORA]
 	    if !pokemon.nil?
 	      pokemon.species = species
 	      pokemon.calc_stats
@@ -532,7 +574,6 @@ class Randomizer
 		    species = pokemon.species
 		  end
 		  # if defined as an exclusion rule, species will not be randomized
-		    excl = $game_switches[906] ? nil : [:SPINDA,:SUNKERN,:SUNFLORA]
 	  	for mon in @gift.keys
 	  		next if mon != species
 	  		species = @gift[mon]
@@ -597,6 +638,7 @@ class Randomizer
 	  end
 
 	  def self.start(skip = false)
+	    # Create command window
 	    ret = $PokemonGlobal && $PokemonGlobal.isRandomizer
 	    ret, cmd = self.ironmonKaizo if skip
 	    ret, cmd = self.choose_options unless skip
@@ -609,13 +651,13 @@ class Randomizer
 	    # display confirmation message
 	    return if skip
 	    added = @choices
-	    $game_variables[Randomizer_Info::Choices] = @choices
+	    $game_variables[Randomizer_Info::Choices] = added
 	    msg = _INTL("Your selected Randomizer rules have been applied.")
+	    Randomizer.setup
 	    msg = _INTL("No Randomizer rules have been applied.") if added.length < 1
 	    msg = _INTL("Your selection has been cancelled.") if cmd < 0
 	    pbMessage(msg)
 	  end
-
 
 	# basic commandWindow override
 	def self.commandWindow(commands, index = 0, msgwindow = nil)
@@ -826,7 +868,10 @@ class PokemonLoadScreen
     ret = pbStartLoadScreen_randomizer
     # refresh current cache
     Randomizer.setup if Randomizer.activated?
-    Restrictions.setup if Restrictions.active?
+    if Restrictions.active?
+    	Restrictions.start
+    	Restrictions.setup
+    end
     return ret
   end
 end
@@ -836,20 +881,27 @@ end
 #===============================================================================
 def pbLoadTrainer(tr_type, tr_name, tr_version = 0)
   # handle trainer type process
-  trainer_exclusions = [:RIVAL1,:RIVAL2,:LEADER_Brock,:LEADER_Misty,:LEADER_Surge,:LEADER_Erika,:LEADER_Sabrina,:LEADER_Blaine,:LEADER_Winslow,:LEADER_Jackson,:OFFCORP,:DEFCORP,:PSYCORP,:ROCKETBOSS,:CHAMPION,:ARMYBOSS,:NAVYBOSS,:AIRFORCEBOSS,:GUARDBOSS,:CHANCELLOR,:DOJO_Luna,:DOJO_Apollo,:DOJO_Jasper,:DOJO_Maloki,:DOJO_Juliet,:DOJO_Adam,:DOJO_Wendy,:LEAGUE_Astrid,:LEAGUE_Winslow,:LEAGUE_Eugene,:LEAGUE_Armand,:LEAGUE_Winston,:LEAGUE_Vincent]
   tr_type_data = GameData::TrainerType.try_get(tr_type)
-  raise _INTL("Trainer type {1} does not exist.", tr_type) if !tr_type_data
+  raise _INTL("\\wtnp[1]Trainer type {1} does not exist.", tr_type) if !tr_type_data
   tr_type = tr_type_data.id
   # handle actual trainer data
   trainer_data = GameData::Trainer.try_get(tr_type, tr_name, tr_version)
-  idx = -1
-  new_trainers = Randomizer.trainers
- # key = [tr_type.to_sym, tr_name, tr_version]
-  # attempt to randomize
- # trainer_data = EliteBattle.getRandomizedData(trainer_data, :TRAINERS, key)
-  return (trainer_data) ? trainer_data.to_trainer : nil
+  return (trainer_data) ? trainer_data.to_trainer : pbLoadRandomTrainer
 end
-
+def pbLoadRandomTrainer
+  return RandomTrainerBattle.load_trainer
+end
+=begin
+alias pbLoadTrainer_rand pbLoadTrainer unless defined?(pbLoadTrainer_rand)
+def pbLoadTrainer(tr_type, tr_name, tr_version = 0)
+  ret = pbLoadTrainer_rand(tr_type, tr_name, tr_version)
+  ret.partyID = tr_version if ret
+  # try to load the next battle speech
+  speech = ret ? EliteBattle.get_trainer_data(tr_type, :BATTLESCRIPT, ret) : nil
+  EliteBattle.set(:nextBattleScript, (speech.is_a?(Hash) ? speech : speech.to_sym)) if !speech.nil?
+  return ret
+end
+=end
 class Pokemon
   def baseStats
     this_base_stats = Randomizer.active?(:STATS) ? getRandStats(species_data) : species_data.base_stats

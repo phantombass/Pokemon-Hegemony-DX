@@ -71,6 +71,8 @@ class PokeBattle_Battle
   attr_accessor :rules
   attr_accessor :choices          # Choices made by each Pokémon this round
   attr_accessor :megaEvolution    # Battle index of each trainer's Pokémon to Mega Evolve
+  attr_accessor :dx_form
+  attr_accessor :dx_temp_stat
   attr_reader   :initialItems
   attr_reader   :recycleItems
   attr_reader   :belch
@@ -152,6 +154,14 @@ class PokeBattle_Battle
     @megaEvolution     = [
        [-1] * (@player ? @player.length : 1),
        [-1] * (@opponent ? @opponent.length : 1)
+    ]
+    @dx_form     = [
+       [-1] * (@player ? @player.length : 1),
+       [-1] * (@opponent ? @opponent.length : 1)
+    ]
+    @dx_temp_stat      = [
+       [1] * (@player ? @player.length : 1),
+       [1] * (@opponent ? @opponent.length : 1)
     ]
     @initialItems      = [
        Array.new(@party1.length) { |i| (@party1[i]) ? @party1[i].item_id : nil },

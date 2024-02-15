@@ -4,13 +4,14 @@
 module Settings
   LEVEL_CAP_SWITCH = 904
   FISHING_AUTO_HOOK     = true
-  GAME_VERSION = "0.1"
+  GAME_VERSION = "0.3.0"
   DISABLE_EVS = 917
 end
 
 Essentials::ERROR_TEXT += "[Pokémon Hegemony DX v#{Settings::GAME_VERSION}]\r\n"
 
 def write_version
+  #$DEBUG = false
   File.open("version.txt", "wb") { |f|
     version = Settings::GAME_VERSION
     f.write("#{version}")
@@ -66,6 +67,8 @@ module Game
     $game_system.level_cap += 1
     $game_system.level_cap = LEVEL_CAP.size-1 if $game_system.level_cap >= LEVEL_CAP.size
     $game_variables[106] = $game_switches[LvlCap::Insane] ? INSANE_LEVEL_CAP[$game_system.level_cap] : LEVEL_CAP[$game_system.level_cap]
+    meName = "Mining found all"
+    pbMessage(_INTL("\\me[{1}]Level Cap increased to #{pbGet(106)}!",meName))
   end
   def self.start_new
     pbMessage(_INTL("Welcome to Pokémon Hegemony DX, a complete, non-profit fan game made by Phantombass."))
@@ -123,19 +126,27 @@ module DailyE4
   LastTime = 72
 end
 
+def set_daily_variables
+  if $game_variables[DailyE4::TimeNow] > $game_variables[DailyE4::LastTime] || $game_variables[DailyE4::TimeNow]<$game_variables[DailyE4::LastTime]
+    $game_variables[DailyE4::Variable] = 1+rand(100)
+    $game_variables[DailyE4::TimeNow] = $game_variables[DailyE4::LastTime]
+    $dungeon.randomize_all_dungeons if $game_switches[68]
+    $dungeon.clear_mission_data
+    pbMessage(_INTL("All incomplete missions have been forfeited.\nPlease check the Bulletin Board for new missions!"))
+    $dungeon.generate_missions
+  end
+end
+
 Events.onMapChange += proc {| sender, e |
     # E4 Setting
     time = pbGetTimeNow
     $game_variables[DailyE4::LastTime] = time.day
-    if $game_variables[DailyE4::TimeNow] > $game_variables[DailyE4::LastTime] || $game_variables[DailyE4::TimeNow]<$game_variables[DailyE4::LastTime]
-      $game_variables[DailyE4::Variable] = 1+rand(100)
-      $game_variables[DailyE4::TimeNow] = $game_variables[DailyE4::LastTime]
-      $dungeon.randomize_all_dungeons
-    end
+    set_daily_variables
     pbResetAllRoamers
     scene = Mission_Overlay.new
     scene.pbShow
     scene.pbEndScene if scene != nil
+    $game_system.reputation = 30 if $game_system.reputation < 30
 }
 
 Events.onStepTaken += proc {
@@ -143,12 +154,16 @@ Events.onStepTaken += proc {
     $mission_steps -= 1
     $viewport_mission.dispose if $mission_steps == 0
   end
-  if $dungeon.steps > 0
-    $dungeon.steps -= 1 if (!$dungeon.valid_locations.include?($game_map.map_id) && $game_map.map_id < 375 )
-  else
-    $dungeon.randomize_all_dungeons
+  if $game_switches[68]
+    if $dungeon.steps > 0
+      $dungeon.steps -= 1 if (!$dungeon.valid_locations.include?($game_map.map_id) && $game_map.map_id < 375 )
+    else
+      $dungeon.randomize_all_dungeons if $game_switches[68]
+      $dungeon.clear_mission_data
+      pbMessage(_INTL("All incomplete missions have been forfeited.\nPlease check the Bulletin Board for new missions!")) if $dungeon.mission_data != ({} || 0 || nil)
+      $dungeon.generate_missions
+    end
   end
-  #PBAI.log("#{$dungeon.steps}")
 }
 
 Events.onAction += proc {| sender, e |
@@ -191,11 +206,12 @@ class PokemonLoadScreen
         write_version
         Game.load(@save_data)
         reset_custom_variables
+        $game_variables[924] = 0
         $PokemonGlobal.repel = 0
         $repel_toggle = true
         $mission_show = true
-        #$dungeon.randomize_all_dungeons
         $dungeon.setup
+        $dx_orb.setup
         return
       when cmd_new_game
         @scene.pbEndScene
@@ -265,15 +281,146 @@ def burnAllPokemon(event=nil)
     end
 end
 
+class Pokemon
+  def getDXForm
+    ret = 0
+    GameData::Species.each do |data|
+      next if data.species != @species || data.unDX_form != form_simple
+      if data.dx_form && hasItem?(:DXORB) && $dx_orb.dx_form == true
+        ret = data.form
+        break
+      end
+    end
+    return ret   # form number, or 0 if no accessible Mega form
+  end
+
+  def getUnDXForm
+    return (DX?) ? species_data.unDX_form : -1
+  end
+
+  def hasDXForm?
+    megaForm = self.getDXForm
+    return megaForm > 0 && megaForm != form_simple
+  end
+
+  def DX?
+    return species_data.dx_form ? true : false
+  end
+
+  def makeDX
+    megaForm = self.getDXForm
+    self.form = megaForm if megaForm > 0
+  end
+
+  def makeUnDX
+    unDXForm = self.getUnDXForm
+    self.form = unDXForm if unDXForm >= 0
+  end
+end
 
 class PokeBattle_Battle
   def pbHegemonyClauses
     self.rules["sleepclause"] = true
     self.rules["evasionclause"] = true
-    if $game_switches[902] || $game_switches[903]
-      self.rules["batonpassclause"] = true
+    self.rules["batonpassclause"] = true
+  end
+
+  def pbCanUseDXOrMega?(idxBattler)
+    return true if pbCanMegaEvolve?(idxBattler)
+    return true if pbCanUseDX?(idxBattler)
+  end
+
+  def pbCanUseDX?(idxBattler)
+    side  = @battlers[idxBattler].idxOwnSide
+    owner = pbGetOwnerIndexFromBattlerIndex(idxBattler)
+    return false if !@battlers[idxBattler].hasActiveItem?(:DXORB)
+    if @battlers[idxBattler].pbOwnedByPlayer? && @battlers[idxBattler].hasActiveItem?(:DXORB)
+      if $dx_orb.temp_stat != ([] || nil)
+        return @dx_temp_stat[idxBattler][owner] == 1
+      elsif $dx_orb.dx_form == true
+        return true
+      end
+    elsif @battlers[idxBattler].hasActiveItem?(:DXORB5) || @battlers[idxBattler].hasActiveItem?(:DXORB1)
+      return true
     end
   end
+
+  def pbRegisterDX(idxBattler)
+    side  = @battlers[idxBattler].idxOwnSide
+    owner = pbGetOwnerIndexFromBattlerIndex(idxBattler)
+    @dx_form[side][owner] = idxBattler
+  end
+
+  def pbUnregisterDX(idxBattler)
+    side  = @battlers[idxBattler].idxOwnSide
+    owner = pbGetOwnerIndexFromBattlerIndex(idxBattler)
+    @dx_form[side][owner] = -1 if @dx_form[side][owner]==idxBattler
+  end
+
+  def pbToggleDX(idxBattler)
+    side  = @battlers[idxBattler].idxOwnSide
+    owner = pbGetOwnerIndexFromBattlerIndex(idxBattler)
+    if $dx_orb.temp_stat != ([] || nil)
+      if @dx_temp_stat[side][owner] > 0
+        @dx_temp_stat[side][owner] = 0
+      else
+        @dx_temp_stat[side][owner] = 1
+      end
+    else
+      if @dx_form[side][owner]==idxBattler
+        @dx_form[side][owner] = -1
+      else
+        @dx_form[side][owner] = idxBattler
+      end
+    end
+  end
+
+  def pbRegisteredDXForm?(idxBattler)
+    side  = @battlers[idxBattler].idxOwnSide
+    owner = pbGetOwnerIndexFromBattlerIndex(idxBattler)
+    return @dx_form[side][owner]==idxBattler
+  end
+
+  def pbRegisteredDXTempStat?(idxBattler)
+    side  = @battlers[idxBattler].idxOwnSide
+    owner = pbGetOwnerIndexFromBattlerIndex(idxBattler)
+    return @dx_temp_stat[side][owner]==0
+  end
+
+  def pbDXForm(idxBattler)
+    battler = @battlers[idxBattler]
+    return if !battler || !battler.pokemon
+    return if battler.DX? || battler.mega?
+    return if !battler.hasDXForm?
+    trainerName = pbGetOwnerName(idxBattler)
+    # Break Illusion
+    if battler.hasActiveAbility?(:ILLUSION)
+      BattleHandlers.triggerTargetAbilityOnHit(battler.ability,nil,battler,nil,self)
+    end
+    # Mega Evolve
+    pbDisplay(_INTL("{1}'s {2} is reacting to {3}'s DX Orb!",
+         battler.pbThis,battler.itemName,trainerName))
+    pbCommonAnimation("MegaEvolution",battler)
+    battler.pokemon.makeDX
+    battler.form = battler.pokemon.form
+    #p $mega_flag
+    battler.pbUpdate(true)
+    @scene.pbChangePokemon(battler,battler.pokemon)
+    @scene.pbRefreshOne(idxBattler)
+    pbCommonAnimation("MegaEvolution2",battler)
+    megaName = _INTL("{1} DX", battler.pokemon.speciesName)
+    pbDisplay(_INTL("{1} became {2}!",battler.pbThis,megaName))
+    side  = battler.idxOwnSide
+    owner = pbGetOwnerIndexFromBattlerIndex(idxBattler)
+    @dx_form[side][owner] = -2
+    if battler.isSpecies?(:GRAPPLOCT) && battler.DX?
+      battler.effects[PBEffects::Telekinesis] = 0
+    end
+    pbCalculatePriority(false,[idxBattler]) if Settings::RECALCULATE_TURN_ORDER_AFTER_MEGA_EVOLUTION
+    # Trigger ability
+    battler.pbEffectsOnSwitchIn
+  end
+
   def pbCanSwitch?(idxBattler,idxParty=-1,partyScene=nil)
     # Check whether party Pokémon can switch in
     return false if !pbCanSwitchLax?(idxBattler,idxParty,partyScene)
@@ -563,6 +710,7 @@ Events.onEndBattle += proc { |_sender,e|
   $game_switches[89] = false
   $CanToggle = true
   $repel_toggle = true
+  $game_variables[924] = 0
   if $game_switches[LvlCap::Ironmon]
     for i in 0...$Trainer.party.length
       k = $Trainer.party.length - 1 - i
@@ -1348,5 +1496,41 @@ class PokeBattle_Battle
     end
     pbDisplayPaused(_INTL("You couldn't get away!"))
     return -1
+  end
+end
+
+module GameData
+  class Item
+    def is_healing_item?
+      item = [:POTION,:SUPERPOTION,:HYPERPOTION,:FULLRESTORE,:MAXPOTION,:BERRYJUICE,:ENERGYROOT,:ENERGYPOWDER,:FULLHEAL,:HEALPOWDER,:REVIVE,:MAXREVIVE,
+        :FRESHWATER,:LEMONADE,:SODAPOP,:LAVACOOKIE,:RAGECANDYBAR,:ETHER,:ELIXIR,:MAXETHER,:MAXELIXIR,:ANTIDOTE,:PARALYZEHEAL,:BURNHEAL,:ICEHEAL,:AWAKENING,
+        :MOOMOOMILK,:SWEETHEART,:REVIVALHERB,:OLDGATEAU,:PPUP,:PPMAX]
+      itm = self.id
+      return item.include?(itm)
+    end
+  end
+end
+
+def pbRandomItem(amt)
+  banlist = [:MASTERBALL,:BEASTBALL,:REPEL,:SUPERREPEL,:MAXREPEL,:LEADERSCREST,:GIMMIGHOULCOIN,:ALLOYSTONE,:DRACOSTONE]
+  list = []
+  GameData::Item.each do |item|
+    next if banlist.include?(item.id)
+    list.push(item.id) if item.is_berry?
+    list.push(item.id) if item.is_healing_item?
+    list.push(item.id) if item.is_gem?
+    list.push(item.id) if item.is_evolution_stone?
+    list.push(item.id) if item.is_poke_ball?
+  end
+  itm = list[rand(list.length)]
+  pbSetEventTime
+  return pbItemBall(itm,amt)
+end
+
+def pbRespawnItem
+  if rand(10) > 4
+    pbSetSelfSwitch(@event_id,"A",false)
+  else
+    pbSetEventTime
   end
 end

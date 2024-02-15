@@ -64,14 +64,19 @@ class PokeBattle_Battle
     return true if pbAutoFightMenu(idxBattler)
     # Regular move selection
     ret = false
-    @scene.pbFightMenu(idxBattler,pbCanMegaEvolve?(idxBattler)) { |cmd|
+    @scene.pbFightMenu(idxBattler,pbCanUseDXOrMega?(idxBattler)) { |cmd|
       case cmd
       when -1   # Cancel
       when -2   # Toggle Mega Evolution
-        pbToggleRegisteredMegaEvolution(idxBattler)
+        if pbCanUseDX?(idxBattler)
+          pbToggleDX(idxBattler)
+        else
+          pbToggleRegisteredMegaEvolution(idxBattler)
+        end
         next false
       when -3   # Shift
         pbUnregisterMegaEvolution(idxBattler)
+        pbUnregisterDX(idxBattler)
         pbRegisterShift(idxBattler)
         ret = true
       else      # Chose a move to use
@@ -98,22 +103,25 @@ class PokeBattle_Battle
   end
 
   def pbItemMenu(idxBattler,firstAction)
-    if !@internalBattle || (@opponent && $game_switches[LvlCap::Ironmon] == false)
+    if !@internalBattle
       pbDisplay(_INTL("Items can't be used here."))
       return false
     end
     ret = false
     @scene.pbItemMenu(idxBattler,firstAction) { |item,useType,idxPkmn,idxMove,itemScene|
       next false if !item
+      next false unless [4,9].include?(useType)
       battler = pkmn = nil
       case useType
       when 1, 2, 6, 7   # Use on Pokémon/Pokémon's move
         next false if !ItemHandlers.hasBattleUseOnPokemon(item)
+        return false
         battler = pbFindBattler(idxPkmn,idxBattler)
         pkmn    = pbParty(idxBattler)[idxPkmn]
         next false if !pbCanUseItemOnPokemon?(item,pkmn,battler,itemScene)
       when 3, 8   # Use on battler
         next false if !ItemHandlers.hasBattleUseOnBattler(item)
+        return false
         battler = pbFindBattler(idxPkmn,idxBattler)
         pkmn    = battler.pokemon if battler
         next false if !pbCanUseItemOnPokemon?(item,pkmn,battler,itemScene)
@@ -122,6 +130,7 @@ class PokeBattle_Battle
         battler = @battlers[idxPkmn]
         pkmn    = battler.pokemon if battler
       when 5, 10   # No target (Poké Doll, Guard Spec., Launcher items)
+        return false
         battler = @battlers[idxBattler]
         pkmn    = battler.pokemon if battler
       else

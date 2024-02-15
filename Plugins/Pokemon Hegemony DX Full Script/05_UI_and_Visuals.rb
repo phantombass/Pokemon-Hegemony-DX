@@ -295,16 +295,16 @@ class PokemonPauseMenu
     cmdDexnav = -1
     cmdDebug    = -1
     cmdQuit     = -1
-    cmdEndGame  = -1
+    #cmdEndGame  = -1
     if $Trainer.has_pokedex && $Trainer.pokedex.accessible_dexes.length > 0
       commands[cmdPokedex = commands.length] = _INTL("Pokédex")
     end
     commands[cmdPokemon = commands.length]   = _INTL("Pokémon") if $Trainer.party_count > 0
-    commands[cmdBag = commands.length]       = _INTL("Bag") if !pbInBugContest?
-    commands[cmdPokegear = commands.length]  = _INTL("Pokégear") if $Trainer.has_pokegear
+    commands[cmdBag = commands.length]       = _INTL("Bag") if !pbInBugContest? && $game_system && !$game_system.save_disabled
+    commands[cmdPokegear = commands.length]  = _INTL("DX Orb...") if $Trainer.has_dx_orb
     commands[cmdDexnav = commands.length]  = _INTL("DexNav") if $game_switches[401]
     commands[cmdPC = commands.length]  = _INTL("PC Box Link") if $Trainer.party_count > 0 && $game_switches[LvlCap::Ironmon] == false
-    commands[cmdQuest = commands.length] = _INTL("Quest Log")
+    commands[cmdQuest = commands.length] = _INTL("Mission Log") if $dungeon.mission_data != {} && $dungeon.mission_data != 0
     commands[cmdTrainer = commands.length]   = $Trainer.name
     if pbInSafari?
       if Settings::SAFARI_STEPS <= 0
@@ -329,7 +329,7 @@ class PokemonPauseMenu
     end
     commands[cmdOption = commands.length]    = _INTL("Options")
     commands[cmdDebug = commands.length]     = _INTL("Debug") if $DEBUG
-    commands[cmdEndGame = commands.length]   = _INTL("Quit Game")
+    #commands[cmdEndGame = commands.length]   = _INTL("Quit Game")
     loop do
       if !$currentDexSearch
         command = @scene.pbShowCommands(commands)
@@ -393,17 +393,12 @@ class PokemonPauseMenu
         end
       elsif cmdPokegear>=0 && command==cmdPokegear
         pbPlayDecisionSE
-        pbFadeOutIn {
-          scene = PokemonPokegear_Scene.new
-          screen = PokemonPokegearScreen.new(scene)
-          screen.pbStartScreen
-          @scene.pbRefresh
-        }
+        customize_DX_Orb
       elsif cmdPC>=0 && command==cmdPC
         pbPlayDecisionSE
         @scene.pbHideMenu
         @scene.pbHideLevelCap
-        pbMessage("Which would you like to do?\\ch[34,4,Access PC,Heal,Cancel]")
+        pbMessage("Which would you like to do?\\ch[34,4,Access PC,Heal: #{pbGet(74)},Cancel]")
         if $game_variables[34] == 0
          if $game_switches[209] == true
            pbMessage(_INTL("You cannot access the PC in here."))
@@ -417,12 +412,18 @@ class PokemonPauseMenu
           }
          end
         elsif $game_variables[34] == 1
-          if ($game_switches[209] == true && $game_switches[902] == true) || ($game_switches[209] == true && $game_switches[197] == true)
+          if ($game_switches[209] == true && $game_switches[197] == true)
             pbMessage(_INTL("You cannot use this in here."))
             pbShowMenu
           else
-            $Trainer.heal_party
-            pbMessage(_INTL("Your party was healed!"))
+            if $game_variables[74] > 0
+              $Trainer.heal_party
+              pbMessage(_INTL("Your party was healed!"))
+              $game_variables[74] -= 1
+            else
+              pbMessage(_INTL("You've run out of Heals!"))
+              pbMessage(_INTL("Please recharge at the PMC!"))
+            end
             pbShowMenu
           end
         else
@@ -444,7 +445,7 @@ class PokemonPauseMenu
       elsif cmdQuest>=0 && command==cmdQuest
         pbPlayDecisionSE
         pbFadeOutIn {
-          pbViewQuests
+          pbOpenMissionLog
           @scene.pbRefresh
         }
       elsif cmdTrainer>=0 && command==cmdTrainer
@@ -503,20 +504,6 @@ class PokemonPauseMenu
           pbDebugMenu
           @scene.pbRefresh
         }
-      elsif cmdEndGame>=0 && command==cmdEndGame
-        @scene.pbHideMenu
-        if pbConfirmMessage(_INTL("Are you sure you want to quit the game?"))
-          scene = PokemonSave_Scene.new
-          screen = PokemonSaveScreen.new(scene)
-          if screen.pbSaveScreen
-            @scene.pbEndScene
-          end
-          @scene.pbEndScene
-          $scene = nil
-          return
-        else
-          pbShowMenu
-        end
       else
         pbPlayCloseMenuSE
         break
@@ -794,33 +781,13 @@ class PokemonSummary_Scene
     elsif pkmn.fainted?
       pbMessage(_INTL("This Pokémon can no longer be used in the Nuzlocke."))
     else
-      @scene.pbMessage(_INTL("How would you like to Level Up?\\ch[34,5,To Level Cap,Change Level...,Cancel]"))
-      lvl = $game_variables[34]
-      if lvl == -1 || lvl == 2 || lvl == 3
-        pbPlayCloseMenuSE
-        dorefresh = true
-      end
-      case lvl
-      when 0
-        pkmn.level = $game_switches[LvlCap::Insane] ? INSANE_LEVEL_CAP[$game_system.level_cap] : LEVEL_CAP[$game_system.level_cap]
-        pkmn.calc_stats
-        dorefresh = true
-      when 1
-        params = ChooseNumberParams.new
-        cap = $game_switches[LvlCap::Insane] ? INSANE_LEVEL_CAP[$game_system.level_cap] : LEVEL_CAP[$game_system.level_cap]
-        params.setRange(1, cap)
-        params.setDefaultValue(pkmn.level)
-        level = pbMessageChooseNumber(
-           _INTL("Set the Pokémon's level (max. {1}).", params.maxNumber), params) { pbUpdate }
-        if level != pkmn.level
-          pkmn.level = level
-          pkmn.calc_stats
-          dorefresh = true
-        end
-      end
-      if dorefresh
-        drawPage(@page)
-      end
+      pkmn.level = $game_switches[LvlCap::Insane] ? INSANE_LEVEL_CAP[$game_system.level_cap] : LEVEL_CAP[$game_system.level_cap]
+      pkmn.calc_stats
+      @scene.pbMessage(_INTL("{1} leveled up to the Level Cap!",pkmn.name))
+      dorefresh = true
+    end
+    if dorefresh
+      drawPage(@page)
     end
   end
 
@@ -1825,8 +1792,8 @@ class HallOfFame_Scene
     post = $game_switches[300] ? "Post-Game " : ""
     pbDrawTextPositions(overlay,[[_INTL("Welcome to the Hall of Fame!"),
        Graphics.width/2,Graphics.height-80,2,BASECOLOR,SHADOWCOLOR]])
-       pbDrawTextPositions(overlay,[[_INTL("{1}{2}{3}{4}{5}{6}",post,grind,inverse,mode,kaizo,ironmon,nuzlocke),
-          Graphics.width/2,Graphics.height-56,2,BASECOLOR,SHADOWCOLOR]])
+    pbDrawTextPositions(overlay,[[_INTL("{1}{2}{3}{4}{5}{6}\\n{7}",post,grind,inverse,mode,kaizo,ironmon,nuzlocke,Settings::GAME_VERSION),
+       Graphics.width/2,Graphics.height-56,2,BASECOLOR,SHADOWCOLOR]])
   end
 end
 

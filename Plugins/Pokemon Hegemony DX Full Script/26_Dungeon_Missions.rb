@@ -8,6 +8,15 @@ module DungeonMissions
   Data = 215
   Reward = 216
   Steps = 217
+  Floor = 218
+  Floor_Target = 219
+  Specific_Target = 220
+  Missions = 221
+  Target_Location = 222
+
+  Mon_Switch = 926
+  Item_Switch = 927
+  Floor_Switch = 928
 end
 
 class Dungeon_Missions
@@ -16,6 +25,7 @@ class Dungeon_Missions
   attr_accessor :target
   attr_accessor :stars
   attr_accessor :mission_data
+  attr_accessor :missions
   attr_accessor :dungeon_reward
   attr_accessor :steps
 
@@ -24,7 +34,8 @@ class Dungeon_Missions
     @name = []
     @target = []
     @stars = []
-    @mission_data = []
+    @mission_data = {}
+    @missions = {}
     @dungeon_reward = []
     @steps = 0
   end
@@ -44,6 +55,9 @@ class Dungeon_Missions
   def self.mission_data
     return @mission_data
   end
+  def self.missions
+    return @missions
+  end
   def self.dungeon_reward
     return @dungeon_reward
   end
@@ -59,28 +73,20 @@ class Dungeon_Missions
     @mission_data = $game_variables[DungeonMissions::Data]
     @dungeon_reward = $game_variables[DungeonMissions::Reward]
     @steps = $game_variables[DungeonMissions::Steps]
+    @missions = $game_variables[DungeonMissions::Missions]
   end
 
-  def randomize(location)
-    @locations.push(location)
-    dungeon = rand(100)
-    rep_wartime = $game_system.reputation > 300 ? 10 : 5
-    rep_learning = rep_wartime + 10
-    rep_support = rep_learning + 10
-    if dungeon < rep_wartime
-      name = "Dungeon of Experiments"
-    elsif dungeon >= rep_wartime && dungeon < rep_learning
-      name = "Dungeon of Learning"
-    elsif dungeon >= rep_learning && dungeon < rep_support
-      name = "Dungeon of Support"
-    elsif dungeon >= rep_support
-      name = "Dungeon of Life"
-    end
-    target = randomize_target
-    stars = randomize_stars
-    @target.push(target)
-    @stars.push(stars)
-    @name.push(name)
+  def clear_dungeon_data
+    @locations = []
+    @name = []
+    @target = []
+    @stars = []
+    @dungeon_reward = []
+    @steps = 1024
+  end
+
+  def gym_open?(location)
+    return false
   end
 
   def randomize_rewards
@@ -148,6 +154,101 @@ class Dungeon_Missions
           end
         end
         rewards.push(list[rand(list.length)])
+      when "Dungeon of Learning"
+        list = []
+        del = []
+        case @stars[loc]
+        when 1
+          common = [:TM27,:TM97,:TM119,:TM48,:TM50,:TM118]
+          rare = [:TM115,:TM80]
+          rarerand = rand(rare.length)
+          for i in common
+            list.push(i)
+          end
+          list.push(rare[rarerand])
+        when 2
+          common = [:TM76,:TM106,:TM14,:TM130,:TM141,:TM75]
+          rare = [:TM125,:TM25]
+          rarerand = rand(rare.length)
+          for i in common
+            list.push(i)
+          end
+          list.push(rare[rarerand])
+        when 3
+          common = [:TM133,:TM142,:TM69,:TM96,:TM292,:TM296]
+          rare = [:TM03,:TM04,:TM05]
+          rarerand = rand(rare.length)
+          for i in common
+            list.push(i)
+          end
+          list.push(rare[rarerand])
+        when 4
+          common = [:TM126,:TM135,:TM136,:TM137,:TM138,:TM139,:TM140,:TM143,:TM144,:TM145,:TM146,:TM120]
+          rare = [:TM109,:TM250,:TM38]
+          rarerand = rand(rare.length)
+          for i in common
+            list.push(i)
+          end
+          list.push(rare[rarerand])
+        when 5
+          common = [:TM257,:TM275,:TM208,:TM205,:TM202,:TM274,:TM211,:TM123,:TM39,:TM265,:TM284,:TM121]
+          rare = [:TM253,:TM147,:TM134]
+          rarerand = rand(rare.length)
+          for i in common
+            list.push(i)
+          end
+          list.push(rare[rarerand])
+        end
+        rewards.push(list[rand(list.length)])
+      when "Dungeon of Support"
+        list = []
+        del = []
+        case @stars[loc]
+        when 1
+          common = [:ABSORBBULB,:LUMINOUSMOSS,:CELLBATTERY,:BERRYJUICE,:WISEGLASSES,:MUSCLEBAND]
+          rare = [:ADRENALINEORB,:NORMALGEM,:ELECTRICSEED,:ILLUMINATEORB]
+          rarerand = rand(rare.length)
+          for i in common
+            list.push(i)
+          end
+          list.push(rare[rarerand])
+        when 2
+          common = [:METALCOAT,:SOFTSAND,:HARDSTONE,:STARDUST,:SPELLTAG,:BLACKBELT,:EXPERTBELT,:ALLOYSTONE,:DRACOSTONE]
+          rare = [:INTIMIDATEORB,:FLYINGGEM,:LEFTOVERS,:MISTYSEED]
+          rarerand = rand(rare.length)
+          for i in common
+            list.push(i)
+          end
+          list.push(rare[rarerand])
+        when 3
+          common = [:CHOICEBAND,:CHOICESPECS,:ELECTRICSEED,:MISTYSEED,:PSYCHICSEED,:GRASSYSEED,:TOXICSEED,:LIFEORB]
+          rare = [:LEVITATEORB,:FILTERORB]
+          rarerand = rand(rare.length)
+          for i in common
+            list.push(i)
+          end
+          list.push(rare[rarerand])
+        when 4
+          common = [:HEAVYDUTYBOOTS,:CHOICESCARF,:AIRBALLOON,:COVERTCLOAK,:CLEARAMULET,:LOADEDDICE,:PUNCHINGGLOVE,:PROTECTIVEPADS,:LEFTOVERS,:BLACKSLUDGE]
+          rare = [:WATERABSORBORB,:FLASHFIREORB]
+          rarerand = rand(rare.length)
+          for i in common
+            list.push(i)
+          end
+          list.push(rare[rarerand])
+        when 5
+          common = []
+          GameData::Item.each do |item| 
+            common.push(item) if item.is_mega_stone? && ![:DIANCITE,:LATIOSITE,:LATIASITE,:ETERNATITE,:MELMETALITE,:ULTRANECROZIUMZ,:CASTFORMITE].include?(GameData::Item.get(item).id)
+          end
+          rare = [:LIGHTNINGRODORB,:SAPSIPPERORB,:MEDUSOIDORB]
+          rarerand = rand(rare.length)
+          for i in common
+            list.push(i)
+          end
+          list.push(rare[rarerand])
+        end
+        rewards.push(list[rand(list.length)])
       when "Dungeon of Life"
         list = []
         del = []
@@ -193,20 +294,9 @@ class Dungeon_Missions
           end
           list.push(rare[rarerand])
         end
-        pbEachPokemon { |poke,_box|
-          mon = poke.species
-          evo = GameData::Species.get(mon).get_baby_species
-          evos = GameData::Species.get(evo).get_family_evolutions
-          del.push(evos)
-        }
-        del.flatten!
-        del.uniq!
-        del.each do |e|
-          if list.include?(e)
-            list.delete(e)
-          end
-        end
         rewards.push(list[rand(list.length)])
+      else
+        rewards.push(nil)
       end
     end
     return rewards
@@ -214,9 +304,7 @@ class Dungeon_Missions
 
   def dungeon_reward(location)
     loc = 0
-    new_loc = []
-    reward = [388,394,378]
-    for i in reward
+    for i in reward_locations
       break if i == location
       loc += 1
     end
@@ -225,12 +313,17 @@ class Dungeon_Missions
 
 
   def valid_locations
-    loc = [321,328,352]
+    loc = [81,85,321,328,352]
     return loc
   end
 
   def location_names
-    loc = [317,311,351]
+    loc = [80,83,317,311,351]
+    return loc
+  end
+
+  def reward_locations
+    loc = [382,404,388,394,378]
     return loc
   end
 
@@ -253,9 +346,7 @@ class Dungeon_Missions
 
   def reward_stars(location)
     loc = 0
-    new_loc = []
-    reward = [388,394,378]
-    for i in reward
+    for i in reward_locations
       break if i == location
       loc += 1
     end
@@ -264,7 +355,9 @@ class Dungeon_Missions
 
   def add_reputation(star)
     rep = $game_system.reputation
-    add = ((((15/((rep/45)*1.75))).floor)*((0.4)*(2/star))).floor
+    part1 = ((15/(rep*0.02))*1.75).floor
+    part2 = (0.4)*(2/star)
+    add = (part1*part2).floor
     add = 0 if (add < 2 && rep >= 150)
     $game_system.reputation += add
     update_level_cap
@@ -277,9 +370,14 @@ class Dungeon_Missions
 
   def lose_reputation(star)
     rep = $game_system.reputation
-    add = (((((15/((rep/45)*1.75))).floor)*((0.4)*(2/star)))*(star^2)).round
+    star = 1 if star == 0
+    part1 = ((15/(rep*0.02))*1.75).floor
+    part2 = (0.4)*(2/star)
+    part3 = star*star
+    add = (part1*part2*part3).floor
     add = 1 if add < 1
     $game_system.reputation -= add
+    $game_system.reputation = 30 if $game_system.reputation < 30
   end
 
   def lose_reputation_manual(lose)
@@ -313,56 +411,92 @@ class Dungeon_Missions
 
   def sign(location)
     loc = 0
-    if @locations.nil? || !@locations.include?(location)
+    for i in @locations
+      break if i == location
+      loc += 1
+    end
+    if (@locations.nil? || @name[loc] == nil) || @mission_data == ({} || 0 || nil) || !@mission_data.has_key?(location) || mission_complete?(@mission_data[location][:id])
       text = "Dungeon Closed"
+      $game_switches[DungeonMissions::Mon_Switch] = false
+      $game_switches[DungeonMissions::Item_Switch] = false
     else
-      for i in @locations
-        break if i == location
-        loc += 1
-      end
-      name = @name[loc]
-      stars = "Stars: #{@stars[loc]}"
+      name = @name[loc].nil? ? @mission_data[location][:name] : @name[loc]
+      star = @stars[loc].nil? ? @mission_data[location][:stars] : @stars[loc]
+      stars = "Stars: #{star}"
       text = "#{name}\n#{stars}"
+      case name
+      when "Dungeon of Experiments", "Dungeon of Life"
+        $game_switches[DungeonMissions::Mon_Switch] = true
+        $game_switches[DungeonMissions::Item_Switch] = false
+      when "Dungeon of Support", "Dungeon of Learning"
+        $game_switches[DungeonMissions::Mon_Switch] = false
+        $game_switches[DungeonMissions::Item_Switch] = true
+      end
     end
     return text
   end
 
-  def start
-    data = []
-    location = rand(self.valid_locations.length)
-    location_name = location_names[location]
-    self.randomize(location)
-    map = pbLoadMapInfos
-    map_name = map[location_name].name
-    stars = self.stars(location)
-    target = self.target(location)
-    target_name = $game_variables[212] != 0 ? target[1] : GameData::Species.get(target).name
-    reward = ((stars * 1000) * ($game_system.reputation/30)).floor
-    data.push(target_name)
-    data.push(map_name)
-    data.push(reward)
-    @mission_data.push(data)
-    $game_variables[DungeonMissions::Data] = @mission_data
+  def reward_is_item?(location)
+    loc = 0
+    for i in @locations
+        break if i == location
+        loc += 1
+      end
+    return true if @name[loc] == ("Dungeon of Support" || "Dungeon of Learning")
+    return false
   end
 
-  def randomize_target
-    target = nil
-    mons = [:MILCERY,:SKITTY,:GULPIN,:FLABEBE,:AZURILL,:MAREANIE,:SNEASEL,:TEDDIURSA,:TOXEL,:CUBONE,:DARUMAKA,:MIMEJR,:MEOWTH,:PONYTA,:CORSOLA,:FARFETCHD,:GEODUDE,:ROLYCOLY,:SKIDDO,:KLINK,:STANTLER,:PICHU,:MAGBY,:ELEKID,:SMOOCHUM,:HAPPINY,:MUNCHLAX,:POIPOLE,:COSMOG,:PHIONE,:KUBFU,:LARVESTA,:SIZZLIPEDE,:SILICOBRA,:MAGNEMITE,:CARBINK,:AUDINO,:RALTS,:ABRA,:GASTLY,:DROWZEE,:ELGYEM,:BRONZOR,:MUNNA,:IMPIDIMP,:INDEEDEE,:PINCURCHIN,:PYUKUMUKU,:WYNAUT,:SCRAGGY,:SEEL,:HORSEA,:JIGGLYPUFF,:MANKEY,:SEVIPER,
-  :ZANGOOSE,:SNUBBULL,:MAREEP,:GIRAFARIG,:DUNSPARCE,:CHINGLING,:SNORUNT,:SPHEAL,:BUIZEL,:FINNEON,:ARROKUDA,:MORELULL,:FOMANTIS,:INKAY,:COTTONEE,:MISDREAVUS,:MURKROW,:FEEBAS,:GOTHITA,:SOLOSIS,:STUNFISK,:PIKIPEK,:EMOLGA,:PLUSLE,:MINUN,:TOGEDEMARU,:MORPEKO,:VOLBEAT,:ILLUMISE,:ODDISH,:BELLSPROUT,:IGGLYBUFF,:CLEFFA,:PICHU,:STARYU,:GRIMER,:KOFFING,:LAPRAS,:ZUBAT,:NATU,:BONSLY,:WEEDLE,:CATERPIE,:WAILMER,:SHELMET,:KARRABLAST,:SCYTHER,:BARBOACH,:LUVDISC,:DEDENNE,:MINIOR,:CLOBBOPUS,:CRABRAWLER,:KRABBY,
-  :SKORUPI,:FOMANTIS,:DEWPIDER,:BUNEARY,:TYNAMO,:DELIBIRD,:REMORAID,:WOOLOO,:NICKIT,:SKWOVET,:DHELMISE,:EKANS,:CRYOGONAL,:CUBCHOO,:WISHIWASHI,:DEINO,:TRAPINCH,:BELDUM,:BAGON,:LARVITAR,:DRATINI,:EEVEE,:GIBLE,:NOIBAT,:JANGMOO,:DREEPY,:RIOLU,:TYROGUE,:CROAGUNK,:GLIGAR,:HATENNA,:ZIGZAGOON,:ROOKIDEE,:JOLTIK,:WOOPER,
-  :TAROUNTULA,:LECHONK,:FIDOUGH,:GIMMIGHOUL,:TAUROS,:MILTANK,:BOUFFALANT,:FRIGIBAX,:FLITTLE,:TOEDSCOOL,:WIGLETT,:DONDOZO,:TATSUGIRI,:VELUZA,:TADBULB,:PAWMI,:FLAMIGO,:MASCHIFF,:GREAVARD,:PAWNIARD,:SMOLIV,:NYMBLE,:BOMBIRDIER,:KLAWF,:ORTHWORM,:CAPSAKID,:GLIMMET,:VAROOM,:BRAMBLIN,:WATTREL,:SHROODLE,:CYCLIZAR,:TINKATINK,:TANDEMAUS,:RELLOR,:FINIZEN,:NACLI,:CETODDLE]
-    people = [["trainer_BUGCATCHER","Bug Catcher"],["trainer_GAMBLER","Grandpa"],["trainer_SAILOR","Sailor"],["trainer_SCIENTIST","Scientist"],["trainer_TUBER_F","little girl"],["trainer_TUBER_M","little boy"]]
-    item = ["lost item","Lost Item"]
-    r = rand(3)
-    randMon = rand(mons.length)
-    randPeople = rand(people.length)
-    case r
-    when 0; target = mons[randMon]
-    when 1; target = people[randPeople]
-    when 2; target = item
+  def reward_is_pokemon?(location)
+    loc = 0
+    for i in @locations
+        break if i == location
+        loc += 1
+      end
+    return true if @name[loc] == ("Dungeon of Life" || "Dungeon of Experiments")
+    return false
+  end
+
+  def target_floor(stars)
+    case stars
+    when 1
+      ret = rand(3) + 1
+    when 2
+      ret = rand(5) + 1
+    when 3
+      ret = rand(8) + 1
+    when 4
+      ret = rand(11) + 1
+    when 5
+      ret = rand(15) + 1
+    else
+      ret = 0
     end
-    $game_variables[212] = r
-    return target
+    return ret
+  end
+
+  def star_floor(location)
+    loc = -1
+    for i in @locations
+      loc += 1
+      if i == location
+        stars = loc == -1 ? @mission_data[location][:stars] : @stars[loc]
+      end
+    end
+    case stars
+    when 1
+      ret = 3
+    when 2
+      ret = 5
+    when 3
+      ret = 8
+    when 4
+      ret = 11
+    when 5
+      ret = 15
+    else
+      ret = 0
+    end
+    return ret
   end
 
   def target(location)
@@ -375,63 +509,105 @@ class Dungeon_Missions
   end
 
   def randomize_all_dungeons
+    clear_dungeon_data
     for location in valid_locations
+      @locations.push(location)
       if rand(100) > 30
-        @locations.push(location)
-        dungeon = rand(100)
-        rep_wartime = $game_system.reputation > 300 ? 10 : 5
-        rep_learning = rep_wartime + 10
-        rep_support = rep_learning + 10
-        if dungeon < rep_wartime
-          name = "Dungeon of Experiments"
-        elsif dungeon >= rep_wartime && dungeon < rep_learning
-          name = "Dungeon of Learning"
-        elsif dungeon >= rep_learning && dungeon < rep_support
-          name = "Dungeon of Support"
-        elsif dungeon >= rep_support
-          name = "Dungeon of Life"
-        end
+        name = dungeon_randomizer
         @name.push(name)
         stars = randomize_stars
         @stars.push(stars)
+      else
+        name = nil
+        stars = 0
+        @name.push(name)
+        @stars.push(stars)
       end
     end
-    target = randomize_target
-    @target.push(target)
     @dungeon_reward = randomize_rewards
-    @steps = 256
     $game_variables[DungeonMissions::Locations] = @locations
     $game_variables[DungeonMissions::Name] = @name
-    $game_variables[DungeonMissions::Target] = @target
     $game_variables[DungeonMissions::Stars] = @stars
-    $game_variables[DungeonMissions::Data] = @mission_data
     $game_variables[DungeonMissions::Reward] = @dungeon_reward
     $game_variables[DungeonMissions::Steps] = @steps
     PBAI.log("Dungeons randomized...")
   end
 
   def refresh_sprite
-    first_pkmn = target($game_map.map_id) == nil ? GameData::Species.get(dungeon_reward($game_map.map_id)) : GameData::Species.get(target($game_map.map_id))
-    pkmn = Pokemon.new(first_pkmn,1)
-    change_sprite([pkmn.species, pkmn.form,
-          pkmn.gender, pkmn.shiny?,
-          pkmn.shadowPokemon?])
+    target = $game_variables[DungeonMissions::Specific_Target]
+    if target == 0
+      first_pkmn = GameData::Species.get(dungeon_reward($game_map.map_id))
+      pkmn = Pokemon.new(first_pkmn,1)
+      change_sprite([pkmn.species, pkmn.form,
+            pkmn.gender, pkmn.shiny?,
+            pkmn.shadowPokemon?])
+    elsif target.is_a?(Symbol)
+      first_pkmn = GameData::Species.get(target)
+      pkmn = Pokemon.new(first_pkmn,1)
+      change_sprite([pkmn.species, pkmn.form,
+            pkmn.gender, pkmn.shiny?,
+            pkmn.shadowPokemon?])
+    else
+      $game_map.events.each_with_index do |event, i|
+        next if event[1].name != "MissionTarget"
+        fname = target[0]
+        fname.gsub!("Graphics/Characters/","")
+        event[1].character_name = fname
+      end
+    end
   end
 
   def change_sprite(params)
     $game_map.events.each_with_index do |event,i|
-      next if event[1].name != ("DungeonReward" || "MissionTarget")
+      next if event[1].name != "DungeonReward"
       fname = GameData::Species.ow_sprite_filename(params[0], params[1],
                                                    params[2], params[3],
                                                    params[4])
       fname.gsub!("Graphics/Characters/","")
-      event[i].character_name = fname
+      event[1].character_name = fname
     end
+  end
+
+  def entrance(location)
+    if $game_switches[68]
+      $game_switches[926] = reward_is_pokemon?($game_map.map_id)
+      $game_switches[927] = reward_is_item?($game_map.map_id)
+      $game_variables[74] = stars(location)
+      $game_variables[DungeonMissions::Floor] = star_floor(location)
+      if @mission_data.has_key?(location)
+        $game_variables[DungeonMissions::Floor_Target] = @mission_data[location][:floor]
+        $game_variables[DungeonMissions::Specific_Target] = @mission_data[location][:target]
+        $game_variables[DungeonMissions::Target_Location] = location
+      end
+    end
+  end
+
+  def close(location)
+    temp = []
+    $game_self_switches[[location,2,"A"]] = false
+    $game_self_switches[[location,4,"A"]] = false
+    loc = 0
+    for loc in reward_locations
+      break if loc == location
+      loc += 1
+    end
+    $game_variables[74] = 3
+    $game_variables[DungeonMissions::Floor] = 0
+    $game_variables[DungeonMissions::Floor_Target] = 0
+    if @mission_data[pbGet(222)][:complete] == false
+      lose_reputation(@mission_data[pbGet(222)][:stars])
+      @mission_data.each_key do |key|
+        next if @mission_data[key][:id] == @mission_data[pbGet(222)][:id]
+        temp[key] = @mission_data[key]
+      end
+      @mission_data = temp
+    end
+    @name[loc] = nil
   end
 end
 
 
-def dungeon_randomizer(location)
+def dungeon_randomizer
   dungeon = rand(100)
   rep_wartime = $game_system.reputation > 300 ? 10 : 5
   rep_learning = rep_wartime + 10
@@ -450,15 +626,13 @@ def dungeon_randomizer(location)
 end
 
 def dungeon_battle(location)
-  loc = 0
-  reward = [388,394,378]
-  for i in reward
-    break if i == location
-    loc += 1
-  end
   pbSetField(:EchoChamber)
   level = $dungeon.reward_stars(location) * 10
   return pbWildBattle($dungeon.dungeon_reward(location),level)
+end
+
+def dungeon_item(location)
+  return pbItemBall($dungeon.dungeon_reward(location),1)
 end
 
 $dungeon = Dungeon_Missions.mission_data == nil ? Dungeon_Missions.new : Dungeon_Missions.setup

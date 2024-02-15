@@ -34,7 +34,7 @@ BattleHandlers::SpeedCalcAbility.add(:SLOWSTART,
 
 BattleHandlers::SpeedCalcAbility.add(:SLUSHRUSH,
   proc { |ability,battler,mult|
-    next mult * 2 if [:Hail].include?(battler.battle.pbWeather)
+    next mult * 2 if ([:Hail].include?(battler.battle.pbWeather) || [:SnowyMountainside,:Icy].include?(battler.activeField))
   }
 )
 
@@ -1136,7 +1136,7 @@ BattleHandlers::DamageCalcUserAbility.add(:TOUGHCLAWS,
 
 BattleHandlers::DamageCalcUserAbility.add(:TOXICBOOST,
   proc { |ability,user,target,move,mults,baseDmg,type|
-    if user.poisoned? && move.physicalMove?
+    if (user.poisoned? || [:Swamp,:Wasteland,:Poison].include?(user.activeField)) && move.physicalMove?
       mults[:base_damage_multiplier] *= 1.5
     end
   }

@@ -1580,7 +1580,7 @@ MapPosition = 1,11,1
 SnapEdges = true
 #-------------------------------
 [328]
-# Hidden Grotto - Route 27
+# Dungeon Entrance
 MapPosition = 1,17,14
 SnapEdges = true
 #-------------------------------
@@ -1885,3 +1885,92 @@ Outdoor = false
 ShowArea = true
 MapPosition = 1,15,8
 Dungeon = true
+#-------------------------------
+[389]
+# 27 Dungeon B1F
+ShowArea = true
+Dungeon = true
+#-------------------------------
+[390]
+# 27 Dungeon B2F
+Outdoor = false
+ShowArea = true
+SnapEdges = false
+Dungeon = true
+#-------------------------------
+[391]
+# 27 Dungeon B3F
+ShowArea = true
+Dungeon = true
+#-------------------------------
+[392]
+# 27 Dungeon B4F
+ShowArea = true
+Dungeon = true
+#-------------------------------
+[393]
+# 27 Dungeon B5F
+ShowArea = true
+Dungeon = true
+#-------------------------------
+[395]
+# Duskbound Dungeon B4F
+ShowArea = true
+MapPosition = 1,14,12
+SnapEdges = false
+Dungeon = true
+#-------------------------------
+[396]
+# Duskbound Dungeon B5F
+ShowArea = true
+MapPosition = 1,14,12
+SnapEdges = false
+Dungeon = true
+#-------------------------------
+[397]
+# Woods Dungeon B4F
+ShowArea = true
+MapPosition = 0,18,1
+Dungeon = true
+#-------------------------------
+[398]
+# Woods Dungeon B5F
+ShowArea = true
+MapPosition = 0,18,1
+Dungeon = true
+#-------------------------------
+[399]
+# Boro Dungeon B1F
+ShowArea = true
+MapPosition = 0,18,1
+Dungeon = true
+#-------------------------------
+[400]
+# Boro Dungeon B2F
+ShowArea = true
+MapPosition = 0,18,1
+Dungeon = true
+#-------------------------------
+[401]
+# Boro Dungeon B3F
+ShowArea = true
+MapPosition = 0,18,1
+Dungeon = true
+#-------------------------------
+[402]
+# Boro Dungeon B4F
+ShowArea = true
+MapPosition = 0,18,1
+Dungeon = true
+#-------------------------------
+[403]
+# Boro Dungeon B5F
+ShowArea = true
+MapPosition = 0,18,1
+Dungeon = true
+#-------------------------------
+[404]
+# Boro Cave
+ShowArea = true
+MapPosition = 0,18,1
+#-------------------------------

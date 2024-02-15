@@ -42,16 +42,20 @@ class Level_Scaling
     return true if $game_switches[LvlCap::Kaizo] || $game_switches[LvlCap::Randomizer]
     return true if (self.boss? == true || self.rival? == true || self.gym? == true) 
     return true if $game_switches[LvlCap::NoChange]
-    return true if $Trainer.badge_count > 3
+    return true if $game_system.level_cap >= 3
     return false
+  end
+
+  def self.level_cap
+    return $game_switches[LvlCap::Insane] ? INSANE_LEVEL_CAP[$game_system.level_cap] : LEVEL_CAP[$game_system.level_cap]
   end
 
   def self.evolve(pokemon,level,levelcap)
     #maps = [32,77,80,83,88,97,98,106,124,147,160,161,174,184,187,218,264,265,271,284,289,300,307,310,]
     species = pokemon.species
     newspecies = GameData::Species.get(species).get_baby_species # revert to the first evolution
-    species_blacklist = [:EEVEE,:TYROGUE,:NINCADA,:WURMPLE,:SCYTHER,:APPLIN]
-    return species if species_blacklist.include?(newspecies)
+    species_blacklist = [:EEVEE,:TYROGUE,:NINCADA,:WURMPLE,:SCYTHER,:APPLIN,:RALTS,:KIRLIA]
+    return newspecies if species_blacklist.include?(newspecies)
     $newspecies = newspecies
       evoflag=0 #used to track multiple evos not done by lvl
       endevo=false
@@ -101,15 +105,18 @@ class Level_Scaling
         return $newspecies
       end #end of evolving script 
   end
+  def self.trainer_max_level
+    return $Trainer.party.map { |e| e.level  }.max
+  end
 end
 
 Events.onTrainerPartyLoad+=proc {| sender, trainer |
    if trainer # Trainer data should exist to be loaded, but may not exist somehow
      party = trainer[0].party   # An array of the trainer's Pokémon
     if $game_switches && $game_switches[LvlCap::Switch] && $Trainer && $game_switches[Settings::LEVEL_CAP_SWITCH]
-       levelcap = LEVEL_CAP[$game_system.level_cap]
+       levelcap = $game_switches[LvlCap::Insane] ? INSANE_LEVEL_CAP[$game_system.level_cap] : LEVEL_CAP[$game_system.level_cap]
        badges = $Trainer.badge_count
-       mlv = $Trainer.party.map { |e| e.level  }.max
+       mlv = Level_Scaling.trainer_max_level
       for i in 0...party.length
         level = 0
         level=1 if level<1
@@ -145,11 +152,26 @@ Events.onTrainerPartyLoad+=proc {| sender, trainer |
         party[i].calc_stats
         if Level_Scaling.prevent_changes? == false
           party[i].species = Level_Scaling.evolve(party[i],level,levelcap)
-          party[i].item = nil if $Trainer.badge_count < 3
-          party[i].ability_index = rand(2) if $Trainer.badge_count < 3
+          party[i].item = nil
+          party[i].ability_index = rand(3)
           party[i].reset_moves
         end
       end #end of for
      end
    end
+}
+
+Events.onWildPokemonCreate+=proc {|sender,e|
+  pokemon = e[0]
+  mlv = Level_Scaling.trainer_max_level
+  levelcap = $game_switches[LvlCap::Insane] ? INSANE_LEVEL_CAP[$game_system.level_cap] : LEVEL_CAP[$game_system.level_cap]
+  level = mlv - 4 - rand(3)
+  level = 1 if level <= 0
+  if Level_Scaling.prevent_changes? == false
+    pokemon.level = level
+    pokemon.species = Level_Scaling.evolve(pokemon,level,levelcap)
+    pokemon.ability_index = rand(3)
+    pokemon.reset_moves
+  end
+  pokemon.calc_stats
 }
