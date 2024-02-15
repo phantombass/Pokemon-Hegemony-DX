@@ -52,6 +52,10 @@ class PokemonPauseMenu_Scene
         @sprites["levelcapwindow"] =Window_UnformattedTextPokemon.newWithSize("Level Cap: #{levelCap}",0,64,208,64,@viewport)
         @sprites["levelcapwindow"].visible = true
       end
+      if $game_switches[68]
+        @sprites["stepswindow"] =Window_UnformattedTextPokemon.newWithSize("Mission Time: #{$dungeon.steps}",0,128,250,64,@viewport)
+        @sprites["stepswindow"].visible = true
+      end
       @sprites["questwindow"] = Window_UnformattedTextPokemon.newWithSize("#{quest_info}",0,208,306,222,@viewport)
       pbSetSmallFont(@sprites["questwindow"].contents)
       @sprites["questwindow"].resizeToFit("#{quest_info}",306)

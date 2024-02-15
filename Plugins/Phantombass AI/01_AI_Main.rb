@@ -1139,7 +1139,7 @@ class PBAI
       boosts = []
       score = 0
       for stat in stats
-        boosts.push(self.battler.stages[stat])
+        boosts.push(self.battler.stages[stat]) if ((self.is_physical_attacker? && stat != :SPECIAL_ATTACK) || (self.is_special_attacker? && stat != :ATTACK))
       end
       for i in boosts
         score += i

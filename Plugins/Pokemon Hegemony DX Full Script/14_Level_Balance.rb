@@ -42,7 +42,7 @@ class Level_Scaling
     return true if $game_switches[LvlCap::Kaizo] || $game_switches[LvlCap::Randomizer]
     return true if (self.boss? == true || self.rival? == true || self.gym? == true) 
     return true if $game_switches[LvlCap::NoChange]
-    return true if $game_system.level_cap >= 3
+    return true if self.level_cap > 45
     return false
   end
 
@@ -114,48 +114,23 @@ Events.onTrainerPartyLoad+=proc {| sender, trainer |
    if trainer # Trainer data should exist to be loaded, but may not exist somehow
      party = trainer[0].party   # An array of the trainer's Pokémon
     if $game_switches && $game_switches[LvlCap::Switch] && $Trainer && $game_switches[Settings::LEVEL_CAP_SWITCH]
-       levelcap = $game_switches[LvlCap::Insane] ? INSANE_LEVEL_CAP[$game_system.level_cap] : LEVEL_CAP[$game_system.level_cap]
+       levelcap = Level_Scaling.level_cap
        badges = $Trainer.badge_count
        mlv = Level_Scaling.trainer_max_level
       for i in 0...party.length
         level = 0
         level=1 if level<1
         if mlv<=levelcap && mlv <= party[i].level && $game_switches[LvlCap::Gym] == true && $game_switches[LvlCap::Trainers] == true
-          if $game_switches[LvlCap::Hard] == true && $game_switches[LvlCap::Expert] == false
-            level = levelcap + rand(2)
-          elsif $game_switches[LvlCap::Hard] == true && $game_switches[LvlCap::Expert] == true
-            level = levelcap + rand(2) +1
-          else
-            level = levelcap
-          end
+          level = levelcap
         elsif $game_switches[LvlCap::LvlTrainer] == true
           level = levelcap - 5
-        elsif $game_switches[LvlCap::Trainers] == true && $game_switches[LvlCap::Gym] == false && $game_switches[LvlCap::Rival] == false
-          level = (mlv-1) - rand(1)
-          if $game_switches[LvlCap::Hard]
-            level += 1
-          elsif $game_switches[LvlCap::Expert]
-            level += 2
-          end
-        elsif $game_switches[LvlCap::Rival] == true && $game_switches[LvlCap::Hard] == false
-          level = party[i].level - rand(2)
-        elsif $game_switches[LvlCap::Hard] == true && $game_switches[LvlCap::Expert] == false && $game_switches[LvlCap::Rival] == true
-          level = party[i].level
-        elsif $game_switches[LvlCap::Hard] == true && $game_switches[LvlCap::Expert] == true && $game_switches[LvlCap::Rival] == true
-          level = party[i].level + 2
         else
-          level = levelcap
+          level = party[i].level
         end
         party[i].level = level
         #now we evolve the pokémon, if applicable
         #unused
         party[i].calc_stats
-        if Level_Scaling.prevent_changes? == false
-          party[i].species = Level_Scaling.evolve(party[i],level,levelcap)
-          party[i].item = nil
-          party[i].ability_index = rand(3)
-          party[i].reset_moves
-        end
       end #end of for
      end
    end

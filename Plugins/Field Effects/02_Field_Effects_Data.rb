@@ -626,4 +626,86 @@ FIELD_EFFECTS = {
 			:change_message => {},
 			:field_change_conditions => {} 
 		},
+		:City => {
+			:field_name => "City",
+			:intro_message => "The city hums with activity...",
+			:field_gfx => "city",
+			:nature_power => :STEEL,
+			:mimicry => :MAGNETBOMB,
+			:intro_script => nil,
+			:abilities => [:STEELWORKER,:FULLMETALBODY,:IRONFIST,:LIGHTNINGROD,:CACOPHONY],
+			:ability_effects => {
+				:STEELWORKER => [[:ATTACK,1]],
+				:FULLMETALBODY => [[:DEFENSE,1]],
+				:IRONFIST => [[:ATTACK,1]],
+				:CACOPHONY => [[:SPECIAL_DEFENSE,1]]
+			},
+			:move_damage_boost => {
+				1.5 => [Fields::OUTAGE_MOVES]
+			},
+			:move_messages => {
+				"The city lights boosted the attack!" => [Fields::OUTAGE_MOVES]},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {},
+			:type_messages => {},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:type_accuracy_change => {},
+			:side_effects => {},
+			:field_changers => {
+				:None => [Fields::QUAKE_MOVES],
+				:Wildfire => [Fields::IGNITE_MOVES],
+				:Outage => [Fields::OUTAGE_MOVES]
+			},
+			:change_message => {
+				"The city came crashing down!" => [Fields::QUAKE_MOVES],
+				"The city caught fire!" => [Fields::IGNITE_MOVES],
+				"Power outage!" => [Fields::OUTAGE_MOVES]
+			},
+			:field_change_conditions => {:Wildfire => PokeBattle_Battle.ignite?} 
+		},
+		:Outage => {
+			:field_name => "Outage",
+			:intro_message => "The power's out...",
+			:field_gfx => "city_night",
+			:nature_power => :DARK,
+			:mimicry => :DARKPULSE,
+			:intro_script => nil,
+			:abilities => [],
+			:ability_effects => {},
+			:move_damage_boost => {},
+			:move_messages => {},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {
+				1.2 => [:DARK,:GHOST]
+			},
+			:type_messages => {
+				"The darkness joined the attack" => [:DARK,:GHOST]
+			},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:type_accuracy_change => {},
+			:side_effects => {},
+			:field_changers => {
+				:None => [Fields::QUAKE_MOVES],
+				:Wildfire => [Fields::IGNITE_MOVES],
+				:City => [Fields::RECHARGE_MOVES]
+			},
+			:change_message => {
+				"The city came crashing down!" => [Fields::QUAKE_MOVES],
+				"The city caught fire!" => [Fields::IGNITE_MOVES],
+				"The electricity recharged the city!" => [Fields::RECHARGE_MOVES]
+			},
+			:field_change_conditions => {:Wildfire => PokeBattle_Battle.ignite?} 
+		},
 	}

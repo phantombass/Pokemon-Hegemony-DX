@@ -37,6 +37,7 @@ module Fields
   water = []
   weakwater = []
   swamp = []
+  electric = []
   moves = load_data("Data/moves.dat")
   for move in moves
     next if move[0].is_a?(Integer)
@@ -48,6 +49,7 @@ module Fields
     punching.push(GameData::Move.get(mv).id) if mv.flags[/j/]
     kicking.push(GameData::Move.get(mv).id) if mv.flags[/t/]
     water.push(GameData::Move.get(mv).id) if (mv.type == :WATER && mv.category != 2 && mv.base_damage >= 65)
+    electric.push(GameData::Move.get(mv).id) if (mv.type == :ELECTRIC && mv.category != 2)
     weakwater.push(GameData::Move.get(mv).id) if (mv.type == :WATER && mv.category != 2 && mv.base_damage < 65)
     swamp.push(GameData::Move.get(mv).id) if (mv.type == :ROCK && mv.base_damage >= 80)
   end
@@ -57,6 +59,8 @@ module Fields
   IGNITE_MOVES = [:FLAMEBURST,:INCINERATE,:LAVAPLUME,:FLAMETHROWER,:MAGMATREK,:FLAREBLITZ,:FLAMEWHEEL,:ERUPTION]
   QUAKE_MOVES = [:EARTHQUAKE,:BULLDOZE,:STOMPINGTANTRUM,:FISSURE,:STEAMROLLER,:STEELROLLER,:ICESPINNER]
   DOUSERS = [:RAINDANCE,:DRIZZLE,:PRIMORDIALSEA] + water
+  OUTAGE_MOVES = electric
+  RECHARGE_MOVES = [:RECHARGE,:CHARGE] + electric
   WEAK_WATER = weakwater
   REMOVAL = [:DEFOG,:TIDYUP,:GALEFORCE,:TAILWIND] + wind
   SWAMP_REMOVAL = swamp
@@ -700,6 +704,12 @@ class PokeBattle_Battle
     if battler.opposes? && battler.shadowPokemon?
       pbCommonAnimation("Shadow",battler)
       pbDisplay(_INTL("Oh!\nA Shadow Pokémon!"))
+    end
+    trainer_hash = $game_variables[RandTrainer::Temp]
+    for mon in trainer_hash[:pokemon]
+      if battler.opposes? && battler.species == mon[:species]
+        battler.item = mon[:item]
+      end
     end
     # Record money-doubling effect of Amulet Coin/Luck Incense
     if !battler.opposes? && [:AMULETCOIN, :LUCKINCENSE].include?(battler.item_id)

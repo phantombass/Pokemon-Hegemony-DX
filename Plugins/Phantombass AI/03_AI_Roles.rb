@@ -186,3 +186,30 @@ GameData::Role.register({
   :id_number    => 26,
   :name         => _INTL("Weather/Terrain Abuser")
 })
+
+class Pokemon
+  def assign_roles
+    roles = []
+    setup = [:SWORDSDANCE,:WORKUP,:NASTYPLOT,:GROWTH,:HOWL,:BULKUP,:CALMMIND,:TAILGLOW,:AGILITY,:ROCKPOLISH,:AUTOTOMIZE,
+      :SHELLSMASH,:SHIFTGEAR,:QUIVERDANCE,:VICTORYDANCE,:CLANGOROUSSOUL,:CHARGE,:COIL,:HONECLAWS,:IRONDEFENSE,:COSMICPOWER,:AMNESIA,
+      :POWERUPPUNCH,:FLAMECHARGE,:TRAILBLAZE]
+    for move in @moves
+      m = GameData::Move.get(move.id).id
+      roles.push(:SETUPSWEEPER) if setup.include?(m)
+      roles.push(:CLERIC) if [:WISH,:HEALBELL,:AROMATHERAPY].include?(m)
+      roles.push(:OFFENSIVEPIVOT) if [:UTURN,:VOLTSWITCH,:FLIPTURN].include?(m)
+      roles.push(:DEFENSIVEPIVOT) if [:PARTINGSHOT,:CHILLYRECEPTION,:TELEPORT].include?(m)
+      roles.push(:SPEEDCONTROL) if [:ICYWIND,:THUNDERWAVE,:GLARE,:BULLDOZE,:DOLDRUMS,:ROCKTOMB,:POUNCE,:NUZZLE,:ELECTROWEB,:LOWSWEEP].include?(m)
+      roles.push(:STALLBREAKER) if m == :TAUNT
+      roles.push(:REDIRECTION) if [:FOLLOWME,:ALLYSWITCH,:RAGEPOWDER].include?(m)
+      roles.push(:SUPPORT) if m == :HELPINGHAND
+      roles.push(:HAZARDREMOVAL) if [:RAPIDSPIN,:MORTALSPIN,:TIDYUP,:DEFOG].include?(m)
+      roles.push(:SCREENS) if [:LIGHTSCREEN,:REFLECT,:AURORAVEIL].include?(m)
+      roles.push(:TOXICSTALLER) if m == :TOXIC
+      roles.push(:LEAD) if [:STEALTHROCK,:SPIKES,:TOXICSPIKES,:STICKYWEB,:COMETSHARDS].include?(m)
+      roles.push(:TRICKROOMSETTER) if m == :TRICKROOM
+    end
+    roles.push(:NONE) if roles == []
+    return roles
+  end
+end

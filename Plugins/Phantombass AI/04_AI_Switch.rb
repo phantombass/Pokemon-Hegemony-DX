@@ -368,15 +368,6 @@ PBAI::SwitchHandler.add_out do |switch,ai,battler,target|
 end
 
 PBAI::SwitchHandler.add_out do |switch,ai,battler,target|
-	if battler.set_up_score > 0
-		switch = false
-	elsif battler.set_up_score < 0
-		switch = true
-	end
-	next switch
-end
-
-PBAI::SwitchHandler.add_out do |switch,ai,battler,target|
 	if battler.effects[PBEffects::Toxic] > 1
     switch = true
   end
@@ -866,6 +857,15 @@ PBAI::SwitchHandler.add do |score,ai,battler,proj,target|
 		PBAI.log("- 10000 to take advantage of Supreme Overlord")
 	end
   next score
+end
+
+PBAI::SwitchHandler.add_out do |switch,ai,battler,target|
+	if battler.set_up_score > 0
+		switch = false
+	elsif battler.set_up_score < 0
+		switch = true
+	end
+	next switch
 end
 
 PBAI::SwitchHandler.add do |score,ai,battler,proj,target|

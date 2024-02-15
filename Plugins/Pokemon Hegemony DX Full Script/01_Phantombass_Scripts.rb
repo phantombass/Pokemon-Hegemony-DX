@@ -157,6 +157,7 @@ Events.onStepTaken += proc {
   if $game_switches[68]
     if $dungeon.steps > 0
       $dungeon.steps -= 1 if (!$dungeon.valid_locations.include?($game_map.map_id) && $game_map.map_id < 375 )
+      $game_variables[DungeonMissions::Steps] = $dungeon.steps
     else
       $dungeon.randomize_all_dungeons if $game_switches[68]
       $dungeon.clear_mission_data
@@ -711,6 +712,7 @@ Events.onEndBattle += proc { |_sender,e|
   $CanToggle = true
   $repel_toggle = true
   $game_variables[924] = 0
+  $game_switches[RandTrainer::Switch] = false
   if $game_switches[LvlCap::Ironmon]
     for i in 0...$Trainer.party.length
       k = $Trainer.party.length - 1 - i
