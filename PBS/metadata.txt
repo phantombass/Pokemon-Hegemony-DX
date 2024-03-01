@@ -1974,3 +1974,123 @@ Dungeon = true
 ShowArea = true
 MapPosition = 0,18,1
 #-------------------------------
+[415]
+# Stibni Dungeon B1F
+ShowArea = true
+MapPosition = 1,16,18
+Dungeon = true
+#-------------------------------
+[416]
+# Stibni Dungeon B2F
+ShowArea = true
+MapPosition = 1,16,18
+Dungeon = true
+#-------------------------------
+[417]
+# Stibni Dungeon B3F
+ShowArea = true
+MapPosition = 1,16,18
+Dungeon = true
+#-------------------------------
+[418]
+# Stibni Dungeon B4F
+ShowArea = true
+MapPosition = 1,16,18
+Dungeon = true
+#-------------------------------
+[419]
+# Stibni Dungeon B5F
+ShowArea = true
+MapPosition = 1,16,18
+Dungeon = true
+#-------------------------------
+[420]
+# Stibni Dungeon B6F
+ShowArea = true
+MapPosition = 1,16,18
+Dungeon = true
+#-------------------------------
+[421]
+# Stibni Dungeon B7F
+ShowArea = true
+MapPosition = 1,16,18
+Dungeon = true
+#-------------------------------
+[422]
+# Stibni Dungeon B8F
+ShowArea = true
+MapPosition = 1,16,18
+Dungeon = true
+#-------------------------------
+[423]
+# Stibni Dungeon B9F
+ShowArea = true
+MapPosition = 1,16,18
+Dungeon = true
+#-------------------------------
+[424]
+# Stibni Dungeon B10F
+ShowArea = true
+MapPosition = 1,16,18
+Dungeon = true
+#-------------------------------
+[425]
+# Helum Dungeon B1F
+ShowArea = true
+MapPosition = 0,10,1
+Dungeon = true
+#-------------------------------
+[426]
+# Helum Dungeon B2F
+ShowArea = true
+MapPosition = 0,10,1
+Dungeon = true
+#-------------------------------
+[427]
+# Helum Dungeon B3F
+ShowArea = true
+MapPosition = 0,10,1
+Dungeon = true
+#-------------------------------
+[428]
+# Helum Dungeon B4F
+ShowArea = true
+MapPosition = 0,10,1
+Dungeon = true
+#-------------------------------
+[429]
+# Helum Dungeon B5F
+ShowArea = true
+MapPosition = 0,10,1
+Dungeon = true
+#-------------------------------
+[430]
+# Helum Dungeon B6F
+ShowArea = true
+MapPosition = 0,10,1
+Dungeon = true
+#-------------------------------
+[431]
+# Helum Dungeon B7F
+ShowArea = true
+MapPosition = 0,10,1
+Dungeon = true
+#-------------------------------
+[432]
+# Helum Dungeon B8F
+ShowArea = true
+MapPosition = 0,10,1
+Dungeon = true
+#-------------------------------
+[433]
+# Helum Dungeon B9F
+ShowArea = true
+MapPosition = 0,10,1
+Dungeon = true
+#-------------------------------
+[434]
+# Helum Dungeon B10F
+ShowArea = true
+MapPosition = 0,10,1
+Dungeon = true
+#-------------------------------

@@ -24,6 +24,7 @@ module GameData
 
     DATA = {}
     DATA_FILENAME = "map_metadata.dat"
+    PBS_BASE_FILENAME = "map_metadata"
 
     SCHEMA = {
        "Outdoor"          => [1,  "b"],

@@ -22,6 +22,11 @@ module FancyBadges
     "Deep Space Badge",
     "Grit Badge",
     "Solar Badge",
-    "Aloof Badge"
+    "Aloof Badge",
+    "Crystal Badge",
+    "Crest Badge",
+    "Energy Badge",
+    "Ancient Badge",
+    "Glimmer Badge"
   ]
 end

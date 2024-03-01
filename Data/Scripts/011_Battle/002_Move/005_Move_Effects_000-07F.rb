@@ -626,7 +626,8 @@ end
 class PokeBattle_Move_021 < PokeBattle_StatUpMove
   def initialize(battle,move)
     super
-    @statUp = [:SPECIAL_DEFENSE,1]
+    num = [:Digital,:Electric].include?(@battle.field.field_effects) ? 2 : 1
+    @statUp = [:SPECIAL_DEFENSE,num]
   end
 
   def pbEffectGeneral(user)
@@ -665,6 +666,9 @@ class PokeBattle_Move_023 < PokeBattle_Move
   def pbEffectGeneral(user)
     user.effects[PBEffects::FocusEnergy] = 2
     @battle.pbDisplay(_INTL("{1} is getting pumped!",user.pbThis))
+    if @battle.field.field_effects == :Dojo
+      user.pbRecoverHP(user.totalhp/4) if user.canHeal?
+    end
   end
 end
 
@@ -756,7 +760,8 @@ end
 class PokeBattle_Move_02A < PokeBattle_MultiStatUpMove
   def initialize(battle,move)
     super
-    @statUp = [:DEFENSE,1,:SPECIAL_DEFENSE,1]
+    num = @battle.field.field_effects == :Space ? 2 : 1
+    @statUp = [:DEFENSE,num,:SPECIAL_DEFENSE,num]
   end
 end
 
@@ -1100,7 +1105,10 @@ end
 class PokeBattle_Move_03F < PokeBattle_StatDownMove
   def initialize(battle,move)
     super
-    @statDown = [:SPECIAL_ATTACK,2]
+    if move.name == "Astro Bomb" && battle.field.field_effects == :Space
+    else
+      @statDown = [:SPECIAL_ATTACK,2]
+    end
   end
 end
 

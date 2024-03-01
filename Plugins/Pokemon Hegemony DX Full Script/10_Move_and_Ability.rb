@@ -6,6 +6,9 @@ module BattleHandlers
   CertainStatGainAbility = AbilityHandlerHash.new
   CertainStatGainItem = ItemHandlerHash.new
   StatLossImmunity = ItemHandlerHash.new
+  ModifyTypeEffectiveness = AbilityHandlerHash.new  # Tera Shell (damage)
+  OnMoveSuccessCheck      = AbilityHandlerHash.new  # Tera Shell (display)
+  OnInflictingStatus      = AbilityHandlerHash.new  # Poison Puppeteer
   OnTerrainChangeAbility                  = AbilityHandlerHash.new
   def self.triggerCertainStatGainAbility(ability, battler, battle, stat, user, increment)
     CertainStatGainAbility.trigger(ability, battler, battle, stat, user,increment)
@@ -25,6 +28,18 @@ module BattleHandlers
 
   def self.triggerOnTerrainChange(ability, battler, battle)
     OnTerrainChange.trigger(ability, battler, battle)
+  end
+
+  def self.triggerModifyTypeEffectiveness(ability, user, target, move, battle, effectiveness)
+    return trigger(ModifyTypeEffectiveness, ability, user, target, move, battle, effectiveness, ret: effectiveness)
+  end
+
+  def self.triggerOnMoveSuccessCheck(ability, user, target, move, battle)
+    OnMoveSuccessCheck.trigger(ability, user, target, move, battle)
+  end
+
+  def self.triggerOnInflictingStatus(ability, battler, user, status)
+    OnInflictingStatus.trigger(ability, battler, user, status)
   end
 end
 #===============================================================================
@@ -115,6 +130,7 @@ class PokeBattle_Move
     user.effects[PBEffects::ParentalBond] = 0
     user.effects[PBEffects::EchoChamber] = 0
     user.effects[PBEffects::Ambidextrous] = 0
+    user.effects[PBEffects::Ricochet] = 0
     user.effects[PBEffects::ProtectRate]  = 1
     @battle.field.effects[PBEffects::FusionBolt]  = false
     @battle.field.effects[PBEffects::FusionFlare] = false
@@ -125,7 +141,7 @@ class PokeBattle_Move
   def pbHammerMove?;           return hammerMove?; end
   def headMove?
     head = [:HEADSMASH,:HEADBUTT,:CROWNRUSH,:SKULLBLITZ,
-      :SKULLBASH,:HEADCHARGE,:IRONHEAD,:HEADLONGRUSH]
+      :SKULLBASH,:HEADCHARGE,:IRONHEAD,:HEADLONGRUSH,:ZENHEADBUTT]
     return head.include?(@id)
   end
 
@@ -145,6 +161,12 @@ class PokeBattle_Move
        !chargingTurnMove? && targets.length==1
       # Record that Parental Bond applies, to weaken the second attack
       user.effects[PBEffects::EchoChamber] = 3
+      return 2
+    end
+    if @battle.field.field_effects == :Mirror && pbDamagingMove? && Fields::RICOCHET_MOVES.include?(@id) &&
+       !chargingTurnMove? && targets.length==1
+      # Record that Parental Bond applies, to weaken the second attack
+      user.effects[PBEffects::Ricochet] = 3
       return 2
     end
     return 1
@@ -265,7 +287,7 @@ class PokeBattle_Move
     end
     if @battle.pbWeather == :Fog
       if !user.pbHasType?(:FAIRY)
-        modifiers[:accuracy_multiplier] *= 0.75
+        modifiers[:accuracy_multiplier] *= 0.8
       end
     end
     if user.effects[PBEffects::MicleBerry]
@@ -516,7 +538,7 @@ BattleHandlers::MoveImmunityTargetAbility.add(:STEAMENGINE,
 
 BattleHandlers::SpeedCalcAbility.add(:SLUDGERUSH,
   proc { |ability,battler,mult|
-    next mult*2 if battler.battle.field.field_effects == :Poison
+    next mult*2 if [:Poison,:Swamp].include?(battler.battle.field.field_effects)
   }
 )
 
@@ -524,7 +546,7 @@ BattleHandlers::TargetAbilityOnHit.add(:SPLINTER,
   proc { |ability,target,battler,move,battle|
     next if battler.pbOpposingSide.effects[PBEffects::StealthRock] == 1
     battle.pbShowAbilitySplash(battler)
-    if battle.field.weather == :Windy
+    if battle.field.weather == :Windy || battle.field.field_effects == :WindTunnel
       battle.pbDisplay(_INTL("The wind prevented {1}'s {2} from working!",battler.pbThis,battler.abilityName))
     else
       battle.scene.pbAnimation(GameData::Move.get(:STEALTHROCK).id,battler,battler)
@@ -539,7 +561,7 @@ BattleHandlers::TargetAbilityOnHit.add(:WEBWEAVER,
   proc { |ability,target,battler,move,battle|
     next if battler.pbOpposingSide.effects[PBEffects::StickyWeb] == 1
     battle.pbShowAbilitySplash(battler)
-    if battle.field.weather == :Windy
+    if battle.field.weather == :Windy || battle.field.field_effects == :WindTunnel
       battle.pbDisplay(_INTL("The wind prevented {1}'s {2} from working!",battler.pbThis,battler.abilityName))
     else
       battle.scene.pbAnimation(GameData::Move.get(:STICKYWEB).id,battler,battler)
@@ -558,6 +580,7 @@ BattleHandlers::TargetAbilityOnHit.add(:SEEDSOWER,
     battle.pbShowAbilitySplash(target)
     battle.pbDisplay(_INTL("Grass grew to cover the battlefield!"))
     battle.pbStartTerrain(target, :Grassy)
+    battle.scene.pbRefreshEverything
   }
 )
 
@@ -574,8 +597,9 @@ BattleHandlers::DamageCalcTargetAbility.add(:TRASHSHIELD,
 BattleHandlers::TargetAbilityOnHit.add(:TOXICDEBRIS,
   proc { |ability,target,battler,move,battle|
     next if battler.pbOpposingSide.effects[PBEffects::ToxicSpikes] == 2
+    next unless move.pbContactMove?
     battle.pbShowAbilitySplash(battler)
-    if battle.field.weather == :Windy
+    if battle.field.weather == :Windy || battle.field.field_effects == :WindTunnel
       battle.pbDisplay(_INTL("The wind prevented {1}'s {2} from working!",battler.pbThis,battler.abilityName))
     else
       battle.scene.pbAnimation(GameData::Move.get(:TOXICSPIKES).id,battler,battler)
@@ -888,7 +912,7 @@ BattleHandlers::AbilityOnSwitchIn.add(:PROTOSYNTHESIS,
     [:ATTACK,:DEFENSE,:SPECIAL_ATTACK,:SPECIAL_DEFENSE,:SPEED].each do |s|
       next if userStats[s] < highestStatValue
       battle.pbShowAbilitySplash(battler)
-      if battler.item == :BOOSTERENERGY && ![:Sun, :HarshSun].include?(battler.battle.pbWeather)
+      if battler.item == :BOOSTERENERGY && ![:Sun, :HarshSun].include?(battler.battle.pbWeather) && battle.field.field_effects != :Lava
         battler.pbHeldItemTriggered(battler.item)
         battler.effects[PBEffects::BoosterEnergy] = true
         battle.pbDisplay(_INTL("{1} used its Booster Energy to activate Protosynthesis!", battler.pbThis))
@@ -904,7 +928,7 @@ BattleHandlers::AbilityOnSwitchIn.add(:PROTOSYNTHESIS,
 )
 BattleHandlers::AbilityOnSwitchIn.add(:QUARKDRIVE,
   proc { |ability, battler, battle, switch_in|
-    next if battle.field.field_effects != :Electric && battler.item != :BOOSTERENERGY
+    next if ![:Electric,:Magnetic].include?(battle.field.field_effects) && battler.item != :BOOSTERENERGY
     userStats = battler.plainStats
     highestStatValue = 0
     userStats.each_value { |value| highestStatValue = value if highestStatValue < value }
@@ -912,7 +936,7 @@ BattleHandlers::AbilityOnSwitchIn.add(:QUARKDRIVE,
     [:ATTACK,:DEFENSE,:SPECIAL_ATTACK,:SPECIAL_DEFENSE,:SPEED].each do |s|
       next if userStats[s] < highestStatValue
       battle.pbShowAbilitySplash(battler)
-      if battler.item == :BOOSTERENERGY && !battle.field.field_effects == :Electric
+      if battler.item == :BOOSTERENERGY && ![:Electric,:Magnetic].include?(battle.field.field_effects)
         battler.pbHeldItemTriggered(battler.item)
         battler.effects[PBEffects::BoosterEnergy] = true
         battle.pbDisplay(_INTL("{1} used its Booster Energy to activate its Quark Drive!", battler.pbThis))
@@ -929,6 +953,7 @@ BattleHandlers::AbilityOnSwitchIn.add(:QUARKDRIVE,
 BattleHandlers::OnTerrainChangeAbility.add(:QUARKDRIVE,
 proc { |ability, battler, battle, switch_in|
     next if battle.field.field_effects == :Electric
+    next if battle.field.field_effects == :Magnetic
     next if battler.effects[PBEffects::BoosterEnergy]
     if battler.item == :BOOSTERENERGY
       battler.pbHeldItemTriggered(battler.item)
@@ -979,10 +1004,12 @@ BattleHandlers::SpeedCalcAbility.copy(:PROTOSYNTHESIS,:QUARKDRIVE)
 
 BattleHandlers::DamageCalcUserAbility.add(:SHARPNESS,
   proc { |ability,user,target,move,mults,baseDmg,type|
-    mults[:base_damage_multiplier] = (mults[:base_damage_multiplier]*1.5).round if move.slicingMove?
+    mod = user.activeField == :Castle ? 1.7 : 1.5
+    mults[:base_damage_multiplier] = (mults[:base_damage_multiplier]*mod).round if move.slicingMove?
   }
 )
 
+BattleHandlers::DamageCalcUserAbility.copy(:SHARPNESS,:SWORDOFMASTERY)
 class Game_Temp
   attr_accessor :fainted_member
 end
@@ -1223,6 +1250,7 @@ BattleHandlers::AbilityOnSwitchIn.add(:MEDUSOID,
 BattleHandlers::AbilityOnSwitchIn.add(:DIMENSIONSHIFT,
   proc { |ability,battler,battle|
     battle.pbShowAbilitySplash(battler)
+    next if battle.field.field_effects == :Dream
     if $gym_gimmick == true && $Trainer.badge_count == 4
       battle.pbDisplay(_INTL("The dimensions are unchanged!"))
     else
@@ -1266,7 +1294,7 @@ BattleHandlers::DamageCalcUserAllyAbility.add(:FLOWERGIFT,
 
 BattleHandlers::DamageCalcTargetAbility.add(:FLOWERGIFT,
   proc { |ability,user,target,move,mults,baseDmg,type|
-    if [:Sun, :HarshSun,:Rainbow].include?(user.battle.pbWeather)
+    if [:Sun, :HarshSun].include?(user.battle.pbWeather)
       mults[:defense_multiplier] *= 1.5
     end
   }
@@ -1274,37 +1302,48 @@ BattleHandlers::DamageCalcTargetAbility.add(:FLOWERGIFT,
 
 BattleHandlers::SpeedCalcAbility.add(:SANDRUSH,
   proc { |ability,battler,mult|
-    next mult * 2 if [:Sandstorm].include?(battler.battle.pbWeather)
+    if [:Sandstorm].include?(battler.battle.pbWeather) || battler.battle.field.field_effects == :Desert
+      next mult * 2
+    end
   }
 )
 
 BattleHandlers::SpeedCalcAbility.add(:SLUSHRUSH,
   proc { |ability,battler,mult|
-    next mult * 2 if [:Hail, :Sleet].include?(battler.battle.pbWeather)
+    if [:Hail, :Sleet].include?(battler.battle.pbWeather) || [:Icy,:SnowyMountainside].include?(battler.battle.field.field_effects)
+      next mult * 2
+    end
   }
 )
 
 BattleHandlers::SpeedCalcAbility.add(:STARSPRINT,
   proc { |ability,battler,mult|
-    next mult * 2 if [:Starstorm].include?(battler.battle.pbWeather)
+    if [:Starstorm].include?(battler.battle.pbWeather) || [:Space,:Distortion].include?(battler.battle.field.field_effects)
+      next mult * 2
+    end
   }
 )
 
 BattleHandlers::SpeedCalcAbility.add(:BACKDRAFT,
   proc { |ability,battler,mult|
     next mult * 2 if [:Windy,:StrongWinds].include?(battler.battle.pbWeather)
+    next mult * 2 if battler.battle.field.field_effects == :WindTunnel
   }
 )
 
 BattleHandlers::SpeedCalcAbility.add(:NOCTEMBOOST,
   proc { |ability,battler,mult|
-    next mult * 2 if [:Eclipse].include?(battler.battle.pbWeather)
+    if [:Eclipse].include?(battler.battle.pbWeather) || [:Outage,:Space,:DarkRoom].include?(battler.battle.field.field_effects)
+      next mult * 2
+    end
   }
 )
 
 BattleHandlers::SpeedCalcAbility.add(:TOXICRUSH,
   proc { |ability,battler,mult|
-    next mult * 2 if [:AcidRain].include?(battler.battle.pbWeather)
+    if [:AcidRain].include?(battler.battle.pbWeather) || [:Poison,:Swamp].include?(battler.battle.field.field_effects)
+      next mult * 2
+    end
   }
 )
 
@@ -1508,6 +1547,20 @@ BattleHandlers::MoveImmunityTargetAbility.add(:DIMENSIONBLOCK,
   }
 )
 
+BattleHandlers::MoveImmunityTargetAbility.add(:PASTELVEIL,
+  proc { |ability,user,target,move,type,battle|
+    next if type != :POISON
+    battle.pbShowAbilitySplash(target)
+    if PokeBattle_SceneConstants::USE_ABILITY_SPLASH
+      battle.pbDisplay(_INTL("It doesn't affect {1}...",target.pbThis(true)))
+    else
+      battle.pbDisplay(_INTL("{1}'s {2} blocks {3}!",target.pbThis,target.abilityName,move.name))
+    end
+    battle.pbHideAbilitySplash(target)
+    next true
+  }
+)
+
 BattleHandlers::MoveImmunityTargetAbility.add(:FLOWERGIFT,
   proc { |ability,user,target,move,type,battle|
     next if type != :FIRE
@@ -1546,13 +1599,19 @@ BattleHandlers::DamageCalcUserAbility.add(:AMPLIFIER,
 
 BattleHandlers::DamageCalcUserAbility.add(:TIGHTFOCUS,
   proc { |ability,user,target,move,mults,baseDmg,type|
-    mults[:base_damage_multiplier] = (mults[:base_damage_multiplier]*1.5).round if move.beamMove?
+    times = user.activeField == :Mirror ? 1.5 : 1.3
+    mults[:base_damage_multiplier] = (mults[:base_damage_multiplier]*times).round if move.beamMove?
   }
 )
 
 BattleHandlers::AbilityOnSwitchIn.add(:ILLUMINATE,
   proc { |ability,battler,battle|
     battler.pbRaiseStatStageByAbility(:ACCURACY,1,battler)
+    if battle.field.field_effects == :DarkRoom && battle.pbWeather != :Eclipse
+      battle.pbDisplay(_INTL("The light brightened the room!"))
+      battle.pbChangeField(:None)
+      battle.scene.pbRefreshEverything
+    end
   }
 )
 
@@ -1854,6 +1913,7 @@ class PokeBattle_Battler
     @effects[PBEffects::TarShot]             = false
     @effects[PBEffects::Cinders]             = -1
     @effects[PBEffects::Singed]              = false
+    @effects[PBEffects::Ricochet]            = 0
   end
   def pbUseMove(choice,specialUsage=false)
     # NOTE: This is intentionally determined before a multi-turn attack can
@@ -2505,6 +2565,7 @@ class PokeBattle_Battler
     user.effects[PBEffects::ParentalBond] -= 1 if user.effects[PBEffects::ParentalBond] > 0
     user.effects[PBEffects::Ambidextrous] -= 1 if user.effects[PBEffects::Ambidextrous] > 0
     user.effects[PBEffects::EchoChamber] -= 1 if user.effects[PBEffects::EchoChamber] > 0
+    user.effects[PBEffects::Ricochet] -= 1 if user.effects[PBEffects::Ricochet] > 0
     # Accuracy check (accuracy/evasion calc)
     if hitNum == 0 || move.successCheckPerHit?
       targets.each do |b|
@@ -2773,6 +2834,51 @@ class PokeBattle_Battler
     return false if !pbCanLowerStatStage?(:SPEED,user)
     return pbLowerStatStageByCause(:SPEED,1,user,user.abilityName)
   end
+  def pbLowerEvasionStatStageSyrup(user)
+    return false if fainted?
+    # NOTE: Substitute intentially blocks Intimidate even if self has Contrary.
+    if @effects[PBEffects::Substitute]>0
+      if PokeBattle_SceneConstants::USE_ABILITY_SPLASH
+        @battle.pbDisplay(_INTL("{1} is protected by its substitute!",pbThis))
+      else
+        @battle.pbDisplay(_INTL("{1}'s substitute protected it from {2}'s {3}!",
+           pbThis,user.pbThis(true),user.abilityName))
+      end
+      return false
+    end
+    if PokeBattle_SceneConstants::USE_ABILITY_SPLASH
+      return pbLowerStatStageByAbility(:EVASION,1,user,false)
+    end
+    # NOTE: These checks exist to ensure appropriate messages are shown if
+    #       Intimidate is blocked somehow (i.e. the messages should mention the
+    #       Intimidate ability by name).
+    if !hasActiveAbility?(:CONTRARY)
+      if pbOwnSide.effects[PBEffects::Mist]>0
+        @battle.pbDisplay(_INTL("{1} is protected from {2}'s {3} by Mist!",
+           pbThis,user.pbThis(true),user.abilityName))
+        return false
+      end
+      if abilityActive?
+        if BattleHandlers.triggerStatLossImmunityAbility(@ability,self,:EVASION,@battle,false) ||
+           BattleHandlers.triggerStatLossImmunityAbilityNonIgnorable(@ability,self,:EVASION,@battle,false) ||
+           BattleHandlers.triggerStatLossImmunityAbilityNonIgnorableSandy(@ability,self,:EVASION,@battle,false)
+          @battle.pbDisplay(_INTL("{1}'s {2} prevented {3}'s {4} from working!",
+             pbThis,abilityName,user.pbThis(true),user.abilityName))
+          return false
+        end
+      end
+      eachAlly do |b|
+        next if !b.abilityActive?
+        if BattleHandlers.triggerStatLossImmunityAllyAbility(b.ability,b,self,:EVASION,@battle,false)
+          @battle.pbDisplay(_INTL("{1} is protected from {2}'s {3} by {4}'s {5}!",
+             pbThis,user.pbThis(true),user.abilityName,b.pbThis(true),b.abilityName))
+          return false
+        end
+      end
+    end
+    return false if !pbCanLowerStatStage?(:EVASION,user)
+    return pbLowerStatStageByCause(:EVASION,1,user,user.abilityName)
+  end
   def pbCanInflictStatus?(newStatus,user,showMessages,move=nil,ignoreStatus=false)
     return false if fainted?
     selfInflicted = (user && user.index==@index)
@@ -2841,7 +2947,10 @@ class PokeBattle_Battler
     hasImmuneType = false
     case newStatus
     when :SLEEP
-      # No type is immune to sleep
+      if @battle.field.field_effects == :Dojo
+        hasImmuneType |= pbHasType?(:FIGHTING)
+        hasImmuneType |= pbHasType?(:PSYCHIC)
+      end
     when :POISON
       if !(user && user.hasActiveAbility?(:CORROSION))
         hasImmuneType |= pbHasType?(:POISON)
@@ -3520,7 +3629,7 @@ class PokeBattle_Move_049 < PokeBattle_TargetStatDownMove
       when :Poison
         @battle.pbDisplay(_INTL("The toxic waste disappeared from the battlefield."))
       end
-      @battle.field.field_effects = :None
+      @battle.scene.pbChangeField(@battle.defaultField)
     end
   end
 end
@@ -3822,7 +3931,7 @@ class PokeBattle_Move_103 < PokeBattle_Move
       @battle.pbDisplay(_INTL("But it failed!"))
       return true
     end
-    if battle.field.weather==:Windy && $gym_hazard == false
+    if @battle.field.weather==:Windy || @battle.field.field_effects == :WindTunnel
       @battle.pbDisplay(_INTL("The Wind prevented the hazards from being set!"))
       return true
     end
@@ -3842,7 +3951,7 @@ class PokeBattle_Move_104 < PokeBattle_Move
       @battle.pbDisplay(_INTL("But it failed!"))
       return true
     end
-    if battle.field.weather==:Windy && $gym_hazard == false
+    if @battle.field.weather==:Windy || @battle.field.field_effects == :WindTunnel
       @battle.pbDisplay(_INTL("The Wind prevented the hazards from being set!"))
       return true
     end
@@ -3862,7 +3971,7 @@ class PokeBattle_Move_105 < PokeBattle_Move
       @battle.pbDisplay(_INTL("But it failed!"))
       return true
     end
-    if battle.field.weather==:Windy && $gym_hazard == false
+    if @battle.field.weather==:Windy || @battle.field.field_effects == :WindTunnel
       @battle.pbDisplay(_INTL("The Wind prevented the hazards from being set!"))
       return true
     end
@@ -3882,7 +3991,7 @@ class PokeBattle_Move_153 < PokeBattle_Move
       @battle.pbDisplay(_INTL("But it failed!"))
       return true
     end
-    if battle.field.weather==:Windy && $gym_hazard == false
+    if @battle.field.weather==:Windy || @battle.field.field_effects == :WindTunnel
       @battle.pbDisplay(_INTL("The Wind prevented the hazards from being set!"))
       return true
     end
@@ -4644,7 +4753,7 @@ end
 #===============================================================================
 class PokeBattle_Move_190 < PokeBattle_Move
   def pbBaseDamage(baseDmg,user,target)
-    baseDmg *= 1.5 if @battle.field.field_effects == :Psychic
+    baseDmg *= 1.5 if [:Psychic,:Dream].include?(@battle.field.field_effects)
     return baseDmg
   end
 end
@@ -4655,6 +4764,19 @@ end
 # Boosts Sp Atk on 1st Turn and Attacks on 2nd (Meteor Beam)
 #===============================================================================
 class PokeBattle_Move_191 < PokeBattle_TwoTurnMove
+  def pbIsChargingTurn?(user)
+    ret = super
+    if !user.effects[PBEffects::TwoTurnAttack]
+      if ([:Starstorm].include?(@battle.pbWeather) && !user.hasUtilityUmbrella?) || user.hasActiveAbility?(:IMPATIENT) ||
+        [:Space,:Distortion].include?(@battle.field.field_effects)
+        @powerHerb = false
+        @chargingTurn = true
+        @damagingTurn = true
+        return false
+      end
+    end
+    return ret
+  end
   def pbChargingTurnMessage(user,targets)
     @battle.pbDisplay(_INTL("{1} is overflowing with space power!",user.pbThis))
   end
@@ -4766,7 +4888,7 @@ class PokeBattle_Move_195 < PokeBattle_Move
       when :Poison
         @battle.pbDisplay(_INTL("The toxic waste disappeared from the battlefield!"))
     end
-    @battle.field.field_effects = :None
+    @battle.scene.pbChangeField(@battle.defaultField)
   end
 end
 
@@ -4850,7 +4972,7 @@ class PokeBattle_Move_500 < PokeBattle_Move
       @battle.pbDisplay(_INTL("But it failed!"))
       return true
     end
-    if @battle.field.weather==:Windy && $gym_hazard == false
+    if @battle.field.weather==:Windy || @battle.field.field_effects == :WindTunnel
       @battle.pbDisplay(_INTL("The Wind prevented the hazards from being set!"))
       return true
     end
@@ -4885,7 +5007,7 @@ class PokeBattle_Move_503 < PokeBattle_TwoTurnMove
   def pbIsChargingTurn?(user)
     ret = super
     if !user.effects[PBEffects::TwoTurnAttack]
-      if [:Starstorm].include?(@battle.pbWeather)
+      if [:Starstorm].include?(@battle.pbWeather) || [:Space,:Distortion].include?(@battle.field.field_effects)
         @powerHerb = false
         @chargingTurn = true
         @damagingTurn = true
@@ -4937,7 +5059,7 @@ class PokeBattle_Move_525 < PokeBattle_Move
     when :Poison
       @battle.pbDisplay(_INTL("The toxic waste disappeared from the battlefield."))
     end
-    @battle.field.field_effects = :None
+    @battle.scene.pbChangeField(@battle.defaultField)
     @battle.eachBattler do |battler| 
       battler.pbAbilityOnTerrainChange
     end
@@ -5120,7 +5242,7 @@ class PokeBattle_Move_532 < PokeBattle_Move
           user.stages[stat] += 1 if !user.statStageAtMax?(stat)
         end
       }
-      user.statsRaisedThisRound = true
+      user.statsRaised = true
       @battle.pbCommonAnimation("StatUp", user)
       @battle.pbDisplay(_INTL("{1} cut its own HP and maximized its Attack, Sp. Atk, and Speed!", user.pbThis))
     end
@@ -5440,6 +5562,7 @@ end
 class PokeBattle_Move_506 < PokeBattle_HealingMove
   def pbHealAmount(user)
     return (user.totalhp*2/3.0).round if user.effects[PBEffects::Charge] > 0
+    return (user.totalhp*2/3.0).round if [:Digital,:Electric].include?(@battle.field.field_effects)
     return (user.totalhp/2.0).round
   end
 end
@@ -5463,6 +5586,7 @@ class PokeBattle_Move_512 < PokeBattle_Move
     return false if user.pbOpposingSide.effects[PBEffects::StealthRock]
     return false if user.pbOpposingSide.effects[PBEffects::CometShards]
     return false if @battle.pbWeather == :Windy
+    return false if @battle.field.field_effects == :WindTunnel
     return true
   end
   def pbEffectGeneral(user)
@@ -5478,6 +5602,7 @@ class PokeBattle_Move_522 < PokeBattle_Move
   def canSetSpikes?(user)
     return false if user.pbOpposingSide.effects[PBEffects::Spikes] < 3
     return false if @battle.pbWeather == :Windy
+    return false if @battle.field.field_effects == :WindTunnel
     return true
   end
   def pbEffectGeneral(user)
@@ -5697,8 +5822,8 @@ class PokeBattle_Battle
   end
 
   def pbEORTerrain
-    return if ![:Electric,:Grassy,:Psychic,:Misty,:Poison].include?(@field.field_effects)
-    return if [:Electric,:Grassy,:Psychic,:Misty,:Poison].include?(@field.defaultField)
+    return unless [:Electric,:Grassy,:Psychic,:Misty,:Poison].include?(@field.field_effects)
+    return if @field.field_effects == @field.defaultField
     # Count down terrain duration
     @field.terrainDuration -= 1 if @field.terrainDuration>0
     # Terrain wears off
@@ -5715,11 +5840,11 @@ class PokeBattle_Battle
       when :Poison
         pbDisplay(_INTL("The toxic waste disappeared from the battlefield!"))
       end
-      @field.field_effects = :None
       $terrain = 0
       # Start up the default terrain
-      pbStartFieldEffect(nil, @field.defaultField) if @field.defaultField != :None
-      return if @field.field_effects == :None
+      field = @field.defaultField !=:None ? @field.defaultField : :None
+      pbStartFieldEffect(nil, field)
+      return if @field.field_effects == field
     end
   end
 
@@ -6137,8 +6262,11 @@ class PokeBattle_Battle
     # Magic Room
     pbEORCountDownFieldEffect(PBEffects::MagicRoom,
        _INTL("Magic Room wore off, and held items' effects returned to normal!"))
+    # Hurricane
+    pbEORCountDownFieldEffect(PBEffects::Hurricane,
+       _INTL("Gravity returned to normal!"))
     # End of terrains
-    #pbEORTerrain
+    pbEORTerrain
     priority.each do |b|
       next if b.fainted?
       # Hyper Mode (Shadow Pokémon)
@@ -6364,6 +6492,11 @@ module PBEffects
   EchoChamber         = 431
   Cinders             = 432
   Singed              = 433
+  Syrupy              = 434
+  SyrupyUser          = 435
+  BurningBulwark      = 436
+  Ricochet            = 437
+  Hurricane           = 438
 end
 
 class PokeBattle_Move_570 < PokeBattle_TargetStatDownMove
@@ -6513,7 +6646,13 @@ BattleHandlers::DamageCalcTargetAbility.add(:UNKNOWNPOWER,
 
 BattleHandlers::SpeedCalcAbility.add(:MEADOWRUSH,
   proc { |ability,battler,mult|
-    next mult*2 if battler.battle.field_effects == :Grassy
+    next mult*2 if [:Grassy,:Garden].include?(battler.battle.field.field_effects)
+  }
+)
+
+BattleHandlers::SpeedCalcAbility.add(:BRAINBLAST,
+  proc { |ability,battler,mult|
+    next mult*2 if [:Psychic,:Dream].include?(battler.battle.field.field_effects)
   }
 )
 
@@ -6610,7 +6749,7 @@ BattleHandlers::AbilityOnSwitchIn.add(:PSYCHICSURGE,
 
 BattleHandlers::SpeedCalcAbility.add(:SURGESURFER,
   proc { |ability,battler,mult|
-    next mult*2 if battler.battle.field.field_effects == :Electric
+    next mult*2 if [:Electric,:Magnetic].include?(battler.battle.field.field_effects)
     next mult*2 if battler.battle.pbWeather == :Storm
   }
 )
@@ -6648,5 +6787,558 @@ BattleHandlers::EORWeatherAbility.add(:STARSALVE,
       battle.pbDisplay(_INTL("{1}'s {2} restored its HP.",battler.pbThis,battler.abilityName))
     end
     battle.pbHideAbilitySplash(battler)
+  }
+)
+#=================
+# Gen 9 DLC Moves
+#=================
+# Matcha Gotcha
+class PokeBattle_Move_600 < PokeBattle_BurnMove
+  def healingMove?; return Settings::MECHANICS_GENERATION >= 6; end
+
+  def pbEffectAgainstTarget(user,target)
+    return if target.damageState.hpLost<=0
+    hpGain = (target.damageState.hpLost/2.0).round
+    user.pbRecoverHPFromDrain(hpGain,target)
+  end
+end
+
+# Syrup Bomb
+class PokeBattle_Move_601 < PokeBattle_Move
+  def pbEffectAgainstTarget(user, target)
+    return if target.fainted? || target.damageState.substitute
+    return if target.effects[PBEffects::Syrupy] > 0
+    target.effects[PBEffects::Syrupy] = 3
+    target.effects[PBEffects::SyrupyUser] = user.index
+    @battle.pbDisplay(_INTL("{1} got covered in sticky candy syrup!", target.pbThis))
+  end
+
+  def pbShowAnimation(id, user, targets, hitNum = 0, showAnimation = true)
+    hitNum = (user.shiny?) ? 1 : 0
+    super
+  end
+end
+
+# Ivy Cudgel
+class PokeBattle_Move_602 < PokeBattle_Move
+  def pbBaseType(user)
+    userTypes = user.pbTypes(true)
+    return userTypes[1]
+  end
+end
+
+# Electro Shot
+class PokeBattle_Move_603 < PokeBattle_TwoTurnMove
+  attr_reader :statUp
+
+  def initialize(battle, move)
+    super
+    @statUp = [:SPECIAL_ATTACK, 1]
+  end
+
+  def pbIsChargingTurn?(user)
+    ret = super
+    if !user.effects[PBEffects::TwoTurnAttack] &&
+       [:Rain, :HeavyRain].include?(user.effectiveWeather)
+      @powerHerb = false
+      @chargingTurn = true
+      @damagingTurn = true
+      return false
+    end
+    return ret
+  end
+  
+  def pbChargingTurnMessage(user, targets)
+    @battle.pbDisplay(_INTL("{1} absorbed electricity!", user.pbThis))
+  end
+
+  def pbChargingTurnEffect(user, target)
+    if user.pbCanRaiseStatStage?(@statUp[0], user, self)
+      user.pbRaiseStatStage(@statUp[0], @statUp[1], user)
+    end
+  end
+end
+
+# Tera Starstorm
+class PokeBattle_Move_604 < PokeBattle_Move
+  def pbCalcTypeModSingle(moveType,defType,user,target)
+    return Effectiveness::SUPER_EFFECTIVE_ONE if target.mega? && user.species == :TERAPAGOS
+    return super
+  end
+end
+
+# Fickle Beam
+class PokeBattle_Move_605 < PokeBattle_Move
+  def pbOnStartUse(user, targets)
+    @allOutAttack = (@battle.pbRandom(100) < 30)
+    if @allOutAttack
+      @battle.pbDisplay(_INTL("{1} is going all out for this attack!", user.pbThis))
+    end
+  end
+
+  def pbBaseDamage(baseDmg, user, target)
+    return (@allOutAttack) ? baseDmg * 2 : baseDmg
+  end
+  
+  def pbShowAnimation(id, user, targets, hitNum = 0, showAnimation = true)
+    hitNum = 1 if @allOutAttack
+    super
+  end
+end
+
+# Burning Bulwark
+class PokeBattle_Move_606 < PokeBattle_ProtectMove
+  def initialize(battle,move)
+    super
+    @effect = PBEffects::BurningBulwark
+  end
+end
+
+# Dragon Cheer
+class PokeBattle_Move_607 < PokeBattle_Move
+  def ignoresSubstitute?(user); return true; end
+  def canSnatch?; return true; end
+
+  def pbMoveFailed?(user, targets)
+    @validTargets = []
+    @battle.allSameSideBattlers(user).each do |b|
+      next if b.index == user.index
+      next if b.effects[PBEffects::FocusEnergy] > 0
+      @validTargets.push(b)
+    end
+    if @validTargets.length == 0
+      @battle.pbDisplay(_INTL("But it failed!"))
+      return true
+    end
+    return false
+  end
+
+  def pbFailsAgainstTarget?(user, target, show_message)
+    return false if @validTargets.any? { |b| b.index == target.index }
+    @battle.pbDisplay(_INTL("{1} is already pumped!", target.pbThis)) if show_message
+    return true
+  end
+
+  def pbEffectAgainstTarget(user, target)
+    boost = (target.pbHasType?(:DRAGON)) ? 2 : 1
+    target.effects[PBEffects::FocusEnergy] = boost
+    @battle.pbCommonAnimation("StatUp", target)
+    @battle.pbDisplay(_INTL("{1} is getting pumped!", target.pbThis))
+  end
+end
+
+# Alluring Voice
+class PokeBattle_Move_608 < PokeBattle_ConfuseMove
+  def pbAdditionalEffect(user, target)
+    super if target.statsRaised
+  end
+end
+
+# Hard Press
+class PokeBattle_Move_609 < PokeBattle_Move
+  def pbBaseDamage(baseDmg, user, target)
+    return [100 * target.hp / target.totalhp, 1].max
+  end
+end
+
+# Supercell Slam
+class PokeBattle_Move_612 < PokeBattle_Move_10B
+  def unusableInGravity?; return false; end
+end
+
+# Psychic Noise
+class PokeBattle_Move_610 < PokeBattle_Move
+  def pbAdditionalEffect(user, target)
+    return if target.effects[PBEffects::HealBlock] > 0
+    return if pbMoveFailedAromaVeil?(user, target, false)
+    target.effects[PBEffects::HealBlock] = 2
+    @battle.pbDisplay(_INTL("{1} was prevented from healing!", target.pbThis))
+    target.pbItemStatusCureCheck
+  end
+end
+
+# Upper Hand
+class PokeBattle_Move_611 < PokeBattle_FlinchMove
+  def pbMoveFailed?(user, targets)
+  hasPriority = false
+    targets.each do |b|
+      next if b.movedThisRound?
+      choices = @battle.choices[b.index]
+      next if !choices[2].damagingMove?
+    next if !choices[4] || choices[4] <= 0 || choices[4] > @priority
+      hasPriority = true
+    end
+    if !hasPriority
+      @battle.pbDisplay(_INTL("But it failed!"))
+      return true
+    end
+    return false
+  end
+end
+
+#====================
+# Gen 9 DLC Abilities
+#====================
+BattleHandlers::AbilityOnSwitchIn.add(:SUPERSWEETSYRUP,
+  proc { |ability,battler,battle|
+    battle.pbShowAbilitySplash(battler)
+    battle.eachOtherSideBattler(battler.index) do |b|
+      next if !b.near?(battler)
+      b.pbLowerEvasionStatStageSyrup(battler)
+      b.pbItemOnIntimidatedCheck
+    end
+    battle.pbHideAbilitySplash(battler)
+  }
+)
+
+BattleHandlers::AbilityOnSwitchIn.add(:HOSPITALITY,
+  proc { |ability,battler,battle|
+    next if battler.allAllies.none? { |b| b.hp < b.totalhp }
+    battle.pbShowAbilitySplash(battler)
+    battler.allAllies.each do |b|
+      next if b.hp == b.totalhp
+      amt = (b.totalhp / 4).floor
+      b.pbRecoverHP(amt)
+      battle.pbDisplay(_INTL("{1} drank down all the matcha that {2} made!", b.pbThis, battler.pbThis(true)))
+    end
+    battle.pbHideAbilitySplash(battler)
+  }
+)
+
+BattleHandlers::UserAbilityOnHit.add(:TOXICCHAIN,
+  proc { |ability,user,target,move,battle|
+    next if battle.pbRandom(100) >= 30
+    next if target.hasActiveItem?(:COVERTCLOAK)
+    battle.pbShowAbilitySplash(user)
+    if target.hasActiveAbility?(:SHIELDDUST) && !battle.moldBreaker
+      battle.pbShowAbilitySplash(target)
+      if !Battle::Scene::USE_ABILITY_SPLASH
+        battle.pbDisplay(_INTL("{1} is unaffected!", target.pbThis))
+      end
+      battle.pbHideAbilitySplash(target)
+    elsif target.pbCanPoison?(user, PokeBattle_SceneConstants::USE_ABILITY_SPLASH)
+      msg = nil
+      if !Battle::Scene::USE_ABILITY_SPLASH
+        msg = _INTL("{1} was badly poisoned!", target.pbThis)
+      end
+      target.pbPoison(user, msg, true)
+    end
+    battle.pbHideAbilitySplash(user)
+  }
+)
+
+BattleHandlers::StatLossImmunityAbility.copy(:KEENEYE,:MINDSEYE)
+BattleHandlers::AccuracyCalcUserAbility.copy(:KEENEYE,:MINDSEYE)
+
+#===============================================================================
+# Embody Aspect
+#===============================================================================
+BattleHandlers::AbilityOnSwitchIn.add(:EMBODYASPECT,
+  proc { |ability, battler, battle, switch_in|
+    next if !battler.isSpecies?(:OGERPON)
+    #next if battler.effects[PBEffects::OneUseAbility] == ability
+    mask = GameData::Species.get(:OGERPON).form_name
+    battle.pbDisplay(_INTL("The {1} worn by {2} shone brilliantly!", mask, battler.pbThis(true)))
+    battler.pbRaiseStatStageByAbility(:SPEED, 1, battler)
+    #battler.effects[PBEffects::OneUseAbility] = ability
+  }
+)
+
+BattleHandlers::AbilityOnSwitchIn.add(:EMBODYASPECT_1,
+  proc { |ability, battler, battle, switch_in|
+    next if !battler.isSpecies?(:OGERPON)
+    #next if battler.effects[PBEffects::OneUseAbility] == ability
+    mask = GameData::Species.get(:OGERPON_1).form_name
+    battle.pbDisplay(_INTL("The {1} worn by {2} shone brilliantly!", mask, battler.pbThis(true)))
+    battler.pbRaiseStatStageByAbility(:SPECIAL_DEFENSE, 1, battler)
+    #battler.effects[PBEffects::OneUseAbility] = ability
+  }
+)
+
+BattleHandlers::AbilityOnSwitchIn.add(:EMBODYASPECT_2,
+  proc { |ability, battler, battle, switch_in|
+    next if !battler.isSpecies?(:OGERPON)
+    #next if battler.effects[PBEffects::OneUseAbility] == ability
+    mask = GameData::Species.get(:OGERPON_2).form_name
+    battle.pbDisplay(_INTL("The {1} worn by {2} shone brilliantly!", mask, battler.pbThis(true)))
+    battler.pbRaiseStatStageByAbility(:ATTACK, 1, battler)
+    #battler.effects[PBEffects::OneUseAbility] = ability
+  }
+)
+
+BattleHandlers::AbilityOnSwitchIn.add(:EMBODYASPECT_3,
+  proc { |ability, battler, battle, switch_in|
+    next if !battler.isSpecies?(:OGERPON)
+    #next if battler.effects[PBEffects::OneUseAbility] == ability
+    mask = GameData::Species.get(:OGERPON_3).form_name
+    battle.pbDisplay(_INTL("The {1} worn by {2} shone brilliantly!", mask, battler.pbThis(true)))
+    battler.pbRaiseStatStageByAbility(:DEFENSE, 1, battler)
+    #battler.effects[PBEffects::OneUseAbility] = ability
+  }
+)
+
+
+############################# Indigo Disk DLC ##################################
+
+#===============================================================================
+# Tera Shell
+#===============================================================================
+BattleHandlers::ModifyTypeEffectiveness.add(:TERASHELL,
+  proc { |ability, user, target, move, battle, effectiveness|
+    next if !move.damagingMove?
+    next if user.hasMoldBreaker?
+    next if target.hp < target.totalhp
+    next if effectiveness < Effectiveness::NORMAL_EFFECTIVE_MULTIPLIER
+    target.damageState.terashell = true
+    next Effectiveness::NOT_VERY_EFFECTIVE_MULTIPLIER
+  }
+)
+
+BattleHandlers::OnMoveSuccessCheck.add(:TERASHELL,
+  proc { |ability, user, target, move, battle|
+    next if !target.damageState.terashell
+    battle.pbShowAbilitySplash(target)
+    battle.pbDisplay(_INTL("{1} made its shell gleam! It's distorting type matchups!", target.pbThis))
+    battle.pbHideAbilitySplash(target)
+  }
+)
+
+#===============================================================================
+# Teraform Zero
+#===============================================================================
+BattleHandlers::AbilityOnSwitchIn.add(:TERAFORMZERO,
+  proc { |ability, battler, battle, switch_in|
+    next if battler.ability_triggered?
+    battle.pbSetAbilityTrigger(battler)
+    weather = battle.field.weather
+    terrain = battle.field.field_effects
+    next if weather == :None && terrain == :None
+    showSplash = false
+    if weather != :None && battle.field.defaultWeather == :None
+    showSplash = true
+      battle.pbShowAbilitySplash(battler)
+      battle.field.weather = :None
+      battle.field.weatherDuration = 0
+      case weather
+      when :Sun         then battle.pbDisplay(_INTL("The sunlight faded."))
+      when :Rain        then battle.pbDisplay(_INTL("The rain stopped."))
+      when :Sandstorm   then battle.pbDisplay(_INTL("The sandstorm subsided."))
+      when :Hail
+        case Settings::HAIL_WEATHER_TYPE
+        when 0 then battle.pbDisplay(_INTL("The hail stopped."))
+        when 1 then battle.pbDisplay(_INTL("The snow stopped."))
+        when 2 then battle.pbDisplay(_INTL("The hailstorm ended."))
+        end
+      when :HarshSun    then battle.pbDisplay(_INTL("The harsh sunlight faded!"))
+      when :HeavyRain   then battle.pbDisplay(_INTL("The heavy rain has lifted!"))
+      when :StrongWinds then battle.pbDisplay(_INTL("The mysterious air current has dissipated!"))
+      else
+        battle.pbDisplay(_INTL("The weather returned to normal."))
+      end
+    end
+    if terrain != :None && battle.field.defaultField == :None
+      battle.pbShowAbilitySplash(battler) if !showSplash
+      battle.field.field_effects = :None
+      battle.field.terrainDuration = 0
+      case terrain
+      when :Electric then battle.pbDisplay(_INTL("The electric current disappeared from the battlefield!"))
+      when :Grassy   then battle.pbDisplay(_INTL("The grass disappeared from the battlefield!"))
+      when :Psychic  then battle.pbDisplay(_INTL("The mist disappeared from the battlefield!"))
+      when :Misty    then battle.pbDisplay(_INTL("The weirdness disappeared from the battlefield!"))
+      when :Poison   then battle.pbDisplay(_INTL("The toxic waste disappeard from the battlefield!"))
+
+      else
+        battle.pbDisplay(_INTL("The battlefield returned to normal."))
+      end
+    end
+    next if !showSplash
+    battle.pbHideAbilitySplash(battler)
+    battle.allBattlers.each { |b| b.pbCheckFormOnWeatherChange }
+    battle.allBattlers.each { |b| b.pbAbilityOnTerrainChange }
+    battle.allBattlers.each { |b| b.pbItemTerrainStatBoostCheck }
+    battle.scene.pbChangeField(:None)
+    @battle.scene.pbRefreshEverything
+  }
+)
+
+#===============================================================================
+# Poison Puppeteer
+#===============================================================================
+BattleHandlers::OnInflictingStatus.add(:POISONPUPPETEER,
+  proc { |ability, user, battler, status|
+    next if !user || user.index == battler.index
+    next if status != :POISON
+    next if battler.effects[PBEffects::Confusion] > 0
+    user.battle.pbShowAbilitySplash(user)
+    battler.pbConfuse if battler.pbCanConfuse?(user, false, nil)
+    user.battle.pbHideAbilitySplash(user)
+  }
+)
+#===============================================
+# Field Effect Move Changes
+#===============================================
+
+# Dream Eater
+
+class PokeBattle_Move_0DE < PokeBattle_Move
+  def healingMove?; return Settings::MECHANICS_GENERATION >= 6; end
+
+  def pbFailsAgainstTarget?(user,target)
+    return false if @battle.field.field_effects == :Dream
+    if !target.asleep?
+      @battle.pbDisplay(_INTL("{1} wasn't affected!",target.pbThis))
+      return true
+    end
+    return false
+  end
+
+  def pbEffectAgainstTarget(user,target)
+    return if target.damageState.hpLost<=0
+    hpGain = (target.damageState.hpLost/2.0).round
+    user.pbRecoverHPFromDrain(hpGain,target)
+  end
+end
+
+# Nightmare
+
+class PokeBattle_Move_10F < PokeBattle_Move
+  def pbFailsAgainstTarget?(user,target)
+    return false if target.effects[PBEffects::Nightmare] == false && @battle.field.field_effects == :Dream
+    if !target.asleep? || target.effects[PBEffects::Nightmare]
+      @battle.pbDisplay(_INTL("But it failed!"))
+      return true
+    end
+    return false
+  end
+
+  def pbEffectAgainstTarget(user,target)
+    target.effects[PBEffects::Nightmare] = true
+    @battle.pbDisplay(_INTL("{1} began having a nightmare!",target.pbThis))
+  end
+end
+
+# Rest
+class PokeBattle_Move_0D9 < PokeBattle_HealingMove
+  def pbMoveFailed?(user,targets)
+    if user.asleep?
+      @battle.pbDisplay(_INTL("But it failed!"))
+      return true
+    end
+    return true if !user.pbCanSleep?(user,true,self,true)
+    return true if super
+    return false
+  end
+
+  def pbHealAmount(user)
+    return user.totalhp/2 if @battle.field.field_effects == :Dream
+    return user.totalhp-user.hp
+  end
+
+  def pbEffectGeneral(user)
+    if @battle.field.field_effects == :Dream
+      @battle.pbDisplay(_INTL("The Dream field allowed {1} to stay awake and heal!",user.pbThis))
+    else
+      user.pbSleepSelf(_INTL("{1} slept and became healthy!",user.pbThis),3)
+    end
+    super
+  end
+end
+
+# Sleep Talk
+class PokeBattle_Move_0B4 < PokeBattle_Move
+  def usableWhenAsleep?; return true; end
+  def callsAnotherMove?; return true; end
+
+  def initialize(battle,move)
+    super
+    @moveBlacklist = [
+       "0D1",   # Uproar
+       "0D4",   # Bide
+       # Struggle, Chatter, Belch
+       "002",   # Struggle                            # Not listed on Bulbapedia
+       "014",   # Chatter                             # Not listed on Bulbapedia
+       "158",   # Belch
+       # Moves that affect the moveset (except Transform)
+       "05C",   # Mimic
+       "05D",   # Sketch
+       # Moves that call other moves
+       "0AE",   # Mirror Move
+       "0AF",   # Copycat
+       "0B0",   # Me First
+       "0B3",   # Nature Power                        # Not listed on Bulbapedia
+       "0B4",   # Sleep Talk
+       "0B5",   # Assist
+       "0B6",   # Metronome
+       # Two-turn attacks
+       "0C3",   # Razor Wind
+       "0C4",   # Solar Beam, Solar Blade
+       "0C5",   # Freeze Shock
+       "0C6",   # Ice Burn
+       "0C7",   # Sky Attack
+       "0C8",   # Skull Bash
+       "0C9",   # Fly
+       "0CA",   # Dig
+       "0CB",   # Dive
+       "0CC",   # Bounce
+       "0CD",   # Shadow Force
+       "0CE",   # Sky Drop
+       "12E",   # Shadow Half
+       "14D",   # Phantom Force
+       "14E",   # Geomancy
+       # Moves that start focussing at the start of the round
+       "115",   # Focus Punch
+       "171",   # Shell Trap
+       "172"    # Beak Blast
+    ]
+  end
+
+  def pbMoveFailed?(user,targets)
+    @sleepTalkMoves = []
+    user.eachMoveWithIndex do |m,i|
+      next if @moveBlacklist.include?(m.function)
+      next if !@battle.pbCanChooseMove?(user.index,i,false,true)
+      @sleepTalkMoves.push(i)
+    end
+    return false if @battle.field.field_effects == :Dream
+    if !user.asleep? || @sleepTalkMoves.length==0
+      @battle.pbDisplay(_INTL("But it failed!"))
+      return true
+    end
+    return false
+  end
+
+  def pbEffectGeneral(user)
+    choice = @sleepTalkMoves[@battle.pbRandom(@sleepTalkMoves.length)]
+    user.pbUseMoveSimple(user.moves[choice].id,user.pbDirectOpposing.index)
+  end
+end
+
+# Aurora Veil
+class PokeBattle_Move_167 < PokeBattle_Move
+  def pbMoveFailed?(user,targets)
+    if @battle.pbWeather != :Hail && @battle.pbWeather != :Sleet && ![:Icy,:FairyLights].include?(@battle.field.field_effects)
+      @battle.pbDisplay(_INTL("But it failed!"))
+      return true
+    end
+    if user.pbOwnSide.effects[PBEffects::AuroraVeil]>0
+      @battle.pbDisplay(_INTL("But it failed!"))
+      return true
+    end
+    return false
+  end
+
+  def pbEffectGeneral(user)
+    user.pbOwnSide.effects[PBEffects::AuroraVeil] = 5
+    user.pbOwnSide.effects[PBEffects::AuroraVeil] = 8 if user.hasActiveItem?(:LIGHTCLAY)
+    @battle.pbDisplay(_INTL("{1} made {2} stronger against physical and special moves!",
+       @name,user.pbTeam(true)))
+  end
+end
+
+BattleHandlers::AbilityOnSwitchIn.add(:INNERFOCUS,
+  proc { |ability,battler,battle|
+    next if battle.field.field_effects != :Dojo
+    battler.effects[PBEffects::FocusEnergy] = 2
+    battle.pbDisplay(_INTL("{1} is getting pumped!",battler.pbThis))
   }
 )

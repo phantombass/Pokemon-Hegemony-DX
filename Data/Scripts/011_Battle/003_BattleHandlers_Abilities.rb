@@ -985,7 +985,8 @@ BattleHandlers::DamageCalcUserAbility.add(:HUSTLE,
 
 BattleHandlers::DamageCalcUserAbility.add(:IRONFIST,
   proc { |ability,user,target,move,mults,baseDmg,type|
-    mults[:base_damage_multiplier] *= 1.2 if move.punchingMove?
+    mod = user.activeField == :Dojo ? 1.4 : 1.2
+    mults[:base_damage_multiplier] *= mod if move.punchingMove?
   }
 )
 
@@ -1136,7 +1137,7 @@ BattleHandlers::DamageCalcUserAbility.add(:TOUGHCLAWS,
 
 BattleHandlers::DamageCalcUserAbility.add(:TOXICBOOST,
   proc { |ability,user,target,move,mults,baseDmg,type|
-    if (user.poisoned? || [:Swamp,:Wasteland,:Poison].include?(user.activeField)) && move.physicalMove?
+    if (user.poisoned? || [:Swamp,:Poison].include?(user.activeField)) && move.physicalMove?
       mults[:base_damage_multiplier] *= 1.5
     end
   }
@@ -1222,7 +1223,8 @@ BattleHandlers::DamageCalcTargetAbility.add(:DRYSKIN,
 BattleHandlers::DamageCalcTargetAbility.add(:FILTER,
   proc { |ability,user,target,move,mults,baseDmg,type|
     if Effectiveness.super_effective?(target.damageState.typeMod)
-      mults[:final_damage_multiplier] *= 0.75
+      mod = user.activeField == :Castle ? 0.5 : 0.75
+      mults[:final_damage_multiplier] *= mod
     end
   }
 )
@@ -1309,7 +1311,8 @@ BattleHandlers::DamageCalcTargetAbility.add(:PUNKROCK,
 BattleHandlers::DamageCalcTargetAbilityNonIgnorable.add(:PRISMARMOR,
   proc { |ability,user,target,move,mults,baseDmg,type|
     if Effectiveness.super_effective?(target.damageState.typeMod)
-      mults[:final_damage_multiplier] *= 0.75
+      mod = user.activeField == :Castle ? 0.5 : 0.75
+      mults[:final_damage_multiplier] *= mod
     end
   }
 )
@@ -2432,7 +2435,8 @@ BattleHandlers::AbilityOnSwitchIn.add(:DOWNLOAD,
       oSpDef += b.spdef
     end
     stat = (oDef<oSpDef) ? :ATTACK : :SPECIAL_ATTACK
-    battler.pbRaiseStatStageByAbility(stat,1,battler)
+    num = battler.hasActiveItem?(:UPGRADE) ? 2 : 1
+    battler.pbRaiseStatStageByAbility(stat,num,battler)
   }
 )
 
@@ -2474,6 +2478,7 @@ BattleHandlers::AbilityOnSwitchIn.add(:FOREWARN,
     battle.eachOtherSideBattler(battler.index) do |b|
       b.eachMove do |m|
         power = m.baseDamage
+        $cat = m.category
         power = 160 if ["070"].include?(m.function)    # OHKO
         power = 150 if ["08B"].include?(m.function)    # Eruption
         # Counter, Mirror Coat, Metal Burst
@@ -2500,6 +2505,8 @@ BattleHandlers::AbilityOnSwitchIn.add(:FOREWARN,
         battle.pbDisplay(_INTL("{1}'s Forewarn alerted it to {2}!",
           battler.pbThis, forewarnMoveName))
       end
+      stat = $cat == 0 ? :DEFENSE : :SPECIAL_DEFENSE
+      battler.pbRaiseStatStage(stat, 1, battler, true) if user.pbCanRaiseStatStage?(stat, battler, self)
       battle.pbHideAbilitySplash(battler)
     end
   }
@@ -2681,13 +2688,15 @@ BattleHandlers::AbilityOnSwitchIn.copy(:ASONEICE,:ASONEGHOST)
 
 BattleHandlers::AbilityOnSwitchIn.add(:INTREPIDSWORD,
   proc { |ability,battler,battle|
-    battler.pbRaiseStatStageByAbility(:ATTACK,1,battler)
+    mod = battle.field.field_effects == :Castle ? 2 : 1
+    battler.pbRaiseStatStageByAbility(:ATTACK,mod,battler)
   }
 )
 
 BattleHandlers::AbilityOnSwitchIn.add(:DAUNTLESSSHIELD,
   proc { |ability,battler,battle|
-    battler.pbRaiseStatStageByAbility(:DEFENSE,1,battler)
+    mod = battle.field.field_effects == :Castle ? 2 : 1
+    battler.pbRaiseStatStageByAbility(:DEFENSE,mod,battler)
   }
 )
 

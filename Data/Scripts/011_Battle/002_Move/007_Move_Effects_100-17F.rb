@@ -214,7 +214,8 @@ class PokeBattle_Move_10B < PokeBattle_Move
     return if !user.takesIndirectDamage?
     @battle.pbDisplay(_INTL("{1} kept going and crashed!",user.pbThis))
     @battle.scene.pbDamageAnimation(user)
-    user.pbReduceHP(user.totalhp/2,false)
+    mod = @battle.field.field_effects == :WindTunnel ? (user.totalhp*3/4.0).round : user.totalhp/2
+    user.pbReduceHP(mod,false)
     user.pbItemHPHealCheck
     user.pbFaint if user.fainted?
   end
@@ -608,6 +609,9 @@ class PokeBattle_Move_115 < PokeBattle_Move
     user.effects[PBEffects::FocusPunch] = true
     @battle.pbCommonAnimation("FocusPunch",user)
     @battle.pbDisplay(_INTL("{1} is tightening its focus!",user.pbThis))
+    if @battle.field.field_effects == :Dojo
+      user.pbRecoverHP(user.totalhp/4) if user.canHeal?
+    end
   end
 
   def pbDisplayUseMessage(user)

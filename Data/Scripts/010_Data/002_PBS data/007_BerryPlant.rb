@@ -9,6 +9,7 @@ module GameData
 
     DATA = {}
     DATA_FILENAME = "berry_plants.dat"
+    PBS_BASE_FILENAME = "berry_plants"
 
     NUMBER_OF_REPLANTS = 9
 

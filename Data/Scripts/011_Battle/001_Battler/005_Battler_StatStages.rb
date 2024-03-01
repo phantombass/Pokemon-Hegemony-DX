@@ -52,7 +52,7 @@ class PokeBattle_Battler
 
   def pbRaiseStatStage(stat,increment,user,showAnim=true,ignoreContrary=false)
     # Contrary
-    if hasActiveAbility?(:CONTRARY) && !ignoreContrary && !affectedByMoldBreaker?
+    if (hasActiveAbility?(:CONTRARY) && !ignoreContrary && !affectedByMoldBreaker?)
       return pbLowerStatStage(stat,increment,user,showAnim,true)
     end
     # Perform the stat stage change
@@ -197,7 +197,7 @@ class PokeBattle_Battler
       return false
     end
     # Contrary
-    if hasActiveAbility?(:CONTRARY) && !ignoreContrary && !affectedByMoldBreaker?
+    if (hasActiveAbility?(:CONTRARY) && !ignoreContrary && !affectedByMoldBreaker?)
       return pbRaiseStatStage(stat,increment,user,showAnim,true)
     end
     # Perform the stat stage change

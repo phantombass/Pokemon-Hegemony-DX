@@ -14,6 +14,7 @@ module GameData
 
     DATA = {}
     DATA_FILENAME = "items.dat"
+    PBS_BASE_FILENAME = "items"
 
     extend ClassMethods
     include InstanceMethods

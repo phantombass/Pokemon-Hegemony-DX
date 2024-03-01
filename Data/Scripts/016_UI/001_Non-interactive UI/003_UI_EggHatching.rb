@@ -213,17 +213,19 @@ def pbHatch(pokemon)
 end
 
 Events.onStepTaken += proc { |_sender,_e|
-  for egg in $Trainer.party
-    next if egg.steps_to_hatch <= 0
-    egg.steps_to_hatch -= 1
-    for i in $Trainer.pokemon_party
-      next if [:FLAMEBODY, :MAGMAARMOR, :STEAMENGINE].include?(i.ability_id)
+  if !in_random_dungeon?
+    for egg in $Trainer.party
+      next if egg.steps_to_hatch <= 0
       egg.steps_to_hatch -= 1
-      break
-    end
-    if egg.steps_to_hatch <= 0
-      egg.steps_to_hatch = 0
-      pbHatch(egg)
+      for i in $Trainer.pokemon_party
+        next if [:FLAMEBODY, :MAGMAARMOR, :STEAMENGINE].include?(i.ability_id)
+        egg.steps_to_hatch -= 1
+        break
+      end
+      if egg.steps_to_hatch <= 0
+        egg.steps_to_hatch = 0
+        pbHatch(egg)
+      end
     end
   end
 }

@@ -1058,9 +1058,9 @@ FormName = Mega Sceptile
 MegaStone = SCEPTILITE
 Type1 = GRASS
 Type2 = DRAGON
-BaseStats = 70,110,75,145,145,85
-Abilities = LIGHTNINGROD
-HiddenAbility = LIGHTNINGROD
+BaseStats = 70,145,75,145,110,85
+Abilities = SHARPNESS
+HiddenAbility = SHARPNESS
 Height = 1.9
 Weight = 55.2
 Generation = 6
@@ -4516,3 +4516,120 @@ Weight = 0.1
 Pokedex = This Pokémon was born from passion that seeped into a coin. It wanders, apparently seeking to return to the treasure chest it once inhabited.
 CatchRate = 0
 Evolutions = GHOLDENGO,None,
+#-------------------------------
+[POLTCHAGEIST,1]
+FormName = Artisan Form
+Pokedex = It sprinkles some of its powdery body onto food and drains the life-force from those who so much as lick it.
+Evolutions = SINISTCHA,Item,MASTERPIECETEACUP
+#-------------------------------
+[SINISTCHA,1]
+FormName = Masterpiece Form
+Pokedex = It lives inside a superb teacup that was crafted by a potter of great renown. Collectors positively adore this Pokémon.
+#-------------------------------
+[OGERPON,1]
+FormName = Wellspring Mask
+Types = GRASS,WATER
+Abilities = WATERABSORB
+Color = Blue
+Pokedex = This form excels in both attack and defense. It ceaselessly unleashes moves like a spring gushes water.
+#-------------------------------
+[OGERPON,2]
+FormName = Hearthflame Mask
+Type1 = GRASS
+Typr2 = FIRE
+Abilities = MOLDBREAKER
+Color = Red
+Pokedex = This form is the most aggressive, bombarding enemies with the intensity of flames blazing within a hearth.
+#-------------------------------
+[OGERPON,3]
+FormName = Cornerstone Mask
+Type1 = GRASS
+Type2 = ROCK
+Abilities = STURDY
+Color = Gray
+Pokedex = This form has excellent defenses, absorbing impacts solidly like the cornerstones that support houses.
+#-------------------------------
+[OGERPON,4]
+PokedexForm = 0
+#-------------------------------
+[OGERPON,5]
+FormName = Wellspring Mask
+PokedexForm = 1
+Type1 = GRASS
+Type2 = WATER
+Abilities = WATERABSORB
+Color = Blue
+Flags = Legendary,TeraType_WATER
+#-------------------------------
+[OGERPON,6]
+FormName = Hearthflame Mask
+PokedexForm = 2
+Type1 = GRASS
+Type2 = FIRE
+Abilities = MOLDBREAKER
+Color = Red
+#-------------------------------
+[OGERPON,7]
+FormName = Cornerstone Mask
+PokedexForm = 3
+Type1 = GRASS
+Type2 = ROCK
+Abilities = STURDY
+Color = Gray
+#-------------------------------
+[OGERPON,8]
+FormName = Terastal Teal Mask
+Abilities = EMBODYASPECT
+#-------------------------------
+[OGERPON,9]
+FormName = Terastal Wellspring Mask
+Type1 = GRASS
+Type2 = WATER
+Abilities = EMBODYASPECT_1
+Color = Blue
+#-------------------------------
+[OGERPON,10]
+FormName = Terastal Hearthflame Mask
+Type1 = GRASS
+Type2 = FIRE
+Abilities = EMBODYASPECT_2
+Color = Red
+#-------------------------------
+[OGERPON,11]
+FormName = Terastal Cornerstone Mask
+Type1 = GRASS
+Type2 = ROCK
+Abilities = EMBODYASPECT_3
+Color = Gray
+#-------------------------------
+[TERAPAGOS,1]
+FormName = Terastal Form
+BaseStats = 95,95,110,85,105,110
+EVs = 0,0,2,0,0,2
+Abilities = TERASHELL
+Height = 0.3
+Weight = 16.0
+Shape = Head
+Pokedex = The shell is made of crystallized Terastal energy. When struck by a move, this shell absorbs the move’s energy and transfers it to Terapagos.
+#-------------------------------
+[TERAPAGOS,2]
+FormName = Stellar Form
+BaseStats = 160,105,110,85,130,110
+EVs = 3,0,0,0,0,0
+Abilities = TERAFORMZERO
+Height = 1.7
+Weight = 77.0
+Shape = Head
+Pokedex = In this form, Terapagos resembles the world as the ancients saw it, and its Terastal energy is abnormally amplified.
+#-------------------------------
+[URSALUNA,1]
+FormName = Bloodmoon Ursaluna
+BaseStats = 113,70,120,52,135,65
+EVs = 0,0,0,0,3,0
+Abilities = MINDSEYE
+Moves = 1,MOONLIGHT,1,HEADLONGRUSH,1,SCRATCH,1,LEER,1,LICK,8,FURYSWIPES,13,PAYBACK,17,HARDEN,22,SLASH,25,PLAYNICE,35,SCARYFACE,41,SNORE,41,REST,48,EARTHPOWER,56,MOONBLAST,64,HAMMERARM,70,BLOODMOON
+TutorMoves = AVALANCHE,BODYPRESS,BODYSLAM,BRICKBREAK,BULLDOZE,CALMMIND,CRUNCH,DIG,DOUBLEEDGE,EARTHPOWER,EARTHQUAKE,ENDURE,FACADE,FIREPUNCH,FLING,FOCUSBLAST,FOCUSPUNCH,GIGAIMPACT,GUNKSHOT,HARDPRESS,HEAVYSLAM,HELPINGHAND,HIGHHORSEPOWER,HYPERBEAM,HYPERVOICE,ICEPUNCH,LOWKICK,METALCLAW,MUDSHOT,PROTECT,RAINDANCE,REST,ROAR,ROCKSLIDE,ROCKTOMB,SCARYFACE,SEEDBOMB,SHADOWCLAW,SLEEPTALK,SMACKDOWN,SNARL,STOMPINGTANTRUM,STONEEDGE,SUBSTITUTE,SUNNYDAY,SWIFT,SWORDSDANCE,TAKEDOWN,TAUNT,THIEF,THUNDERPUNCH,TRAILBLAZE,UPROAR,VACUUMWAVE
+Height = 2.7
+Weight = 333.0
+Generation = 9
+#-------------------------------

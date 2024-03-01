@@ -136,6 +136,25 @@ PBAI::ScoreHandler.add do |score, ai, user, target, move|
   next score
 end
 
+#Prefer moves boosted by the field
+PBAI::ScoreHandler.add do |score, ai, user, target, move|
+  fe = FIELD_EFFECTS[ai.battle.field.field_effects]
+  next if move.statusMove?
+  for key in fe[:move_damage_boost].keys
+    if key > 1.0 && fe[:move_damage_boost][key].include?(move.id)
+      score += 100
+      PBAI.log("+ 100 for Field boost")
+    end
+  end
+  for key2 in fe[:type_damage_change].keys
+    if key2 > 1.0 && fe[:type_damage_change][key2].include?(move.type)
+      score += 100
+      PBAI.log("+ 100 for Field boost")
+    end
+  end
+  next score
+end
+
 #Prefer slicing moves if you have Sharpness
 PBAI::ScoreHandler.add do |score, ai, user, target, move|
   next if !move.slicingMove?
@@ -1128,7 +1147,7 @@ end
 
 # Glare/Thunder Wave
 PBAI::ScoreHandler.add("007") do |score, ai, user, target, move|
-  if move.statusMove? && !user.target_is_immune?(move,target) && !target.hasActiveAbility?([:LIMBER,:COMATOSE]) && user.has_role?(:SPEEDCONTROL)
+  if move.statusMove? && !user.target_is_immune?(move,target) && !target.types.include?(:ELECTRIC) && !target.hasActiveAbility?([:LIMBER,:COMATOSE,:GOODASGOLD,:PURIFYINGSALT]) && user.has_role?(:SPEEDCONTROL)
     score += 100
     PBAI.log("+ 100 for being able to paralyze and having the Speed Control role")
   end
@@ -1247,17 +1266,19 @@ end
 PBAI::ScoreHandler.add("0AC") do |score, ai, user, target, move|
   wide = 0
   if ai.battle.doublebattle
-    target_moves = $game_switches[LvlCap::Expert] ? target.moves : target.used_moves
+    target_moves = target.moves
     if target_moves != nil
       for i in target_moves
-        wide += 40 if [:AllNearFoes,:AllNearOthers,:AllBattlers,:BothSides].include?(i.pbTarget(user))
+        wide += 40 if [:AllNearFoes,:AllNearOthers,:AllBattlers,:BothSides].include?(i.pbTarget(user)) && i.damagingMove?
       end
     end
-    score += wide
-    PBAI.log("+ #{wide} for dodging spread moves")
-    if user.has_role?(:SUPPORT)
-      score += 40
-      PBAI.log("+ 40 for being a Support role.")
+    if wide > 0
+      score += wide
+      PBAI.log("+ #{wide} for dodging spread moves")
+      if user.has_role?(:SUPPORT)
+        score += 40
+        PBAI.log("+ 40 for being a Support role.")
+      end
     end
   end
   next score
@@ -1307,7 +1328,7 @@ end
 
 # Toxic Thread
 PBAI::ScoreHandler.add("159") do |score, ai, user, target, move|
-  if !target.paralyzed? && target.can_paralyze?(user, move)
+  if !target.poisoned? && target.can_poison?(user, move)
     score += 50
     PBAI.log("+ 50 for being able to poison the target")
   end
@@ -1429,16 +1450,14 @@ PBAI::ScoreHandler.add("103", "104", "105", "153", "500") do |score, ai, user, t
       score -= 1000
       PBAI.log("- 1000 because hazards will be set on our side")
     end
-    if $game_switches[LvlCap::Expert]
-      for i in target.moves
-        if ["035","02A","032","10D","02B","02C","14E","032","024","026","518"].include?(i.function) && !user.hasActiveAbility?(:UNAWARE)
-          setup = true
-        end
+    for i in target.moves
+      if ["035","02A","032","10D","02B","02C","14E","032","024","026","518"].include?(i.function) && !user.hasActiveAbility?(:UNAWARE)
+        setup = true
       end
-      if setup == true
-        score -= 1000
-        PBAI.log("- 1000 to counter setup leads vs hazard leads")
-      end
+    end
+    if setup == true
+      score -= 1000
+      PBAI.log("- 1000 to counter setup leads vs hazard leads")
     end
     if !target.can_switch? || !user.can_switch?
       score -= 1000

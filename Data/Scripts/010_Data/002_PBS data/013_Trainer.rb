@@ -11,6 +11,7 @@ module GameData
 
     DATA = {}
     DATA_FILENAME = "trainers.dat"
+    PBS_BASE_FILENAME = "trainers"
 
     SCHEMA = {
       "Items"        => [:items,         "*e", :Item],

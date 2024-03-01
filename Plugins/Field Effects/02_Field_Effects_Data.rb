@@ -99,12 +99,13 @@ FIELD_EFFECTS = {
 			:nature_power => :ENERGYBALL,
 			:mimicry => :GRASS,
 			:intro_script => nil,
-			:abilities => [:GRASSPELT,:FLOWERVEIL,:SAPSIPPER,:AROMAVEIL,:SWEETVEIL,:LEAFGUARD],
+			:abilities => [:GRASSPELT,:FLOWERVEIL,:SAPSIPPER,:AROMAVEIL,:SWEETVEIL,:LEAFGUARD,:MEADOWRUSH],
 			:ability_effects => {
 			:FLOWERVEIL => [[:DEFENSE,1]],
 			:AROMAVEIL => [[:DEFENSE,1]],
 			:SWEETVEIL => [[:SPECIAL_DEFENSE,1]],
-			:LEAFGUARD => [[:DEFENSE,1],[:SPECIAL_DEFENSE,1]]
+			:LEAFGUARD => [[:DEFENSE,1],[:SPECIAL_DEFENSE,1]],
+			:GRASSPELT => [[:DEFENSE,1]]
 			},
 			:move_damage_boost => {
 			1.2 => [Fields::WIND_MOVES]
@@ -135,7 +136,7 @@ FIELD_EFFECTS = {
 			:nature_power => :ENERGYBALL,
 			:mimicry => :GRASS,
 			:intro_script => nil,
-			:abilities => [:GRASSPELT,:SAPSIPPER,:LEAFGUARD],
+			:abilities => [:GRASSPELT,:SAPSIPPER,:LEAFGUARD,:MEADOWRUSH],
 			:ability_effects => {
 			:LEAFGUARD => [[:DEFENSE,1],[:SPECIAL_DEFENSE,1]]
 			},
@@ -174,8 +175,10 @@ FIELD_EFFECTS = {
 			:nature_power => :THUNDERBOLT,
 			:mimicry => :ELECTRIC,
 			:intro_script => nil,
-			:abilities => [:VOLTABSORB,:LIGHTNINGROD,:MOTORDRIVE,:PROTOSYNTHESIS],
-			:ability_effects => {},
+			:abilities => [:VOLTABSORB,:LIGHTNINGROD,:MOTORDRIVE,:QUARKDRIVE,:SURGESURFER,:STATIC],
+			:ability_effects => {
+				:STATIC => [[:DEFENSE,1]]
+			},
 			:move_damage_boost => {},
 			:move_messages => {},
 			:move_type_change => {},
@@ -308,7 +311,7 @@ FIELD_EFFECTS = {
 			:nature_power => :DEATHTOLL,
 			:mimicry => :POISON,
 			:intro_script => nil,
-			:abilities => [:POISONPOINT,:POISONTOUCH,:FEVERPITCH,:CORROSION,:NITRIC],
+			:abilities => [:POISONPOINT,:POISONTOUCH,:FEVERPITCH,:CORROSION,:NITRIC,:SLUDGERUSH,:TOXICRUSH],
 			:ability_effects => {
 				:POISONPOINT => [[:DEFENSE,1]],
 				:POISONTOUCH => [[:ATTACK,1]],
@@ -460,7 +463,7 @@ FIELD_EFFECTS = {
 			:nature_power => :SLUDGEWAVE,
 			:mimicry => :POISON,
 			:intro_script => "swamp",
-			:abilities => [:POISONPOINT,:POISONTOUCH,:FEVERPITCH,:CORROSION,:NITRIC],
+			:abilities => [:POISONPOINT,:POISONTOUCH,:FEVERPITCH,:CORROSION,:NITRIC,:SLUDGERUSH,:TOXICRUSH,:POISONHEAL,:TOXICBOOST],
 			:ability_effects => {
 				:POISONPOINT => [[:DEFENSE,1]],
 				:POISONTOUCH => [[:ATTACK,1]],
@@ -676,8 +679,10 @@ FIELD_EFFECTS = {
 			:nature_power => :DARK,
 			:mimicry => :DARKPULSE,
 			:intro_script => nil,
-			:abilities => [],
-			:ability_effects => {},
+			:abilities => [:NOCTEMBOOST,:DARKAURA],
+			:ability_effects => {
+				:DARKAURA => [[:SPECIAL_ATTACK,1]]
+			},
 			:move_damage_boost => {},
 			:move_messages => {},
 			:move_type_change => {},
@@ -707,5 +712,613 @@ FIELD_EFFECTS = {
 				"The electricity recharged the city!" => [Fields::RECHARGE_MOVES]
 			},
 			:field_change_conditions => {:Wildfire => PokeBattle_Battle.ignite?} 
+		},
+		:DragonsDen => {
+			:field_name => "Dragon's Den",
+			:intro_message => "You feel a powerful aura...",
+			:field_gfx => "dragon",
+			:nature_power => :DRAGONPULSE,
+			:mimicry => :DRAGON,
+			:intro_script => nil,
+			:abilities => [:DRAGONSMAW,:THERMALEXCHANGE,:FLASHFIRE,:WELLBAKEDODY,:LEGENDARMOR,:HEATPROOF],
+			:ability_effects => {
+				:DRAGONSMAW => [[:ATTACK,1],[:SPECIAL_ATTACK,1]],
+				:THERMALEXCHANGE => [[:ATTACK,1]],
+				:HEATPROOF => [[:DEFENSE,1],[:SPECIAL_DEFENSE,1]]
+			},
+			:move_damage_boost => {},
+			:move_messages => {},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {
+				2 => [:DRAGON,"fullhp"]
+			},
+			:type_damage_change => {
+				1.3 => [:DRAGON,:FIRE]
+			},
+			:type_messages => {
+				"The power of the ancients amplified the attack!" => [:DRAGON,:FIRE]
+			},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:type_accuracy_change => {},
+			:side_effects => {},
+			:field_changers => {},
+			:change_message => {},
+			:field_change_conditions => {} 
+		},
+		:Water => {
+			:field_name => "Water",
+			:intro_message => "The waves are crashing around you.",
+			:field_gfx => "water",
+			:nature_power => :SURF,
+			:mimicry => :WATER,
+			:intro_script => nil,
+			:abilities => [:SWIFTSWIM,:STORMDRAIN,:WATERCOMPACTION,:STEAMENGINE,:WATERABSORB,:DRYSKIN],
+			:ability_effects => {},
+			:move_damage_boost => {
+				1.2 => [Fields::HURRICANE_MOVES]
+			},
+			:move_messages => {},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {
+				1.2 => [:WATER,:ELECTRIC],
+				0.8 => [:FIRE]
+			},
+			:type_messages => {
+				"The water weakened the attack!" => [:FIRE],
+				"The waves joined the attack!" => [:WATER],
+				"Electricity flowed through the water!" => [:ELECTRIC]
+			},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:type_accuracy_change => {},
+			:side_effects => {"hurricane" => Fields::WIND_MOVES},
+			:field_changers => {:Underwater => [:DIVE]},
+			:change_message => {"The battle moved underwater!" => [:DIVE]},
+			:field_change_conditions => {} 
+		},
+		:Underwater => {
+			:field_name => "Underwater",
+			:intro_message => "Bloop bloop...",
+			:field_gfx => "underwater",
+			:nature_power => :WATERPULSE,
+			:mimicry => :WATER,
+			:intro_script => nil,
+			:abilities => [:SWIFTSWIM,:STORMDRAIN,:WATERCOMPACTION,:STEAMENGINE,:WATERABSORB,:DRYSKIN],
+			:ability_effects => {},
+			:move_damage_boost => {
+				1.5 => [Fields::PULSE_MOVES],
+				1.2 => [Fields::SOUND_MOVES],
+				0.8 => [Fields::PUNCHING_MOVES,Fields::KICKING_MOVES]
+			},
+			:move_messages => {
+				"The water slowed the attack!" => [Fields::PUNCHING_MOVES,Fields::KICKING_MOVES],
+				"The sound reverberated strongly through the water!" => [Fields::SOUND_MOVES],
+				"Underwater pressure gave a massive boost!" => [Fields::PULSE_MOVES]
+			},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {
+				1.2 => [:WATER,:ELECTRIC],
+				0.8 => [:BUG,:FIGHTING],
+				0.0 => [:FIRE]
+			},
+			:type_messages => {
+				"The water doused the attack!" => [:FIRE],
+				"The water joined the attack!" => [:WATER],
+				"The water slowed the attack!" => [:BUG,:FIGHTING],
+				"Electricity flowed through the water!" => [:ELECTRIC]
+			},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:type_accuracy_change => {},
+			:side_effects => {},
+			:field_changers => {:Water => [:DIVE]},
+			:change_message => {"The battle moved above water!" => [:DIVE]},
+			:field_change_conditions => {} 
+		},
+		:Dream => {
+			:field_name => "Dream",
+			:intro_message => "It's never quite as it seems...",
+			:field_gfx => "dream",
+			:nature_power => :DREAMEATER,
+			:mimicry => :PSYCHIC,
+			:intro_script => nil,
+			:abilities => [:BADDREAMS,:BRAINBLAST,:NEUROFORCE,:MINDGAMES],
+			:ability_effects => {
+				:NEUROFORCE => [[:SPECIAL_ATTACK,1]],
+				:MINDGAMES => [[:DEFENSE,1],[:SPECIAL_DEFENSE,1]],
+				:BADDREAMS => [[:SPECIAL_ATTACK,1]]
+			},
+			:move_damage_boost => {
+				1.3 => [:PAYBACK,:REVENGE]
+			},
+			:move_messages => {
+				"Only in your dreams..." => [:PAYBACK,:REVENGE]
+			},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {
+				1.2 => [:PSYCHIC,:DARK]
+			},
+			:type_messages => {
+				"Such sweet dreams..." => [:PSYCHIC],
+				"A horrible nightmare!" => [:DARK]
+			},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:type_accuracy_change => {},
+			:side_effects => {},
+			:field_changers => {},
+			:change_message => {},
+			:field_change_conditions => {} 
+		},
+		:Icy => {
+			:field_name => "Icy",
+			:intro_message => "Caution! Thin ice!",
+			:field_gfx => "ice",
+			:nature_power => :ICEBEAM,
+			:mimicry => :ICE,
+			:intro_script => nil,
+			:abilities => [:ICEBODY,:SLUSHRUSH,:SNOWCLOAK],
+			:ability_effects => {
+				:SNOWCLOAK => [[:DEFENSE,1],[:SPECIAL_DEFENSE,1]],
+			},
+			:move_damage_boost => {},
+			:move_messages => {},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {
+				1.2 => [:ICE]
+			},
+			:type_messages => {
+				"A biting chill joins the attack!" => [:ICE]
+			},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {
+				:ICE => [:WATER]
+			},
+			:type_change_message => {
+				"The water froze!" => [:WATER]
+			},
+			:type_accuracy_change => {},
+			:side_effects => {},
+			:field_changers => {
+				:Water => [Fields::IGNITE_MOVES],
+				:None => [Fields::SWAMP_REMOVAL]
+			},
+			:change_message => {
+				"The ice melted!" => [Fields::IGNITE_MOVES],
+				"The ice broke!" => [Fields::SWAMP_REMOVAL]
+			},
+			:field_change_conditions => {
+				:Water => PokeBattle_Battle.melt?,
+				:None => PokeBattle_Battle.melt?
+			} 
+		},
+		:Magnetic => {
+			:field_name => "Magnetic",
+			:intro_message => "The field is magnetized.",
+			:field_gfx => "champion2",
+			:nature_power => :PARABOLICCHARGE,
+			:mimicry => :ELECTRIC,
+			:intro_script => "magnet",
+			:abilities => [:VOLTABSORB,:LIGHTNINGROD,:MOTORDRIVE,:PROTOSYNTHESIS,:MAGNETPULL,:BATTERY,:PLUS,:MINUS,:SURGESURFER],
+			:ability_effects => {
+				:MAGNETPULL => [[:DEFENSE,1],[:SPECIAL_DEFENSE,1]],
+				:BATTERY => [[:SPECIAL_ATTACK,1],[:SPEED,1]],
+				:PLUS => [[:SPECIAL_ATTACK,1]],
+				:MINUS => [[:SPECIAL_ATTACK,1]]
+			},
+			:move_damage_boost => {},
+			:move_messages => {},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {
+				1.3 => [:ELECTRIC,:STEEL]
+			},
+			:type_messages => {"The field powered the attack!" => [:ELECTRIC,:STEEL]},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:type_accuracy_change => {},
+			:side_effects => {},
+			:field_changers => {
+				:None => [Fields::MAGNET_REMOVAL]
+			},
+			:change_message => {
+				"The field got demagnetized!" => [Fields::MAGNET_REMOVAL]
+			},
+			:field_change_conditions => {} 
+		},
+		:Mirror => {
+			:field_name => "Mirror",
+			:intro_message => "All around me are familiar faces...",
+			:field_gfx => "cave1_ice",
+			:nature_power => :FLASHCANNON,
+			:mimicry => :STEEL,
+			:intro_script => nil,
+			:abilities => [:TIGHTFOCUS,:MIRRORARMOR,:FULLMETALBODY,:CLEARBODY,:UNSHAKEN,:ILLUMINATE],
+			:ability_effects => {
+				:MIRRORARMOR => [[:SPECIAL_DEFENSE,1]],
+				:FULLMETALBODY => [[:DEFENSE,1]],
+				:CLEARBODY => [[:DEFENSE,1],[:SPECIAL_DEFENSE,1]],
+				:UNSHAKEN => [[:ATTACK,1],[:SPECIAL_ATTACK,1]]
+			},
+			:move_damage_boost => {
+				1.3 => [Fields::SPECIAL_STEEL],
+				1.2 => [Fields::RICOCHET_MOVES]
+			},
+			:move_messages => {
+				"The mirror boosted the attack!" => [Fields::SPECIAL_STEEL],
+				"The mirror ricocheted the attack!" => [Fields::RICOCHET_MOVES]
+			},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {
+				1.3 => [:PSYCHIC]
+			},
+			:type_messages => {"The mirror amplified the psychic energy!" => [:PSYCHIC]},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:type_accuracy_change => {},
+			:side_effects => {},
+			:field_changers => {
+				:None => [Fields::SWAMP_REMOVAL]
+			},
+			:change_message => {
+				"The mirror shattered!" => [Fields::SWAMP_REMOVAL]
+			},
+			:field_change_conditions => {} 
+		},
+		:Space => {
+			:field_name => "Space",
+			:intro_message => "The final frontier...",
+			:field_gfx => "elite1",
+			:nature_power => :STARBEAM,
+			:mimicry => :COSMIC,
+			:intro_script => nil,
+			:abilities => [:ASTRALCLOAK,:STARSALVE,:NOCTEMBOOST,:STARSPRINT],
+			:ability_effects => {
+				:ASTRALCLOAK => [[:DEFENSE,1],[:SPECIAL_DEFENSE,1]]
+			},
+			:move_damage_boost => {
+				0.0 => [Fields::SOUND_MOVES]
+			},
+			:move_messages => {
+				"The sound dissipated!" => [Fields::SOUND_MOVES]
+			},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {
+				1.2 => [:COSMIC,:DARK],
+				0.8 => [:PSYCHIC,:FIRE]
+			},
+			:type_messages => {
+				"The stars join the attack!" => [:COSMIC],
+				"The darkness is overwhelming!" => [:DARK],
+				"The darkness weakened the attack!" => [:PSYCHIC],
+				"The fire got stifled without air!" => [:FIRE]
+			},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:type_accuracy_change => {},
+			:side_effects => {},
+			:field_changers => {},
+			:change_message => {},
+			:field_change_conditions => {} 
+		},
+		:Digital => {
+			:field_name => "Digital",
+			:intro_message =>"Beep boop boop beep bop...",
+			:field_gfx => "champion2",
+			:nature_power => :TRIATTACK,
+			:mimicry => :NORMAL,
+			:intro_script => nil,
+			:abilities => [:VOLTABSORB,:LIGHTNINGROD,:MOTORDRIVE,:QUARKDRIVE,:SURGESURFER,:DOWNLOAD],
+			:ability_effects => {},
+			:move_damage_boost => {1.3 => [:SPAMRAID]},
+			:move_messages => {
+				"ERROR: VIRUS DETECTED" => [:SPAMRAID]
+			},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {
+				1.2 => [:ELECTRIC,:NORMAL]
+			},
+			:type_messages => {
+				"The field powered the attack!" => [:ELECTRIC,:NORMAL]
+			},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:type_accuracy_change => {},
+			:side_effects => {},
+			:field_changers => {
+				:None => [Fields::SHORT_MOVES]
+			},
+			:change_message => {
+				"The field shorted out!" => [Fields::SHORT_MOVES]
+			},
+			:field_change_conditions => {} 
+		},
+		:Dojo => {
+			:field_name => "Dojo",
+			:intro_message =>"You can feel the focus...",
+			:field_gfx => "elite6",
+			:nature_power => :DRAINPUNCH,
+			:mimicry => :FIGHTING,
+			:intro_script => nil,
+			:abilities => [:INNERFOCUS,:STEADFAST,:IRONFIST],
+			:ability_effects => {
+				:STEADFAST => [[:SPEED,1]]
+			},
+			:move_damage_boost => {
+				1.2 => [Fields::SOUND_MOVES]
+			},
+			:move_messages => {
+				"Concentration broken!" => [Fields::SOUND_MOVES]
+			},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {
+				1.2 => [:FIGHTING,nil],
+			},
+			:type_damage_change => {
+				1.2 => [:FIGHTING,:PSYCHIC]
+			},
+			:type_messages => {
+				"The power of focus!" => [:FIGHTING,:PSYCHIC]
+			},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:type_accuracy_change => {},
+			:side_effects => {},
+			:field_changers => {
+				:None => [Fields::QUAKE_MOVES]
+			},
+			:change_message => {
+				"The dojo was leveled!" => [Fields::QUAKE_MOVES]
+			},
+			:field_change_conditions => {} 
+		},
+		:Distortion => {
+			:field_name => "Distortion",
+			:intro_message => "Everything feels wrong here...",
+			:field_gfx => "distortion",
+			:nature_power => :ASTRALGALE,
+			:mimicry => :COSMIC,
+			:intro_script => "distortion",
+			:abilities => [:STARSALVE,:DISGUISE,:PRANKSTER,:IMPOSTER,:STARSPRINT],
+			:ability_effects => {
+				:DISGUISE => [[:DEFENSE,1],[:SPECIAL_DEFENSE,1]],
+				:IMPOSTER => [[:DEFENSE,1],[:SPECIAL_DEFENSE,1]],
+				:PRANKSTER => [[:SPEED,1]]
+			},
+			:move_damage_boost => {},
+			:move_messages => {},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {
+				90 => [:DARKVOID]
+			},
+			:defensive_modifiers => {},
+			:type_damage_change => {
+				1.2 => [:COSMIC,:DARK,:DRAGON],
+				0.8 => [:PSYCHIC,:FAIRY,:FIGHTING]
+			},
+			:type_messages => {
+				"The void joins the attack!" => [:COSMIC,:DARK],
+				"The ancient power draws power from the distortion!" => [:DRAGON],
+				"The distortion weakened the attack!" => [:PSYCHIC,:FAIRY,:FIGHTING]
+			},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:type_accuracy_change => {},
+			:side_effects => {},
+			:field_changers => {},
+			:change_message => {},
+			:field_change_conditions => {} 
+		},
+		:WindTunnel => {
+			:field_name => "Wind Tunnel",
+			:intro_message => "Air steadily flows around you...",
+			:field_gfx => "snow_night",
+			:nature_power => :AIRCANNON,
+			:mimicry => :FLYING,
+			:intro_script => "wind",
+			:abilities => [:WINDPOWER,:WINDRIDER,:BACKDRAFT],
+			:ability_effects => {},
+			:move_damage_boost => {
+				1.2 => [Fields::WIND_MOVES,Fields::KICKING_MOVES]
+			},
+			:move_messages => {
+				"The wind gave the move momentum!" => [Fields::KICKING_MOVES],
+				"A backdraft is blowing!" => [Fields::WIND_MOVES]
+			},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {
+				1.2 => [:FLYING,:ICE]
+			},
+			:type_messages => {
+				"The wind pushes the attack!" => [:FLYING],
+				"An extra chill!" => [:ICE]
+			},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:type_accuracy_change => {},
+			:side_effects => {},
+			:field_changers => {},
+			:change_message => {},
+			:field_change_conditions => {} 
+		},
+		:DarkRoom => {
+			:field_name => "Dark Room",
+			:intro_message => "The room has a low light.",
+			:field_gfx => "elite3",
+			:nature_power => :DARKPULSE,
+			:mimicry => :DARK,
+			:intro_script => nil,
+			:abilities => [:NOCTEMBOOST,:DARKAURA,:PRANKSTER,:IMPOSTER],
+			:ability_effects => {
+				:DARKAURA => [[:SPECIAL_ATTACK,1]],
+				:PRANKSTER => [[:SPEED,1]],
+				:IMPOSTER => [[:DEFENSE,1],[:SPECIAL_DEFENSE,1]]
+			},
+			:move_damage_boost => {
+				1.3 => [Fields::LIGHT_MOVES]
+			},
+			:move_messages => {
+				"Too bright!" => [Fields::LIGHT_MOVES]
+			},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {
+				1.2 => [:DARK,:GHOST],
+				0.8 => [:PSYCHIC,:FAIRY,:GRASS]
+			},
+			:type_messages => {
+				"The darkness joined the attack" => [:DARK,:GHOST],
+				"The darkness choked out the attack." => [:PSYCHIC,:FAIRY,:GRASS]
+			},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:type_accuracy_change => {},
+			:side_effects => {},
+			:field_changers => {
+				:None => [Fields::LIGHT_MOVES],
+			},
+			:change_message => {
+				"The lights came on!" => [Fields::LIGHT_MOVES]
+			},
+			:field_change_conditions => {:None => PokeBattle_Battle.light?} 
+		},
+		:FairyLights => {
+			:field_name => "Fairy Lights",
+			:intro_message => "Pretty sparkly lights all around...",
+			:field_gfx => "snow_eve",
+			:nature_power => :DAZZLINGGLEAM,
+			:mimicry => :FAIRY,
+			:intro_script => nil,
+			:abilities => [:ILLUMINATE,:DAZZLING,:FAIRYAURA],
+			:ability_effects => {
+				:FAIRYAURA => [[:SPECIAL_ATTACK,1]],
+				:ILLUMINATE => [[:SPEED,1]],
+				:DAZZLING => [[:DEFENSE,1],[:SPECIAL_DEFENSE,1]]
+			},
+			:move_damage_boost => {
+				1.3 => [Fields::FAIRY_LIGHTS_MOVES]
+			},
+			:move_messages => {},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {
+				1.2 => [:FAIRY],
+				0.8 => [:DARK,:GHOST]
+			},
+			:type_messages => {
+				"The sparkles are blinding!" => [:FAIRY],
+				"The lights overpower the darkness!" => [:DARK,:GHOST]
+			},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:type_accuracy_change => {},
+			:side_effects => {},
+			:field_changers => {},
+			:change_message => {},
+			:field_change_conditions => {} 
+		},
+		:Castle => {
+			:field_name => "Castle",
+			:intro_message => "The castle walls stand strong.",
+			:field_gfx => "castle",
+			:nature_power => :TWINBLADES,
+			:mimicry => :STEEL,
+			:intro_script => nil,
+			:abilities => [:FILTER,:PRISMARMOR,:BATTLEARMOR,:SHELLARMOR,:QUEENLYMAJESTY],
+			:ability_effects => {},
+			:move_damage_boost => {
+				1.2 => [Fields::SLICING_MOVES]
+			},
+			:move_messages => {
+				"The blade meets its target!" => [Fields::SLICING_MOVES]
+			},
+			:move_type_change => {},
+			:move_type_mod => {},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {},
+			:type_damage_change => {
+				1.2 => [:ROCK,:STEEL,:PSYCHIC,:FAIRY,:COSMIC],
+				0.8 => [:DRAGON,:FIGHTING]
+			},
+			:type_messages => {
+				"The fortress imbued power into the attack!" => [:ROCK,:STEEL,:PSYCHIC,:FAIRY,:COSMIC],
+				"The fortress is well guarded!" => [:DRAGON,:FIGHTING]
+			},
+			:type_type_mod => {
+				:COSMIC => [:ROCK]
+			},
+			:type_mod_message => {
+				"Nearby meteorites and runes joined the attack!" => [:ROCK]
+			},
+			:type_type_change => {},
+			:type_change_message => {},
+			:type_accuracy_change => {},
+			:side_effects => {},
+			:field_changers => {},
+			:change_message => {},
+			:field_change_conditions => {} 
 		},
 	}

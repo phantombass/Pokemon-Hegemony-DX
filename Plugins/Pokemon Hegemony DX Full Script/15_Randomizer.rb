@@ -69,9 +69,58 @@ class Randomizer
 	    	:VIRIZION,:TERRAKION,:KELDEO,:KYUREM,:MAGEARNA,:MARSHADOW,:SPECTRIER,:GLASTIER,:CALYREX,:BLACEPHALON,:STAKATAKA,:NAGANADEL,:NIHILEGO,
 	    	:BUZZWOLE,:PHEROMOSA,:XURKITREE,:GUZZLORD,:KARTANA,:NECROZMA,:CELESTEELA,:OGERPON,:TERAPAGOS,:SHEDINJA,:SCREAMTAIL,:GREATTUSK,:FLUTTERMANE,
 	    	:ROARINGMOON,:WALKINGWAKE,:GOUGINGFIRE,:RAGINGBOLT,:SLITHERWING,:BRUTEBONNET,:SANDYSHOCKS,:IRONTREADS,:IRONMOTH,:IRONBUNDLE,:IRONJUGULIS,
-	    	:IRONTHORNS,:IRONHANDS,:IRONVALIANT,:IRONLEAVES,:IRONBOULDER,:IRONCROWN,:TAPUBULU,:TAPULELE,:TAPUFINI,:TAPUKOKO,:SPINDA]
+	    	:IRONTHORNS,:IRONHANDS,:IRONVALIANT,:IRONLEAVES,:IRONBOULDER,:IRONCROWN,:TAPUBULU,:TAPULELE,:TAPUFINI,:TAPUKOKO,:SPINDA,:WOCHIEN2,:CHIENPAO2,
+	    	:CHIYU2,:TINGLU2]
 	    GameData::Species.each { |species| keys.push(species.id) if species.form == 0 && !blacklist.include?(species.id) }
     	return keys
+    end
+
+    def self.all_trainer_species
+  		keys = []
+  		blacklist2 = []
+  		blacklist = [:MEWTWO,:HOOH,:LUGIA,:KYOGRE,:GROUDON,:RAYQUAZA,:DEOXYS,:DIALGA,:PALKIA,:GIRATINA,:ARCEUS,
+	    	:RESHIRAM,:ZEKROM,:XERNEAS,:YVELTAL,:ZYGARDE,:SOLGALEO,:LUNALA,:ZACIAN,:ZAMAZENTA,:ETERNATUS,:KORAIDON,:MIRAIDON,:ZYGARDE2,:REGIGIGAS2,
+	    	:TAPUKOKO2,:TAPUFINI2,:TAPULELE2,:TAPUBULU2,:DIANCIE,:HOOPA,:VOLCANION,:DARKRAI,:OGERPON,:TERAPAGOS,:SHEDINJA,:SPINDA,:WOCHIEN2,:CHIENPAO2,
+	    	:CHIYU2,:TINGLU2]
+	    	for i in 899..950
+		      blacklist2.push(i)
+		    end
+		    for j in 958..992
+		      blacklist2.push(j)
+		    end
+		    for k in 994..1012
+		      blacklist2.push(k)
+		    end
+		    for l in 1115..1214
+		      blacklist2.push(l)
+		    end
+		    for m in 1217..1237
+		      blacklist2.push(m)
+		    end
+	    GameData::Species.each { |species| keys.push(species.id) if species.form == 0 && !blacklist.include?(species.id) && !blacklist2.include?(species.id_number) }
+    	return keys
+    end
+
+    def self.all_wild_species
+    	mons = []
+    	blacklist = []
+	    for i in 899..950
+	      blacklist.push(i)
+	    end
+	    for j in 958..992
+	      blacklist.push(j)
+	    end
+	    for k in 994..1012
+	      blacklist.push(k)
+	    end
+	    for l in 1115..1214
+	      blacklist.push(l)
+	    end
+	    for m in 1217..1237
+	      blacklist.push(m)
+	    end
+    	self.all_available_species.each {|mon| mons.push(mon) unless blacklist.include?(GameData::Species.get(mon).id_number)}
+    	return mons
     end
 
   	def self.active?(type)

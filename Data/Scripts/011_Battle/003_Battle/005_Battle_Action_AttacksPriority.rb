@@ -155,6 +155,9 @@ class PokeBattle_Battle
             if b.abilityActive?
               pri = BattleHandlers.triggerPriorityChangeAbility(b.ability,b,move,pri)
             end
+            if @field.field_effects == :WindTunnel && Fields::WIND_TUNNEL_MOVES.include?(move.id)
+              pri = 1
+            end
             bArray[3] = pri
             @choices[b.index][4] = pri
           end

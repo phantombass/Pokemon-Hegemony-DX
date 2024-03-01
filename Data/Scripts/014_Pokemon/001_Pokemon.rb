@@ -567,6 +567,19 @@ class Pokemon
     @roles.push(GameData::Role.get(value).id)
   end
 
+  def has_role?(role)
+    x = []
+    for i in @roles
+      x.push(i)
+      if role.is_a?(Array)
+        if role.include?(i)
+          return true
+        end
+      end
+    end
+    return x.include?(role) && !role.is_a?(Array)
+  end
+
   # Sets this Pokémon's nature to a particular nature.
   # @param value [Symbol, String, Integer, nil] nature to change to
   def nature=(value)

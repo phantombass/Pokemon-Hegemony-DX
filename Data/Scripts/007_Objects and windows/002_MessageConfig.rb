@@ -95,7 +95,7 @@ module MessageConfig
     when 0 then return 2
     when 1 then return 1
     when 2 then return -2
-    when 3 then return -5
+    when 3 then return -10
     end
     return TEXT_SPEED || 1
   end

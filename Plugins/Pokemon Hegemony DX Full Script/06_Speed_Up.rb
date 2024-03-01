@@ -17,6 +17,12 @@ module Input
         $PokemonGlobal.repel = REPEL_STAGES[$inf_repel]
         $PokemonGlobal.repel == 0 ? pbMessage(_INTL("Infinite Repel Disabled.")) : pbMessage(_INTL("Infinite Repel Enabled."))
       end
+      if triggerex?(:F) && $game_temp.in_menu == false && $game_temp.message_window_showing == false && $repel_toggle && !$game_system.save_disabled
+        if pbConfirmMessage(_INTL("Would you like to save the game?"))
+          Game.save
+          pbMessage(_INTL("\\PN saved the game!"))
+        end
+      end
     end
   end
 

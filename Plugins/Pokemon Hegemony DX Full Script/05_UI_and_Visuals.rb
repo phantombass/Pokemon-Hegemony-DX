@@ -105,11 +105,13 @@ class PokemonPauseMenu_Scene
   def pbShowLevelCap
     @sprites["levelcapwindow"].visible = true
     @sprites["questwindow"].visible = true
+    @sprites["stepswindow"].visible = true if $game_switches[68]
   end
 
   def pbHideLevelCap
     @sprites["levelcapwindow"].visible = false if $game_switches[Settings::LEVEL_CAP_SWITCH] == true
     @sprites["questwindow"].visible = false
+    @sprites["stepswindow"].visible = false if $game_switches[68]
   end
 
   def pbShowCommands(commands)
@@ -1249,7 +1251,7 @@ class PokemonOption_Scene
            end
          }
        ),
-       EnumOption.new(_INTL("Text Speed"),[_INTL("Slow"),_INTL("Normal"),_INTL("Fast")],
+       EnumOption.new(_INTL("Text Speed"),[_INTL("Slow"),_INTL("Normal"),_INTL("Fast"),_INTL("Instant")],
          proc { $PokemonSystem.textspeed },
          proc { |value|
            $PokemonSystem.textspeed = value

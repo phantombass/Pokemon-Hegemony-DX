@@ -20,6 +20,7 @@ module GameData
 
     DATA = {}
     DATA_FILENAME = "metadata.dat"
+    PBS_BASE_FILENAME = "metadata"
 
     SCHEMA = {
       "Home"             => [1,  "vuuu"],

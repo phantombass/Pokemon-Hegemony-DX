@@ -567,16 +567,25 @@ class PBAI
     end
 
     def check_spam_block
-      return false if @battle.doublebattle
       return false if !$game_switches[LvlCap::Expert]
+      return false if @battle.doublebattle
       flag = $spam_block_triggered
+      flag_second = 0
       if $spam_block_triggered == false
         self.opposing_side.battlers.each do |target|
           next if target.nil?
           flag = PBAI::SpamHandler.trigger(flag,@ai,@battler,target)
         end
       end
+      if $spam_block_triggered
+        self.opposing_side.battlers.each do |target|
+          next if target.nil?
+          flag_second = PBAI::SpamHandler.trigger_secondary(flag_second,@ai,@battler,target)
+        end
+      end
       PBAI.log("Spam Block Triggered") if flag
+      PBAI.log("Spam Block Extended by #{flag_second} turns") if flag_second > 0
+      PBAI.spam_block_add(flag_second)
       return flag
     end
 
@@ -1170,12 +1179,6 @@ class PBAI
       # If we should switch due to effects in battle
       PBAI.log("\nShould switch = #{switch}")
       if switch == true
-        for i in scores
-          next if i[1] != self
-          if i[0] >= 0 && self.turnCount == 0
-            return [0,0]
-          end
-        end
         availscores = scores.select { |e| !e[1].fainted? }
         # Switch to a dark type instead of the best type matchup
         #if $switch_flags[:dark]
@@ -1188,7 +1191,7 @@ class PBAI
             self.opposing_side.battlers.each do |target|
               next if target.nil?
               score = PBAI::SwitchHandler.trigger_general(score,@ai,self,proj,target)
-              target_moves = $game_switches[LvlCap::Expert] ? target.moves : target.used_moves
+              target_moves = target.moves
               target_moves = [$spam_block_flags[:choice]] if check_spam_block && $spam_block_flags[:choice].is_a?(PokeBattle_Move)
               if target_moves != nil
                 for i in target_moves
@@ -1225,6 +1228,9 @@ class PBAI
         end
         offensive_score = 1.0
         defensive_score = 1.0
+        $breaker = pkmn.has_role?([:PHYSICALBREAKER,:SPECIALBREAKER])
+        $tank = pkmn.has_role?([:TANK,:PHYSICALWALL,:SPECIALWALL])
+        $pivot = pkmn.has_role?([:OFFENSIVEPIVOT,:DEFENSIVEPIVOT])
         self.opposing_side.battlers.each do |target|
           next if target.nil?
           offensive_score *= proj.get_offense_score(target)
@@ -1249,6 +1255,11 @@ class PBAI
         score = 200
         score += e[0] * 100
         score -= e[1] * 100
+        score -= 5000 if $breaker
+        score += 5000 if $tank
+        score += 2500 if $pivot
+        score += 3000 if e[1] == 0
+        score -= 1000 if proj.pokemon.owner.id != self.pokemon.owner.id
         next [score,proj]
       end
       scores.sort! do |a,b|
@@ -1273,6 +1284,10 @@ class PBAI
           next if target.nil?
           offensive_score *= proj.get_offense_score(target)
           defensive_score *= target.get_offense_score(proj)
+          offensive_score += 2.0 if proj.pokemon.hasType?(:POISON) && proj.pokemon.grounded? && self.pbOwnSide.effects[PBEffects::ToxicSpikes] > 0
+          defensive_score += 2.0 if proj.pokemon.hasType?(:POISON) && proj.pokemon.grounded? && self.pbOwnSide.effects[PBEffects::ToxicSpikes]> 0
+          offensive_score += 2.0 if proj.pokemon.hasType?(:COSMIC) && self.pbOwnSide.effects[PBEffects::CometShards] == true
+          defensive_score += 2.0 if proj.pokemon.hasType?(:COSMIC) && self.pbOwnSide.effects[PBEffects::CometShards] == true
         end
         next [offensive_score, defensive_score, proj]
       end
@@ -1485,6 +1500,8 @@ class PBAI
         when :ROCK
           return true if target.hasActiveAbility?(:SCALER)
           return true if target.hasActiveItem?(:SCALERORB)
+        when :POISON
+          return true if target.hasActiveAbility?(:PASTELVEIL)
         when :COSMIC
           return true if target.hasActiveAbility?(:DIMENSIONBLOCK)
           return true if target.hasActiveItem?(:DIMENSIONBLOCKORB)

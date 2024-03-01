@@ -840,7 +840,9 @@
 820,MEGANIUMITE,Meganiumite,Meganiumites,1,0,"One variety of the mysterious Mega Stones. Have Meganium hold it, and this stone will enable it to Mega Evolve during battle.",0,0,12,
 821,ARBOKINITE,Arbokinite,Arbokinites,1,0,"One variety of the mysterious Mega Stones. Have Arbok hold it, and this stone will enable it to Mega Evolve during battle.",0,0,12,
 822,BEARTINITE,Beartinite,Beartinites,1,0,"One variety of the mysterious Mega Stones. Have Beartic hold it, and this stone will enable it to Mega Evolve during battle.",0,0,12,
-
+823,MASTERPIECETEACUP,Masterpiece Teacup,Masterpiece Teacups,1,1600,"A peculiar chipped teacup that can make a certain species of Pokémon evolve. It makes delicious tea..",1,0,7,
+824,UNREMARKABLETEACUP,Unremarkable Teacup,Unremarkable Teacups,1,1600,"A peculiar cracked teacup that can make a certain species of Pokémon evolve. It makes delicious tea.",1,0,7,
+825,SYRUPYAPPLE,Syrupy Apple,Syrupy Apples,1,2200,"A peculiar apple that can make a certain species of Pokémon evolve. It's exceptionally syrupy.",1,0,7,
 
 827,STELLARPLATE,Stellar Plate,Stellar Plates,1,1000,"An item to be held by a Pokémon. It is a stone tablet that boosts the power of Cosmic-type moves.",0,0,13,
 828,CORRUPTEDDRIVE,Corrupted Drive,Corrupted Drives,1,2100,A computer drive that has been corrupted with a virus. Its producer is unknown.,1,0,7,
@@ -1015,3 +1017,4 @@
 1005,DXORB3,DX Orb,DX Orbs,1,0,"A device made from an ancient crystal. It is said to hold many powers from the Queen of Parthenia.",0,0,0,
 1006,DXORB4,DX Orb,DX Orbs,1,0,"A device made from an ancient crystal. It is said to hold many powers from the Queen of Parthenia.",0,0,0,
 1007,DXORB5,DX Orb,DX Orbs,1,0,"A device made from an ancient crystal. It is said to hold many powers from the Queen of Parthenia.",0,0,0,
+1008,ALTERNATESTONE,Alternate Stone,Alternate Stones,1,2100,"A peculiar stone that makes certain species of Pokémon evolve. It has a twisted pattern.",1,0,7,

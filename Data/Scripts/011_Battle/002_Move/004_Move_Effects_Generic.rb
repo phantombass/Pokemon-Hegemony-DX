@@ -238,14 +238,26 @@ class PokeBattle_StatUpMove < PokeBattle_Move
 
   def pbEffectGeneral(user)
     return if damagingMove?
-    return if Restrictions.active? && user.index == 0
-    user.pbRaiseStatStage(@statUp[0],@statUp[1],user)
+    return if Restrictions.active? && user..pbOwnedByPlayer?
+    dojo_moves = [:MEDITATE]
+    dojo = true if dojo_moves.include?(@id) && @battle.field.field_effects == :Dojo
+    mod = (dojo_moves.include?(@id) && @battle.field.field_effects == :Dojo) ? 2 : 1
+    user.pbRaiseStatStage(@statUp[0],@statUp[1]*mod,user)
+    if dojo
+      user.pbRecoverHP(user.totalhp/4) if user.canHeal?
+    end
   end
 
   def pbAdditionalEffect(user,target)
-    return if Restrictions.active? && user.index == 0
+    return if Restrictions.active? && user..pbOwnedByPlayer?
+    dojo_moves = [:MEDITATE]
+    dojo = true if dojo_moves.include?(@id) && @battle.field.field_effects == :Dojo
+    mod = (dojo_moves.include?(@id) && @battle.field.field_effects == :Dojo) ? 2 : 1
     if user.pbCanRaiseStatStage?(@statUp[0],user,self)
-      user.pbRaiseStatStage(@statUp[0],@statUp[1],user)
+      user.pbRaiseStatStage(@statUp[0],@statUp[1]*mod,user)
+    end
+    if dojo
+      user.pbRecoverHP(user.totalhp/4) if user.canHeal?
     end
   end
 end
@@ -271,24 +283,36 @@ class PokeBattle_MultiStatUpMove < PokeBattle_Move
 
   def pbEffectGeneral(user)
     return if damagingMove?
-    return if Restrictions.active? && user.index == 0
+    return if Restrictions.active? && user..pbOwnedByPlayer?
     showAnim = true
+    dojo_moves = [:CALMMIND,:BULKUP,:WORKUP]
+    dojo = true if dojo_moves.include?(@id) && @battle.field.field_effects == :Dojo
+    mod = (dojo_moves.include?(@id) && @battle.field.field_effects == :Dojo) ? 2 : 1
     for i in 0...@statUp.length/2
       next if !user.pbCanRaiseStatStage?(@statUp[i*2],user,self)
-      if user.pbRaiseStatStage(@statUp[i*2],@statUp[i*2+1],user,showAnim)
+      if user.pbRaiseStatStage(@statUp[i*2],@statUp[i*2+1]*mod,user,showAnim)
         showAnim = false
       end
+    end
+    if dojo
+      user.pbRecoverHP(user.totalhp/4) if user.canHeal?
     end
   end
 
   def pbAdditionalEffect(user,target)
     showAnim = true
-    return if Restrictions.active? && user.index == 0
+    return if Restrictions.active? && user.pbOwnedByPlayer?
+    dojo_moves = [:CALMMIND,:BULKUP,:WORKUP]
+    dojo = true if dojo_moves.include?(@id) && @battle.field.field_effects == :Dojo
+    mod = (dojo_moves.include?(@id) && @battle.field.field_effects == :Dojo) ? 2 : 1
     for i in 0...@statUp.length/2
       next if !user.pbCanRaiseStatStage?(@statUp[i*2],user,self)
-      if user.pbRaiseStatStage(@statUp[i*2],@statUp[i*2+1],user,showAnim)
+      if user.pbRaiseStatStage(@statUp[i*2],@statUp[i*2+1]*mod,user,showAnim)
         showAnim = false
       end
+    end
+    if dojo
+      user.pbRecoverHP(user.totalhp/4) if user.canHeal?
     end
   end
 end
@@ -302,6 +326,7 @@ class PokeBattle_StatDownMove < PokeBattle_Move
     showAnim = true
     for i in 0...@statDown.length/2
       next if !user.pbCanLowerStatStage?(@statDown[i*2],user,self)
+      next if [:ASTROBOMB,:DRACOMETEOR,:NIGHTRUSH].include?(@id)
       if user.pbLowerStatStage(@statDown[i*2],@statDown[i*2+1],user,showAnim)
         showAnim = false
       end

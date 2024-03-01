@@ -1781,3 +1781,54 @@ BattleHandlers::DamageCalcUserItem.add(:PUNCHINGGLOVE,
     mults[:base_damage_multiplier] *= 1.2 if move.punchingMove?
   }
 )
+
+ItemHandlers::UseOnPokemon.add(:ALTERNATESTONE,
+  proc { |item, qty, pkmn, scene|
+    if pkmn.shadowPokemon?
+      scene.pbDisplay(_INTL("It won't have any effect."))
+      next false
+    end
+    newspecies = pkmn.check_evolution_on_use_item(item)
+    if newspecies
+      pkmn.form = 1 if pkmn.is_able_alternate_stone?
+      pbFadeOutInWithMusic {
+        evo = PokemonEvolutionScene.new
+        evo.pbStartScreen(pkmn, newspecies)
+        evo.pbEvolution(false)
+        evo.pbEndScreen
+        if scene.is_a?(PokemonPartyScreen)
+          scene.pbRefreshAnnotations(proc { |p| !p.check_evolution_on_use_item(item).nil? })
+          scene.pbRefresh
+        end
+      }
+      next true
+    end
+    scene.pbDisplay(_INTL("It won't have any effect."))
+    next false
+  }
+)
+
+class Pokemon
+  def alolan?
+    pkmn = [:CUBONE,:EXEGGCUTE,:PIKACHU]
+    return pkmn.include?(self.species)
+  end
+
+  def galarian?
+    pkmn = [:KOFFING,:MIMEJR]
+    return pkmn.include?(self.species)
+  end
+
+  def hisuian?
+    pkmn = [:QUILAVA,:DARTRIX,:DEWOTT,:GOOMY,:RUFFLET,:PETILIL,:BERGMITE]
+    return pkmn.include?(self.species)
+  end
+
+  def paldean?
+    pkmn = [:URSARING]
+  end
+
+  def is_able_alternate_stone?
+    return alolan? || galarian? || hisuian?
+  end
+end

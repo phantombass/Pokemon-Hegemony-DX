@@ -13,6 +13,8 @@ module DungeonMissions
   Specific_Target = 220
   Missions = 221
   Target_Location = 222
+  Gym = 223
+  Leaders = 224
 
   Mon_Switch = 926
   Item_Switch = 927
@@ -28,6 +30,8 @@ class Dungeon_Missions
   attr_accessor :missions
   attr_accessor :dungeon_reward
   attr_accessor :steps
+  attr_accessor :gym_leader_data
+  attr_accessor :gym_leaders_defeated
 
   def initialize
     @locations = []
@@ -37,6 +41,8 @@ class Dungeon_Missions
     @mission_data = {}
     @missions = {}
     @dungeon_reward = []
+    @gym_leader_data = {}
+    @gym_leaders_defeated = []
     @steps = 0
   end
 
@@ -61,6 +67,12 @@ class Dungeon_Missions
   def self.dungeon_reward
     return @dungeon_reward
   end
+  def self.gym_leader_data
+    return @gym_leader_data
+  end
+  def self.gym_leaders_defeated
+    return @gym_leaders_defeated
+  end
   def self.steps
     return @steps
   end
@@ -74,6 +86,8 @@ class Dungeon_Missions
     @dungeon_reward = $game_variables[DungeonMissions::Reward]
     @steps = $game_variables[DungeonMissions::Steps]
     @missions = $game_variables[DungeonMissions::Missions]
+    @gym_leader_data = $game_variables[DungeonMissions::Gym]
+    @gym_leaders_defeated = $game_variables[DungeonMissions::Leaders]
   end
 
   def clear_dungeon_data
@@ -82,11 +96,7 @@ class Dungeon_Missions
     @target = []
     @stars = []
     @dungeon_reward = []
-    @steps = 1024
-  end
-
-  def gym_open?(location)
-    return false
+    @steps = 850
   end
 
   def randomize_rewards
@@ -328,14 +338,14 @@ class Dungeon_Missions
   end
 
   def randomize_stars
-    rep = ($game_system.reputation/30).floor
-    rep = 1 if $game_system.reputation < 30
-    rep = 5 if $game_system.reputation >= 150
+    rep = (($game_system.reputation*2)/90).floor
+    rep = 1 if $game_system.reputation < 90
+    rep = 5 if $game_system.reputation >= 225
     star = rand(rep) + 1
     return star
   end
 
-  def stars(location)
+  def star(location)
     loc = 0
     for i in @locations
       break if i == location
@@ -353,6 +363,23 @@ class Dungeon_Missions
     return @stars[loc]
   end
 
+  def reputation_cap
+    level_cap_increment = $game_system.level_cap
+    if $game_system.reputation >= 90 && level_cap_increment == 1 && $Trainer.badge_count == 0
+      $game_system.reputation = 89
+    elsif $game_system.reputation >= 120 && level_cap_increment == 2 && $Trainer.badge_count <= 1
+      $game_system.reputation = 119
+    elsif $game_system.reputation >= 150 && level_cap_increment == 3 && $Trainer.badge_count <= 3
+      $game_system.reputation = 149
+    elsif $game_system.reputation >= 180 && level_cap_increment == 4 && $Trainer.badge_count <= 4
+      $game_system.reputation = 179
+    elsif $game_system.reputation >= 210 && level_cap_increment == 5 && $Trainer.badge_count <= 6
+      $game_system.reputation = 209
+    elsif $game_system.reputation >= 400 && level_cap_increment == 9 && !$game_switches[12]
+      $game_system.reputation = 399
+    end
+  end
+
   def add_reputation(star)
     rep = $game_system.reputation
     part1 = ((15/(rep*0.02))*1.75).floor
@@ -360,11 +387,13 @@ class Dungeon_Missions
     add = (part1*part2).floor
     add = 0 if (add < 2 && rep >= 150)
     $game_system.reputation += add
+    reputation_cap
     update_level_cap
   end
 
   def add_reputation_manual(add)
     $game_system.reputation += add
+    reputation_cap
     update_level_cap
   end
 
@@ -390,14 +419,26 @@ class Dungeon_Missions
       Game.level_cap_update
     elsif $game_system.reputation >= 90 && $game_system.reputation < 120 && level_cap_increment == 1
       Game.level_cap_update
+      pbMessage(_INTL("\\me[Key item get]You now have access to 2-star Dungeons!"))
+      pbMessage(_INTL("Don't let your work slip or you might lose your access to higher-star Dungeons!"))
     elsif $game_system.reputation >= 120 && $game_system.reputation < 150 && level_cap_increment == 2
       Game.level_cap_update
+      if $game_system.reputation >= 135
+        pbMessage(_INTL("\\me[Key item get]You now have access to 3-star Dungeons!"))
+        pbMessage(_INTL("Don't let your work slip or you might lose your access to higher-star Dungeons!"))
+      end
     elsif $game_system.reputation >= 150 && $game_system.reputation < 180 && level_cap_increment == 3
       Game.level_cap_update
     elsif $game_system.reputation >= 180 && $game_system.reputation < 210 && level_cap_increment == 4
       Game.level_cap_update
+      pbMessage(_INTL("\\me[Key item get]You now have access to 4-star Dungeons!"))
+      pbMessage(_INTL("Don't let your work slip or you might lose your access to higher-star Dungeons!"))
     elsif $game_system.reputation >= 210 && $game_system.reputation < 240 && level_cap_increment == 5
       Game.level_cap_update
+      if $game_system.reputation >= 225
+        pbMessage(_INTL("\\me[Key item get]You now have access to 5-star Dungeons!"))
+        pbMessage(_INTL("Don't let your work slip or you might lose your access to higher-star Dungeons!"))
+      end
     elsif $game_system.reputation >= 240 && $game_system.reputation < 270 && level_cap_increment == 6
       Game.level_cap_update
     elsif $game_system.reputation >= 270 && $game_system.reputation < 300 && level_cap_increment == 7
@@ -405,6 +446,8 @@ class Dungeon_Missions
     elsif $game_system.reputation >= 300 && $game_system.reputation < 400 && level_cap_increment == 8
       Game.level_cap_update
     elsif $game_system.reputation >= 400 && $game_system.reputation < 500 && level_cap_increment == 9
+      Game.level_cap_update
+    elsif $game_system.reputation >= 500 && level_cap_increment == 10
       Game.level_cap_update
     end
   end
@@ -415,13 +458,13 @@ class Dungeon_Missions
       break if i == location
       loc += 1
     end
-    if (@locations.nil? || @name[loc] == nil) || @mission_data == ({} || 0 || nil) || !@mission_data.has_key?(location) || mission_complete?(@mission_data[location][:id])
+    if ((@locations.nil? || @name[loc] == nil) && !@mission_data.has_key?(location)) || mission_complete?(@mission_data[location][:id])
       text = "Dungeon Closed"
       $game_switches[DungeonMissions::Mon_Switch] = false
       $game_switches[DungeonMissions::Item_Switch] = false
     else
-      name = @name[loc].nil? ? @mission_data[location][:name] : @name[loc]
-      star = @stars[loc].nil? ? @mission_data[location][:stars] : @stars[loc]
+      name = @mission_data[location][:name].nil? ? @name[loc] : @mission_data[location][:name]
+      star = @mission_data[location][:stars].nil? ? @stars[loc] : @mission_data[location][:stars]
       stars = "Stars: #{star}"
       text = "#{name}\n#{stars}"
       case name
@@ -457,21 +500,10 @@ class Dungeon_Missions
   end
 
   def target_floor(stars)
-    case stars
-    when 1
-      ret = rand(3) + 1
-    when 2
-      ret = rand(5) + 1
-    when 3
-      ret = rand(8) + 1
-    when 4
-      ret = rand(11) + 1
-    when 5
-      ret = rand(15) + 1
-    else
-      ret = 0
-    end
-    return ret
+    num = [3,5,8,11,15]
+    star = rand(num[stars-1])
+    star = 2 if star == 0
+    return star
   end
 
   def star_floor(location)
@@ -482,20 +514,8 @@ class Dungeon_Missions
         stars = loc == -1 ? @mission_data[location][:stars] : @stars[loc]
       end
     end
-    case stars
-    when 1
-      ret = 3
-    when 2
-      ret = 5
-    when 3
-      ret = 8
-    when 4
-      ret = 11
-    when 5
-      ret = 15
-    else
-      ret = 0
-    end
+    num = [3,5,8,11,15]
+    ret = [1,2,3,4,5].include?(stars) ? num[stars-1] : 3
     return ret
   end
 
@@ -542,15 +562,29 @@ class Dungeon_Missions
             pkmn.gender, pkmn.shiny?,
             pkmn.shadowPokemon?])
     elsif target.is_a?(Symbol)
-      first_pkmn = GameData::Species.get(target)
-      pkmn = Pokemon.new(first_pkmn,1)
-      change_sprite([pkmn.species, pkmn.form,
-            pkmn.gender, pkmn.shiny?,
-            pkmn.shadowPokemon?])
+      $game_map.events.each_with_index do |event, i|
+        next if event[1].name != "MissionTarget"
+        fname = target.to_s
+        fname = fname.upcase
+        fname.gsub!("Graphics/Characters/","")
+        event[1].character_name = fname
+      end
     else
       $game_map.events.each_with_index do |event, i|
         next if event[1].name != "MissionTarget"
         fname = target[0]
+        fname.gsub!("Graphics/Characters/","")
+        event[1].character_name = fname
+      end
+    end
+  end
+
+  def refresh_gym_leader_sprite
+    gym = $game_variables[3]
+    if gym != 0
+      $game_map.events.each_with_index do |event, i|
+        next if event[1].name != "GymLeader"
+        fname = gym
         fname.gsub!("Graphics/Characters/","")
         event[1].character_name = fname
       end
@@ -572,20 +606,113 @@ class Dungeon_Missions
     if $game_switches[68]
       $game_switches[926] = reward_is_pokemon?($game_map.map_id)
       $game_switches[927] = reward_is_item?($game_map.map_id)
-      $game_variables[74] = stars(location)
+      $game_variables[74] = star(location)
+      $game_switches[932] = false
       $game_variables[DungeonMissions::Floor] = star_floor(location)
       if @mission_data.has_key?(location)
         $game_variables[DungeonMissions::Floor_Target] = @mission_data[location][:floor]
         $game_variables[DungeonMissions::Specific_Target] = @mission_data[location][:target]
         $game_variables[DungeonMissions::Target_Location] = location
       end
+      @gym_leader_data = {} if @gym_leader_data == 0
+      if @gym_leader_data == {} && Level_Scaling.level_cap >= 25 && $Trainer.badge_count < 16
+        gym_leader_randomize(location)
+      end
     end
+  end
+
+  def gym_leader_randomize(location)
+    if rand(100) < 85 && @gym_leader_data.keys.length == 0
+      @gym_leaders_defeated = [] if @gym_leaders_defeated == 0
+      leaders = [:LEADER_Brock,:LEADER_Misty,:RIVAL1,:LEADER_Erika,:LEADER_Sabrina,:LEADER_Blaine,
+        :LEADER_Winslow,:LEADER_Koga,:DOJO_Adam,:DOJO_Wendy,:DOJO_Luna,:DOJO_Apollo,:DOJO_Jasper,
+        :DOJO_Maloki,:DOJO_Juliet,:DOJO_Olaf]
+      leader_location = ["Krypto Quay","Nitro City","The Capitol","Neonn Town","Ogan City","Helum City","Chloros City",
+        "Sodum Town","Alumi Steppes","Stibni Village","Urani Island","Argyros City","Port Lithum","Oro City","Kallim Sanctuary",
+        "Wolfram City"]
+      for i in 0...leaders.length
+        leaders.delete_at(i) if @gym_leaders_defeated.include?(leaders[i])
+      end
+      num = rand(leaders.length)
+      leader = leaders[num]
+      loc = leader_location[num]
+      floor = rand(star_floor(location)) + 1
+      $game_variables[1] = loc
+      $game_variables[2] = floor
+      $game_variables[4] = leader
+      gym_hash = {
+        :trainer => leader,
+        :sprite => "trainer_" + leader.to_s,
+        :gym_location => loc,
+        :floor => floor,
+        :found => false,
+        :dialogue => gym_leader_dialogue(leader,loc)
+      }
+      @gym_leader_data[location] = gym_hash
+      $game_variables[3] = gym_hash[:sprite]
+      $game_variables[DungeonMissions::Gym] = @gym_leader_data
+      PBAI.log("Gym Leader #{gym_hash[:trainer]} found on floor #{gym_hash[:floor]}")
+      PBAI.log("Gym Location: #{pbGet(1)}")
+    end
+  end
+
+  def gym_leader_dialogue(leader,location)
+    text = []
+    case leader
+    when :DOJO_Wendy
+      text.push("\\[463f0000]Ah, don't mind me. I was just exploring down here.")
+      text.push("\\[463f0000]Oh, so you're \\PN. I'd heard a challenger was making their rounds.")
+      text.push("\\[463f0000]Well I won't keep you waiting then. I'll see you at my Gym in #{location}.")
+    when :LEADER_Blaine
+      text.push("\\[7fe00000]Ah, you must be \\PN. I'm Turner.")
+      text.push("\\[7fe00000]I heard you were looking for Gym challenges. I'll be glad to take you on.")
+      text.push("\\[7fe00000]Meet me at my Gym in #{location}.")
+    else
+      text.push("\\[7fe00000]Meet me at my gym in #{location}.")
+    end
+    return text
+  end
+
+  def gym_open?(location)
+    return false if @gym_leader_data == {}
+    return false if @gym_leader_data == nil
+    return false if @gym_leader_data == 0
+    map = pbLoadMapInfos
+    map_name = map[location].name
+    for key in @gym_leader_data.keys
+      if @gym_leader_data[key][:gym_location] == map_name && @gym_leader_data[key][:found] == true
+        return true
+      end
+    end
+    return false
+  end
+
+  def register_gym_leader
+    for key in @gym_leader_data.keys
+      @gym_leader_data[key][:found] = true
+    end
+    $game_switches[932] = false
+    for i in 1..3
+      $game_variables[i] = 0
+    end
+    $game_variables[DungeonMissions::Gym] = @gym_leader_data
+  end
+
+  def gym_leader_defeated
+    for keys in @gym_leader_data
+      @gym_leaders_defeated.push(@gym_leader_data[key][:trainer])
+    end
+    @gym_leader_data = {}
+    $game_variables[DungeonMissions::Gym] = @gym_leader_data
+    $game_variables[DungeonMissions::Leaders] = @gym_leaders_defeated
   end
 
   def close(location)
     temp = []
     $game_self_switches[[location,2,"A"]] = false
     $game_self_switches[[location,4,"A"]] = false
+    $game_self_switches[[$game_map.map_id,3,"A"]] = false if $game_map.map_id != location
+    $game_self_switches[[$game_map.map_id,8,"A"]] = false if $game_map.map_id != location
     loc = 0
     for loc in reward_locations
       break if loc == location
@@ -594,6 +721,7 @@ class Dungeon_Missions
     $game_variables[74] = 3
     $game_variables[DungeonMissions::Floor] = 0
     $game_variables[DungeonMissions::Floor_Target] = 0
+    $game_variables[1] = 0
     if @mission_data[pbGet(222)][:complete] == false
       lose_reputation(@mission_data[pbGet(222)][:stars])
       @mission_data.each_key do |key|
@@ -603,6 +731,25 @@ class Dungeon_Missions
       @mission_data = temp
     end
     @name[loc] = nil
+    $game_switches[928] = false
+  end
+
+  def correct_floor?(value=0)
+    if $game_variables[DungeonMissions::Floor_Target] == value
+      $game_switches[928] = true
+      pbWait(8)
+      pbMessage(_INTL("\\me[Mining found all]You've reached the destination floor!"))
+      refresh_sprite
+    else
+      $game_switches[928] = false
+    end
+    if $game_variables[2] == value
+      $game_switches[932] = true
+      refresh_gym_leader_sprite
+    else
+      $game_switches[932] = false
+    end
+    $game_map.refresh
   end
 end
 

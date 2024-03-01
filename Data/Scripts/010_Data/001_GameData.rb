@@ -6,6 +6,9 @@ module GameData
   # For data that is known by a symbol or an ID number.
   #=============================================================================
   module ClassMethods
+    def schema
+      return self::SCHEMA
+    end
     def register(hash)
       self::DATA[hash[:id]] = self::DATA[hash[:id_number]] = self.new(hash)
     end
@@ -74,6 +77,9 @@ module GameData
   # For data that is only known by a symbol.
   #=============================================================================
   module ClassMethodsSymbols
+    def schema
+      return self::SCHEMA
+    end
     def register(hash)
       self::DATA[hash[:id]] = self.new(hash)
     end
@@ -136,6 +142,9 @@ module GameData
   # For data that is only known by an ID number.
   #=============================================================================
   module ClassMethodsIDNumbers
+    def schema
+      return self::SCHEMA
+    end
     def register(hash)
       self::DATA[hash[:id]] = self.new(hash)
     end
@@ -207,6 +216,14 @@ module GameData
       end
       return false
     end
+    def get_property_for_PBS(key)
+      ret = nil
+      if self.class::SCHEMA.include?(key) && self.respond_to?(self.class::SCHEMA[key][0])
+        ret = self.send(self.class::SCHEMA[key][0])
+        ret = nil if ret == false || (ret.is_a?(Array) && ret.length == 0)
+      end
+      return ret
+    end
   end
 
   #=============================================================================
@@ -225,5 +242,21 @@ module GameData
     Trainer.load
     Metadata.load
     MapMetadata.load
+    DungeonTileset.load
+    DungeonParameters.load
+  end
+  def self.get_all_pbs_base_filenames
+    ret = {}
+    self.constants.each do |c|
+      next if !self.const_get(c).is_a?(Class)
+      ret[c] = self.const_get(c)::PBS_BASE_FILENAME if self.const_get(c).const_defined?(:PBS_BASE_FILENAME)
+      next if !ret[c].is_a?(Array)
+      ret[c].length.times do |i|
+        next if i == 0
+        ret[(c.to_s + i.to_s).to_sym] = ret[c][i]   # :Species1 => "pokemon_forms"
+      end
+      ret[c] = ret[c][0]   # :Species => "pokemon"
+    end
+    return ret
   end
 end

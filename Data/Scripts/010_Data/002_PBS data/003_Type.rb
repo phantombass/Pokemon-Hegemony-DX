@@ -11,6 +11,7 @@ module GameData
 
     DATA = {}
     DATA_FILENAME = "types.dat"
+    PBS_BASE_FILENAME = "types"
 
     SCHEMA = {
       "Name"          => [1, "s"],

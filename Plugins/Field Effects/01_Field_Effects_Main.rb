@@ -38,6 +38,8 @@ module Fields
   weakwater = []
   swamp = []
   electric = []
+  hurricane = []
+  special_steel = []
   moves = load_data("Data/moves.dat")
   for move in moves
     next if move[0].is_a?(Integer)
@@ -48,23 +50,39 @@ module Fields
     slicing.push(GameData::Move.get(mv).id) if mv.flags[/q/]
     punching.push(GameData::Move.get(mv).id) if mv.flags[/j/]
     kicking.push(GameData::Move.get(mv).id) if mv.flags[/t/]
+    hurricane.push(GameData::Move.get(mv).id) if (mv.flags[/r/] && mv.base_damage >= 70)
     water.push(GameData::Move.get(mv).id) if (mv.type == :WATER && mv.category != 2 && mv.base_damage >= 65)
     electric.push(GameData::Move.get(mv).id) if (mv.type == :ELECTRIC && mv.category != 2)
     weakwater.push(GameData::Move.get(mv).id) if (mv.type == :WATER && mv.category != 2 && mv.base_damage < 65)
     swamp.push(GameData::Move.get(mv).id) if (mv.type == :ROCK && mv.base_damage >= 80)
+    special_steel.push(GameData::Move.get(mv).id) if (mv.type == :STEEL && mv.category == 1)
   end
   SOUND_MOVES = sound
+  PULSE_MOVES = pulse
   WIND_MOVES = wind
+  PUNCHING_MOVES = punching
+  KICKING_MOVES = kicking
+  SLICING_MOVES = slicing
   ECHO_MOVES = slicing + kicking + sound + punching
   IGNITE_MOVES = [:FLAMEBURST,:INCINERATE,:LAVAPLUME,:FLAMETHROWER,:MAGMATREK,:FLAREBLITZ,:FLAMEWHEEL,:ERUPTION]
   QUAKE_MOVES = [:EARTHQUAKE,:BULLDOZE,:STOMPINGTANTRUM,:FISSURE,:STEAMROLLER,:STEELROLLER,:ICESPINNER]
   DOUSERS = [:RAINDANCE,:DRIZZLE,:PRIMORDIALSEA] + water
   OUTAGE_MOVES = electric
   RECHARGE_MOVES = [:RECHARGE,:CHARGE] + electric
+  SHORT_MOVES = [:DISCHARGE,:OVERCHARGE,:ZAPCANNON,:OVERDRIVE,:SUPERCELLSLAM]
   WEAK_WATER = weakwater
   REMOVAL = [:DEFOG,:TIDYUP,:GALEFORCE,:TAILWIND] + wind
   SWAMP_REMOVAL = swamp
   LAVA_REMOVAL = [:ICEBEAM,:BLIZZARD,:GLACIALLANCE,:SHEERCOLD,:ICESPINNER,:ICICLECRASH,:ICEHAMMER] + water
+  HURRICANE_MOVES = hurricane
+  MAGNET_REMOVAL = swamp + [:GRAVITY,:POLARITYPULSE]
+  RICOCHET_MOVES = [:DAZZLINGGLEAM,:MIRRORSHOT,:MIRRORRUSH,:LIGHTOFRUIN,:MAKEITRAIN,:FLASH,:FLASHCANNON,:AURORABEAM,:MOONBLAST,:STARBEAM,
+    :PHOTONGEYSER,:ICEBEAM,:LUSTERPURGE,:MISTBALL,:SNIPESHOT,:BUBBLEBEAM,:PSYBEAM,:AURASPHERE,:CHARGEBEAM,:THUNDERBOLT]
+  LIGHT_MOVES = [:DAZZLINGGLEAM,:FLASH,:PHOTONGEYSER,:LUSTERPURGE,:AURORABEAM,:DISCHARGE]
+  FAIRY_LIGHTS_MOVES = [:PHOTONGEYSER,:LUSTERPURGE,:AURORABEAM,:DISCHARGE,:MISTBALL]
+  FAIRY_LIGHTS_REMOVAL = [:ROCKSLIDE,:MUDSHOT,:MUDBOMB,:MUDSLAP,:MUDBOMB,:MUDSPORT,:OCTOZOOKA,:MUDDYWATER]
+  SPECIAL_STEEL = special_steel
+  WIND_TUNNEL_MOVES = wind + kicking
   #These are examples of arrays you can make for moves that will affect or be affected by a field effect
 end
 
@@ -183,6 +201,11 @@ GameData::FieldEffects.register({
 GameData::FieldEffects.register({
   :id   => :Magnetic,
   :name => _INTL("Magnetic")
+})
+
+GameData::FieldEffects.register({
+  :id   => :Digital,
+  :name => _INTL("Digital")
 })
 
 GameData::FieldEffects.register({
@@ -365,6 +388,12 @@ GameData::Environment.register({
 })
 
 GameData::Environment.register({
+  :id          => :Digital,
+  :name        => _INTL("Digital"),
+  :battle_base => "champion2"
+})
+
+GameData::Environment.register({
   :id          => :Mirror,
   :name        => _INTL("Mirror"),
   :battle_base => "cave1_ice"
@@ -449,7 +478,7 @@ class PokemonTemp
       rules["environment"] = (environment_data) ? environment_data.id : nil
     when "field"
       field_data = GameData::FieldEffects.try_get(var)
-      rules["defaultField"] = (field_data) ? field_data.id : nil
+      rules["defaultField"] = (field_data) ? field_data.id : :None
     when "backdrop", "battleback" then rules["backdrop"]            = var
     when "base"                   then rules["base"]                = var
     when "outcome", "outcomevar"  then rules["outcomeVar"]          = var
@@ -612,6 +641,16 @@ class PokeBattle_Battle
     return false if [:Sun,:HarshSun].include?(@field.pbWeather)
     return true
   end
+  def self.melt?
+    return false if @field.nil?
+    return false if [:Hail,:Sleet].include?(@field.pbWeather)
+    return true
+  end
+  def self.light?
+    return false if @field.nil?
+    return false if @field.pbWeather == :Eclipse
+    return true
+  end
   def pbStartBattleCore
     # Set up the battlers on each side
     if $game_switches[899] && $game_switches[900]
@@ -688,9 +727,23 @@ class PokeBattle_Battle
     case fe[:intro_script]
     when "swamp"
       @battlers.each do |battler|
-        battler.pbLowerStatStage(:SPEED,1,nil) if battler.affectedBySwamp? && battler.pbCanLowerStatStage?(:SPEED) && @field.field_effects == :Swamp
-        pbDisplay(_INTL("{1} was caught in the swamp!",battler.pbThis))
+        if battler.affectedBySwamp? && battler.pbCanLowerStatStage?(:SPEED) && @field.field_effects == :Swamp
+          battler.pbLowerStatStage(:SPEED,1,nil) 
+          pbDisplay(_INTL("{1} was caught in the swamp!",battler.pbThis))
+        end
       end
+    when "magnet"
+      @battlers.each do |battler|
+        if battler.affectedByMagnet? && !battler.airborne?
+          battler.effects[PBEffects::MagnetRise] = 1 
+          pbDisplay(_INTL("{1} was lifted off the ground with electromagnetism!",battler.pbThis))
+        end
+      end
+    when "distortion"
+      pbDisplay(_INTL("The Distortion field inverts the type matchups!"))
+      $inverse = true
+    when "wind"
+      pbDisplay(_INTL("The Wind Tunnel boosts the speed of airborne Pokémon!"))
     end
     # Abilities upon entering battle
     pbOnActiveAll
@@ -705,10 +758,12 @@ class PokeBattle_Battle
       pbCommonAnimation("Shadow",battler)
       pbDisplay(_INTL("Oh!\nA Shadow Pokémon!"))
     end
-    trainer_hash = $game_variables[RandTrainer::Temp]
-    for mon in trainer_hash[:pokemon]
-      if battler.opposes? && battler.species == mon[:species]
-        battler.item = mon[:item]
+    if !battler.pbOwnedByPlayer? && !wildBattle?
+      trainer_hash = $game_variables[RandTrainer::Temp]
+      for mon in trainer_hash[:pokemon]
+        if battler.species == mon[:species]
+          battler.item = mon[:item]
+        end
       end
     end
     # Record money-doubling effect of Amulet Coin/Luck Incense
@@ -836,6 +891,10 @@ class PokeBattle_Battle
       pbDisplay(_INTL("{1} was caught in the swamp!",battler.pbThis))
       battler.pbLowerStatStage(:SPEED,1,battler) if battler.pbCanLowerStatStage?(:SPEED)
       battler.pbItemStatRestoreCheck
+    end
+    if battler.affectedByMagnet? && !battler.fainted? && @field.field_effects == :Magnetic
+      pbDisplay(_INTL("{1} was lifted off the ground with electromagnetism!",battler.pbThis))
+      battler.effects[PBEffects::MagnetRise] = 1
     end
     return true
   end
@@ -1002,7 +1061,7 @@ class PokeBattle_Battle
     amt = -1
 	  fe = FIELD_EFFECTS[@field.field_effects]
     case @field.field_effects
-    when :Electric
+    when :Electric,:Magnetic
       if battler.affectedByTerrain? && battler.canHeal? && battler.hasActiveAbility?(:VOLTABSORB)
         PBDebug.log("[Lingering effect] Electric Terrain heals #{battler.pbThis(true)}")
         battler.pbRecoverHP(battler.totalhp / 16)
@@ -1015,8 +1074,20 @@ class PokeBattle_Battle
         pbDisplay(_INTL("{1}'s HP was restored.", battler.pbThis))
       end
     when :Garden
-      if battler.affectedByTerrain? && battler.canHeal? && battler.affectedByGarden?
+      if battler.canHeal? && battler.affectedByGarden?
         PBDebug.log("[Lingering effect] Garden Field heals #{battler.pbThis(true)}")
+        battler.pbRecoverHP(battler.totalhp / 16)
+        pbDisplay(_INTL("{1}'s HP was restored.", battler.pbThis))
+      end
+    when :Space, :Distortion
+      if battler.affectedByTerrain? && battler.canHeal? && battler.hasActiveAbility?(:STARSALVE)
+        PBDebug.log("[Lingering effect] Field heals #{battler.pbThis(true)}")
+        battler.pbRecoverHP(battler.totalhp / 16)
+        pbDisplay(_INTL("{1}'s HP was restored.", battler.pbThis))
+      end
+    when :Swamp, :Poison
+      if battler.affectedByTerrain? && battler.canHeal? && battler.hasActiveAbility?(:POISONHEAL)
+        PBDebug.log("[Lingering effect] Swamp Field heals #{battler.pbThis(true)}")
         battler.pbRecoverHP(battler.totalhp / 16)
         pbDisplay(_INTL("{1}'s HP was restored.", battler.pbThis))
       end
@@ -1037,6 +1108,38 @@ class PokeBattle_Battle
         PBDebug.log("[Lingering effect] Snowy Mountainside field heals #{battler.pbThis(true)}")
         battler.pbRecoverHP(battler.totalhp / 16)
         pbDisplay(_INTL("{1}'s HP was restored.", battler.pbThis))
+      end
+    when :DragonsDen
+      if battler.affectedByTerrain? && battler.canHeal? && battler.affectedByDragonsDen?
+        PBDebug.log("[Lingering effect] Dragon's Den field heals #{battler.pbThis(true)}")
+        battler.pbRecoverHP(battler.totalhp / 16)
+        pbDisplay(_INTL("{1}'s HP was restored.", battler.pbThis))
+      end
+      if battler.affectedByTerrain? && battler.canHeal? && battler.hasActiveAbility?(:LEGENDARMOR)
+        PBDebug.log("[Lingering effect] Dragon's Den field heals #{battler.pbThis(true)}")
+        battler.pbRecoverHP(battler.totalhp / 16)
+        pbDisplay(_INTL("{1}'s HP was restored.", battler.pbThis))
+      end
+    when :Water
+      if battler.affectedByTerrain? && battler.canHeal? && battler.hasActiveAbility?([:DRYSKIN,:WATERABSORB])
+        PBDebug.log("[Lingering effect] Water field heals #{battler.pbThis(true)}")
+        battler.pbRecoverHP(battler.totalhp / 16)
+        pbDisplay(_INTL("{1}'s HP was restored.", battler.pbThis))
+      end
+      if battler.affectedByHurricane? && battler.takesIndirectDamage? && $hurricane > 0
+        PBDebug.log("[Lingering effect] Hurricane hurts #{battler.pbThis(true)}")
+        battler.pbReduceHP(battler.totalhp / 16)
+        pbDisplay(_INTL("{1}'s was thrown about by the hurricane.", battler.pbThis))
+      end
+    when :Underwater
+      if battler.affectedByTerrain? && battler.canHeal? && battler.hasActiveAbility?([:DRYSKIN,:WATERABSORB])
+        PBDebug.log("[Lingering effect] Underwater field heals #{battler.pbThis(true)}")
+        battler.pbRecoverHP(battler.totalhp / 16)
+        pbDisplay(_INTL("{1}'s HP was restored.", battler.pbThis))
+      elsif battler.affectedByUnderwater? && battler.takesIndirectDamage?
+        PBDebug.log("[Lingering effect] Underwater Field hurts #{battler.pbThis(true)}")
+        battler.pbReduceHP(battler.totalhp / 8)
+        pbDisplay(_INTL("{1}'s was scorched.", battler.pbThis))
       end
     end
     #add damage done at the end of the field by field effects
@@ -1064,6 +1167,18 @@ class PokeBattle_Battler
   def affectedByCinders?
     return true if !pbHasType?([:FIRE,:DRAGON])
     return false if !takesIndirectDamage?
+  end
+  def affectedByDragonsDen?
+    return pbHasType?([:FIRE,:DRAGON])
+  end
+  def affectedByHurricane?
+    return !pbHasType?(:WATER)
+  end
+  def affectedByUnderwater?
+    return pbHasType?(:FIRE)
+  end
+  def affectedByMagnet?
+    return pbHasType?([:ELECTRIC,:STEEL])
   end
   def activeField
     return @battle.field.field_effects
@@ -1235,7 +1350,7 @@ class PokeBattle_Move
       #New Field Effect Modifier Method
   	if fe[:type_type_mod].keys != nil
   		for type_mod in fe[:type_type_mod].keys
-  			if isConst?(ret,PBTypes,type_mod)
+  			if ret == GameData::Type.const_get(type_mod.to_sym)
   				ret = GameData::Type.get(fe[:type_type_mod][type_mod]).id
   				for message in fe[:type_change_message].keys
   					if fe[:type_change_message][message].include?(type_mod)
@@ -1305,6 +1420,9 @@ class PokeBattle_Move
       multipliers[:base_damage_multiplier] /= 4
     end
     if user.effects[PBEffects::EchoChamber]==1
+      multipliers[:base_damage_multiplier] /= 4
+    end
+    if user.effects[PBEffects::Ricochet]==1
       multipliers[:base_damage_multiplier] /= 4
     end
     # Other
@@ -1651,6 +1769,9 @@ class PokeBattle_Move
               target.effects[PBEffects::Cinders] = 3
               @battle.pbDisplay(_INTL("{1} had cinders blown into their eyes!",target.pbThis)) if $test_trigger == false
             end
+          when "hurricane"
+            @battle.pbDisplay(_INTL("The attack whipped up a hurricane!")) if $test_trigger == false
+            @battle.field.effects[PBEffects::Hurricane] = 3
           end
         end
       end
@@ -1666,7 +1787,7 @@ class PokeBattle_Move
         ret = Effectiveness::NORMAL_EFFECTIVE_ONE
       end
       # Foresight
-      if (user.hasActiveAbility?(:SCRAPPY) || target.effects[PBEffects::Foresight]) &&
+      if (user.hasActiveAbility?([:SCRAPPY,:MINDSEYE]) || target.effects[PBEffects::Foresight]) &&
          defType == :GHOST
         ret = Effectiveness::NORMAL_EFFECTIVE_ONE
       end
@@ -1677,6 +1798,15 @@ class PokeBattle_Move
       # Miracle Eye
       if target.effects[PBEffects::MiracleEye] && defType == :DARK
         ret = Effectiveness::NORMAL_EFFECTIVE_ONE
+      end
+      if user.activeField == :DragonsDen
+        ret = Effectiveness::NORMAL_EFFECTIVE_ONE if defType == :FAIRY && Effectiveness.ineffective_type?(moveType,defType)
+      end
+      if user.activeField == :Water
+        ret = Effectiveness::NORMAL_EFFECTIVE_ONE if defType == :GROUND && Effectiveness.ineffective_type?(moveType,defType)
+      end
+      if user.activeField == :Underwater
+        ret = Effectiveness::NORMAL_EFFECTIVE_ONE if !Effectiveness.super_effective_type?(moveType,defType) && moveType == :ELECTRIC
       end
     elsif Effectiveness.super_effective_type?(moveType, defType)
       # Delta Stream's weather

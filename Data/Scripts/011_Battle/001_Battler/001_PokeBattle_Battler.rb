@@ -333,6 +333,7 @@ class PokeBattle_Battler
        @battle.pbPlayer.badge_count >= Settings::NUM_BADGES_BOOST_SPEED
       speedMult *= 1.1
     end
+    speedMult *= 2 if airborne? && @battle.field.field_effects == :WindTunnel
     # Calculation
     return [(speed*speedMult).round,1].max
   end

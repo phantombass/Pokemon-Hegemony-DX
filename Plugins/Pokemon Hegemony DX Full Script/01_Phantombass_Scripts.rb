@@ -50,7 +50,10 @@ end
 
 class TrainerBattle
   def self.start(trainerID, trainerName, endSpeech=nil,doubleBattle=false, trainerPartyID=0, canLose=false, outcomeVar=1)
-    return pbTrainerBattle(trainerID, trainerName, endSpeech=nil,doubleBattle=false, trainerPartyID=0, canLose=false, outcomeVar=1)
+    if Level_Scaling.gym_battle
+      trainerPartyID = $game_system.level_cap > 4 ? 4 : $game_system.level_cap
+    end
+    return pbTrainerBattle(trainerID, trainerName, endSpeech=nil,doubleBattle=false, trainerPartyID, canLose=false, outcomeVar=1)
   end
 end
 
@@ -131,10 +134,14 @@ def set_daily_variables
     $game_variables[DailyE4::Variable] = 1+rand(100)
     $game_variables[DailyE4::TimeNow] = $game_variables[DailyE4::LastTime]
     $dungeon.randomize_all_dungeons if $game_switches[68]
-    $dungeon.clear_mission_data
-    pbMessage(_INTL("All incomplete missions have been forfeited.\nPlease check the Bulletin Board for new missions!"))
-    $dungeon.generate_missions
+    mission_reset if $game_switches[68]
   end
+end
+
+def mission_reset
+  pbMessage(_INTL("All incomplete missions have been forfeited.\nPlease check the Bulletin Board for new missions!")) if $dungeon.mission_data != ({} || 0 || nil)
+  $dungeon.clear_mission_data
+  $dungeon.generate_missions
 end
 
 Events.onMapChange += proc {| sender, e |
@@ -156,13 +163,11 @@ Events.onStepTaken += proc {
   end
   if $game_switches[68]
     if $dungeon.steps > 0
-      $dungeon.steps -= 1 if (!$dungeon.valid_locations.include?($game_map.map_id) && $game_map.map_id < 375 )
+      $dungeon.steps -= 1 if (!$dungeon.valid_locations.include?($game_map.map_id) && !in_random_dungeon? )
       $game_variables[DungeonMissions::Steps] = $dungeon.steps
     else
       $dungeon.randomize_all_dungeons if $game_switches[68]
-      $dungeon.clear_mission_data
-      pbMessage(_INTL("All incomplete missions have been forfeited.\nPlease check the Bulletin Board for new missions!")) if $dungeon.mission_data != ({} || 0 || nil)
-      $dungeon.generate_missions
+      mission_reset if $game_switches[68]
     end
   end
 }
@@ -170,6 +175,10 @@ Events.onStepTaken += proc {
 Events.onAction += proc {| sender, e |
   $mission.pbEndScene if $mission != nil
 }
+
+def in_random_dungeon?
+  return $game_map.map_id >= 375
+end
 
 class PokemonLoadScreen
   def pbStartLoadScreen
@@ -283,6 +292,9 @@ def burnAllPokemon(event=nil)
 end
 
 class Pokemon
+  def grounded?
+    return !hasType?(:FLYING) && !hasAbility?(:LEVITATE) && self.item != :AIRBALLOON
+  end
   def getDXForm
     ret = 0
     GameData::Species.each do |data|
@@ -644,9 +656,7 @@ class Pokemon
 
   def paralyzeAllPokemon
       for pkmn in $Trainer.able_party
-         next if pkmn.hasType?(:ELECTRIC) ||
-            pkmn.hasAbility?(:COMATOSE)  || pkmn.hasAbility?(:SHIELDSDOWN) || pkmn.hasAbility?(:LIMBER)
-            pkmn.status!=0
+         next if !pkmn.can_paralyze
          pkmn.status = :PARALYSIS
        end
   end
@@ -667,6 +677,12 @@ class Pokemon
     end
     for k in 994..1012
       blacklist.push(k)
+    end
+    for l in 1115..1214
+      blacklist.push(l)
+    end
+    for m in 1217..1237
+      blacklist.push(m)
     end
     pkmn = GameData::Species.get(self.species).id_number
     return blacklist.include?(pkmn)
@@ -724,12 +740,19 @@ Events.onEndBattle += proc { |_sender,e|
   end
 }
 
+def clear_all_self_switches
+  $game_map.events.each_with_index do |event, i|
+    $game_self_switches[[$game_map.map_id,i,"A"]] = false
+  end
+end
+
 def pbStartOver(gameover=false)
   if pbInBugContest?
     pbBugContestStartOver
     return
   end
   $Trainer.heal_party
+  $dungeon.lose_reputation_manual(10)
   if $PokemonGlobal.pokecenterMapId && $PokemonGlobal.pokecenterMapId>=0
     if $game_switches[902] || $game_switches[LvlCap::Ironmon]
       gameover = true

@@ -193,21 +193,34 @@ class Pokemon
     setup = [:SWORDSDANCE,:WORKUP,:NASTYPLOT,:GROWTH,:HOWL,:BULKUP,:CALMMIND,:TAILGLOW,:AGILITY,:ROCKPOLISH,:AUTOTOMIZE,
       :SHELLSMASH,:SHIFTGEAR,:QUIVERDANCE,:VICTORYDANCE,:CLANGOROUSSOUL,:CHARGE,:COIL,:HONECLAWS,:IRONDEFENSE,:COSMICPOWER,:AMNESIA,
       :POWERUPPUNCH,:FLAMECHARGE,:TRAILBLAZE]
+    physical_moves = 0
+    special_moves = 0
+    status_moves = 0
+    @moves.each do |move|
+      physical_moves += 1 if move.category == 0
+      special_moves += 1 if move.category == 1
+      status_moves += 1 if move.category == 2
+    end
+    roles.push(:PHYSICALBREAKER) if physical_moves > 2
+    roles.push(:SPECIALBREAKER) if special_moves > 2
     for move in @moves
       m = GameData::Move.get(move.id).id
       roles.push(:SETUPSWEEPER) if setup.include?(m)
       roles.push(:CLERIC) if [:WISH,:HEALBELL,:AROMATHERAPY].include?(m)
       roles.push(:OFFENSIVEPIVOT) if [:UTURN,:VOLTSWITCH,:FLIPTURN].include?(m)
-      roles.push(:DEFENSIVEPIVOT) if [:PARTINGSHOT,:CHILLYRECEPTION,:TELEPORT].include?(m)
-      roles.push(:SPEEDCONTROL) if [:ICYWIND,:THUNDERWAVE,:GLARE,:BULLDOZE,:DOLDRUMS,:ROCKTOMB,:POUNCE,:NUZZLE,:ELECTROWEB,:LOWSWEEP].include?(m)
+      roles.push(:DEFENSIVEPIVOT) if [:PARTINGSHOT,:CHILLYRECEPTION,:TELEPORT,:SHEDTAIL].include?(m)
+      roles.push(:SPEEDCONTROL) if [:ICYWIND,:THUNDERWAVE,:GLARE,:BULLDOZE,:DOLDRUMS,:ROCKTOMB,:POUNCE,:NUZZLE,:ELECTROWEB,:LOWSWEEP,:TAILWIND].include?(m)
       roles.push(:STALLBREAKER) if m == :TAUNT
       roles.push(:REDIRECTION) if [:FOLLOWME,:ALLYSWITCH,:RAGEPOWDER].include?(m)
-      roles.push(:SUPPORT) if m == :HELPINGHAND
+      roles.push(:SUPPORT) if [:HELPINGHAND,:WIDEGUARD,:MATBLOCK].include?(m)
       roles.push(:HAZARDREMOVAL) if [:RAPIDSPIN,:MORTALSPIN,:TIDYUP,:DEFOG].include?(m)
       roles.push(:SCREENS) if [:LIGHTSCREEN,:REFLECT,:AURORAVEIL].include?(m)
       roles.push(:TOXICSTALLER) if m == :TOXIC
       roles.push(:LEAD) if [:STEALTHROCK,:SPIKES,:TOXICSPIKES,:STICKYWEB,:COMETSHARDS].include?(m)
       roles.push(:TRICKROOMSETTER) if m == :TRICKROOM
+      roles.push(:TANK) if [:RECOVER,:ROOST,:MOONLIGHT,:MORNINGSUN,:SHOREUP,:PACKIN,:SOFTBOILED,:SYNTHESIS,:HEALORDER].include?(m) && !roles.include?(:SETUPSWEEPER)
+      roles.push(:PHAZER) if [:ROAR,:DRAGONTAIL,:WHIRLWIND,:HAZE,:FREEZYFROST].include?(m)
+      roles.push(:STATUSABSORBER) if m == :FACADE
     end
     roles.push(:NONE) if roles == []
     return roles
