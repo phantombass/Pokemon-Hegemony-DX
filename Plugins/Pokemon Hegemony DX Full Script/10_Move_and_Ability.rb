@@ -157,7 +157,13 @@ class PokeBattle_Move
       user.effects[PBEffects::Ambidextrous] = 3
       return 2
     end
-    if user.hasActiveAbility?(:ECHOCHAMBER) && pbDamagingMove? && soundMove? &&
+    if user.hasActiveAbility?(:ECHOCHAMBER) && @battle.field.field_effects != :EchoChamber && pbDamagingMove? && soundMove? &&
+       !chargingTurnMove? && targets.length==1
+      # Record that Parental Bond applies, to weaken the second attack
+      user.effects[PBEffects::EchoChamber] = 3
+      return 2
+    end
+    if @battle.field.field_effects == :EchoChamber && !user.hasActiveAbility?(:ECHOCHAMBER) && pbDamagingMove? && Fields::ECHO_MOVES.include?(@id) &&
        !chargingTurnMove? && targets.length==1
       # Record that Parental Bond applies, to weaken the second attack
       user.effects[PBEffects::EchoChamber] = 3
@@ -1010,6 +1016,13 @@ BattleHandlers::DamageCalcUserAbility.add(:SHARPNESS,
 )
 
 BattleHandlers::DamageCalcUserAbility.copy(:SHARPNESS,:SWORDOFMASTERY)
+
+BattleHandlers::DamageCalcUserAbility.add(:ECHOCHAMBER,
+  proc { |ability,user,target,move,mults,baseDmg,type|
+    next if user.activeField != :EchoChamber
+    mults[:base_damage_multiplier] = (mults[:base_damage_multiplier]*1.2).round if move.soundMove? && move.damagingMove?
+  }
+)
 class Game_Temp
   attr_accessor :fainted_member
 end
@@ -6264,7 +6277,7 @@ class PokeBattle_Battle
        _INTL("Magic Room wore off, and held items' effects returned to normal!"))
     # Hurricane
     pbEORCountDownFieldEffect(PBEffects::Hurricane,
-       _INTL("Gravity returned to normal!"))
+       _INTL("The hurricane died down!"))
     # End of terrains
     pbEORTerrain
     priority.each do |b|
@@ -6497,6 +6510,7 @@ module PBEffects
   BurningBulwark      = 436
   Ricochet            = 437
   Hurricane           = 438
+  Spirits             = 439
 end
 
 class PokeBattle_Move_570 < PokeBattle_TargetStatDownMove

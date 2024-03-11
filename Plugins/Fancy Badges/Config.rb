@@ -12,21 +12,21 @@
 #===============================================================================
 module FancyBadges
   NAMES = [
-    "Corner Badge",
-    "Hazard Badge",
-    "Stellar Badge",
-    "Mental Badge",
-    "Patience Badge",
-    "Renege Badge",
-    "Infirm Badge",
-    "Deep Space Badge",
-    "Grit Badge",
-    "Solar Badge",
-    "Aloof Badge",
-    "Crystal Badge",
-    "Crest Badge",
-    "Energy Badge",
-    "Ancient Badge",
-    "Glimmer Badge"
+    "Garden Badge",
+    "Desert Badge",
+    "Icy Badge",
+    "Swamp Badge",
+    "Dream Badge",
+    "Cave Badge",
+    "Space Badge",
+    "Magnetic Badge",
+    "Lava Badge",
+    "Mirror Badge",
+    "Dark Room Badge",
+    "Dojo Badge",
+    "Underwater Badge",
+    "Dragon's Den Badge",
+    "Wind Tunnel Badge",
+    "Fairy Lights Badge"
   ]
 end

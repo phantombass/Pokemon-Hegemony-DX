@@ -190,6 +190,7 @@ Events.onChangeDirection += proc {
 
 def pbBattleOnStepTaken(repel_active)
   return if $Trainer.able_pokemon_count == 0
+  return if $PokemonGlobal.repel > 0
   return if !$PokemonEncounters.encounter_possible_here?
   encounter_type = $PokemonEncounters.encounter_type
   return if !encounter_type
@@ -282,6 +283,8 @@ Events.onMapSceneChange += proc { |_sender, e|
   # Show location signpost
   if mapChanged && map_metadata && map_metadata.announce_location
     nosignpost = false
+    map_name = $game_map.name
+    map_name = map_name + " B#{pbGet(29)}F" if map_metadata&.random_dungeon
     if $PokemonGlobal.mapTrail[1]
       for i in 0...Settings::NO_SIGNPOSTS.length / 2
         nosignpost = true if Settings::NO_SIGNPOSTS[2 * i] == $PokemonGlobal.mapTrail[1] &&
@@ -292,9 +295,9 @@ Events.onMapSceneChange += proc { |_sender, e|
       end
       mapinfos = pbLoadMapInfos
       oldmapname = mapinfos[$PokemonGlobal.mapTrail[1]].name
-      nosignpost = true if $game_map.name == oldmapname
+      nosignpost = true if map_name == oldmapname
     end
-    scene.spriteset.addUserSprite(LocationWindow.new($game_map.name)) if !nosignpost
+    scene.spriteset.addUserSprite(LocationWindow.new(map_name)) if !nosignpost
   end
   # Force cycling/walking
   if map_metadata && map_metadata.always_bicycle

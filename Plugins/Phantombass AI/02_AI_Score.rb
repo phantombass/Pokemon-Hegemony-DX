@@ -480,6 +480,16 @@ PBAI::ScoreHandler.add do |score, ai, user, target, move|
   next score
 end
 
+# Prioritize weather inducing moves based on role
+PBAI::ScoreHandler.add do |score, ai, user, target, move|
+  if move.is_a?(PokeBattle_WeatherMove) && user.has_role?(:WEATHERTERRAIN) && ai.battle.pbWeather != move.weatherType &&
+    ![:HarshSun,:HeavyRain,:StrongWinds].include?(ai.battle.pbWeather)
+    score += 1000
+    PBAI.log("+ 1000 to set weather for the battle.")
+  end
+  next score
+end
+
 #Weather Weakened
 PBAI::ScoreHandler.add do |score, ai, user, target, move|
   case ai.battle.pbWeather

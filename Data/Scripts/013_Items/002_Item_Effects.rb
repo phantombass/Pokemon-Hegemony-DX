@@ -75,7 +75,7 @@ ItemHandlers::ConfirmUseInField.add(:ESCAPEROPE,proc { |item|
     next false
   end
   mapname = pbGetMapNameFromId(escape[0])
-  next pbConfirmMessage(_INTL("Want to escape from here and return to {1}?",mapname))
+  next pbConfirmMessage(_INTL("Want to escape from here and return to {1}?\nIf you are in a dungeon, you will forfeit it and all its missions.",mapname))
 })
 
 ItemHandlers::ConfirmUseInField.copy(:ESCAPEROPE,:INFINITEROPE)

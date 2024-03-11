@@ -413,13 +413,13 @@ MapPosition = 0,19,2
 SnapEdges = true
 #-------------------------------
 [078]
-# Hidden Grotto - Garon
+# Dungeon Entrance
 Outdoor = true
 MapPosition = 0,20,1
 SnapEdges = true
 #-------------------------------
 [079]
-# Hidden Grotto - Route 1
+# Dungeon Entrance
 Outdoor = true
 ShowArea = false
 MapPosition = 0,19,2
@@ -439,7 +439,7 @@ MapPosition = 0,18,2
 SnapEdges = true
 #-------------------------------
 [082]
-# Hidden Grotto - Woods 2
+# Abandoned Grotto
 Outdoor = true
 MapPosition = 0,18,2
 SnapEdges = true
@@ -458,7 +458,7 @@ MapPosition = 0,16,2
 SnapEdges = true
 #-------------------------------
 [085]
-# Hidden Grotto - Boro
+# Dungeon Entrance
 Outdoor = true
 SnapEdges = true
 #-------------------------------
@@ -527,7 +527,7 @@ MapPosition = 0,3,1
 SnapEdges = true
 #-------------------------------
 [100]
-# Hidden Grotto - Route 3
+# Dungeon Entrance
 MapPosition = 0,3,1
 SnapEdges = true
 #-------------------------------
@@ -540,7 +540,7 @@ MapPosition = 0,1,1
 SnapEdges = true
 #-------------------------------
 [102]
-# Hidden Cave
+# Dungeon Entrance
 MapPosition = 0,1,1
 SnapEdges = true
 #-------------------------------
@@ -572,7 +572,7 @@ SnapEdges = true
 Environment = Cave
 #-------------------------------
 [108]
-# Mt. Nenox
+# Dungeon Entrance
 MapPosition = 0,5,1
 SnapEdges = true
 #-------------------------------
@@ -626,7 +626,7 @@ HealingSpot = 114,21,10
 MapPosition = 0,12,4
 #-------------------------------
 [117]
-# Hidden Grotto - Route 4
+# Dungeon Entrance
 MapPosition = 0,12,2
 SnapEdges = true
 #-------------------------------
@@ -663,7 +663,7 @@ DarkMap = true
 SnapEdges = true
 #-------------------------------
 [125]
-# Hidden Grotto - Helum
+# Dungeon Entrance
 MapPosition = 0,10,1
 SnapEdges = true
 #-------------------------------
@@ -767,17 +767,17 @@ MapPosition = 0,16,8
 SnapEdges = true
 #-------------------------------
 [140]
-# Hidden Grotto - Route 5
+# Dungeon Entrance
 MapPosition = 0,15,4
 SnapEdges = true
 #-------------------------------
 [141]
-# Hidden Grotto - Route 6
+# Dungeon Entrance
 MapPosition = 0,15,4
 SnapEdges = true
 #-------------------------------
 [142]
-# Hidden Grotto - Route 2
+# Dungeon Entrance
 MapPosition = 0,15,1
 SnapEdges = true
 #-------------------------------
@@ -805,7 +805,7 @@ MapPosition = 0,18,8
 SnapEdges = true
 #-------------------------------
 [148]
-# Hidden Grotto - Route 8
+# Dungeon Entrance
 MapPosition = 0,18,3
 SnapEdges = true
 #-------------------------------
@@ -919,7 +919,7 @@ MapPosition = 0,11,10
 SnapEdges = true
 #-------------------------------
 [171]
-# Hidden Grotto - Route 11
+# Dungeon Entrance
 MapPosition = 0,11,8
 SnapEdges = true
 #-------------------------------
@@ -931,7 +931,7 @@ MapPosition = 0,20,0
 SnapEdges = true
 #-------------------------------
 [173]
-# Canyon Cave
+# Dungeon Entrance
 ShowArea = true
 MapPosition = 0,9,1
 SnapEdges = true
@@ -968,7 +968,7 @@ MapPosition = 0,24,3
 SnapEdges = true
 #-------------------------------
 [183]
-# Hidden Grotto - Route 16
+# Dungeon Entrance
 Outdoor = false
 MapPosition = 0,22,1
 SnapEdges = true
@@ -1024,12 +1024,12 @@ MapPosition = 0,4,14
 SnapEdges = true
 #-------------------------------
 [202]
-# Hidden Grotto - Route 12
+# Dungeon Entrance
 MapPosition = 0,9,17
 SnapEdges = true
 #-------------------------------
 [203]
-# Hidden Grotto - Route 13
+# Dungeon Entrance
 MapPosition = 0,6,16
 SnapEdges = true
 #-------------------------------
@@ -1049,7 +1049,7 @@ MapPosition = 0,4,14
 SnapEdges = true
 #-------------------------------
 [207]
-# Hidden Grotto - Lake Chloros
+# Dungeon Entrance
 MapPosition = 0,11,13
 SnapEdges = true
 #-------------------------------
@@ -1073,7 +1073,7 @@ MapPosition = 0,4,12
 SnapEdges = true
 #-------------------------------
 [213]
-# Hidden Grotto - Route 14
+# Dungeon Entrance
 MapPosition = 0,4,12
 SnapEdges = true
 #-------------------------------
@@ -1115,7 +1115,7 @@ MapPosition = 0,11,13
 DiveMap = 230
 #-------------------------------
 [223]
-# Hidden Grotto - Route 15
+# Dungeon Entrance
 MapPosition = 0,25,11
 SnapEdges = true
 #-------------------------------
@@ -1127,7 +1127,7 @@ MapPosition = 0,25,11
 SnapEdges = true
 #-------------------------------
 [226]
-# Hidden Grotto - Route 20
+# Dungeon Entrance
 ShowArea = true
 MapPosition = 0,25,10
 SnapEdges = true
@@ -1194,7 +1194,7 @@ HealingSpot = 242,7,6
 MapPosition = 0,2,8
 #-------------------------------
 [245]
-# Hidden Grotto - Route 19
+# Dungeon Entrance
 ShowArea = true
 MapPosition = 0,27,4
 SnapEdges = true
@@ -1310,13 +1310,13 @@ MapPosition = 1,22,2
 MapPosition = 1,23,3
 #-------------------------------
 [275]
-# Hidden Grotto - Route 21
+# Dungeon Entrance
 Outdoor = true
 MapPosition = 1,23,3
 SnapEdges = true
 #-------------------------------
 [276]
-# Hidden Grotto - Route 22
+# Dungeon Entrance
 MapPosition = 1,26,6
 SnapEdges = true
 #-------------------------------
@@ -1333,7 +1333,7 @@ HealingSpot = 277,26,8
 MapPosition = 1,22,9
 #-------------------------------
 [279]
-# Hidden Grotto - Route 23
+# Dungeon Entrance
 MapPosition = 1,22,6
 SnapEdges = true
 #-------------------------------
@@ -1376,7 +1376,7 @@ MapPosition = 1,24,9
 SnapEdges = true
 #-------------------------------
 [287]
-# Hidden Grotto - Route 24
+# Dungeon Entrance
 MapPosition = 1,24,9
 SnapEdges = true
 #-------------------------------
@@ -1395,7 +1395,7 @@ MapPosition = 1,25,14
 SnapEdges = true
 #-------------------------------
 [290]
-# Hidden Grotto - Argyros
+# Dungeon Entrance
 MapPosition = 1,25,14
 SnapEdges = true
 #-------------------------------
@@ -1422,7 +1422,7 @@ MapPosition = 1,25,14
 MapPosition = 1,26,14
 #-------------------------------
 [296]
-# Offshoot Cave
+# Dungeon Entrance
 ShowArea = true
 MapPosition = 1,26,11
 SnapEdges = true
@@ -1535,7 +1535,7 @@ MapPosition = 1,16,18
 SnapEdges = true
 #-------------------------------
 [320]
-# Hidden Grotto - Route 26
+# Dungeon Entrance
 Outdoor = false
 ShowArea = false
 MapPosition = 1,20,16
@@ -1585,13 +1585,13 @@ MapPosition = 1,17,14
 SnapEdges = true
 #-------------------------------
 [329]
-# Hidden Grotto - Route 29
+# Dungeon Entrance
 MapPosition = 1,13,8
 SafariMap = false
 SnapEdges = true
 #-------------------------------
 [330]
-# Hidden Grotto - Route 30
+# Dungeon Entrance
 MapPosition = 1,11,6
 SnapEdges = true
 #-------------------------------
@@ -1639,7 +1639,7 @@ MapPosition = 1,8,8
 SnapEdges = true
 #-------------------------------
 [338]
-# Hidden Grotto - Route 33
+# Dungeon Entrance
 MapPosition = 1,8,8
 SnapEdges = true
 #-------------------------------
@@ -1790,12 +1790,12 @@ MapPosition = 1,11,1
 MapPosition = 1,8,5
 #-------------------------------
 [364]
-# Hidden Grotto - Route 34
+# Dungeon Entrance
 MapPosition = 1,5,12
 SnapEdges = true
 #-------------------------------
 [365]
-# Hidden Grotto - Route 35
+# Dungeon Entrance
 MapPosition = 1,4,15
 SnapEdges = true
 #-------------------------------
@@ -1806,165 +1806,168 @@ MapPosition = 1,9,13
 SnapEdges = true
 #-------------------------------
 [369]
-# Hidden Grotto - Mt. Titanus
+# Abandoned Grotto
 MapPosition = 1,10,16
 SnapEdges = true
 #-------------------------------
 [370]
-# Hidden Grotto - Route 36
+# Dungeon Entrance
 MapPosition = 1,6,17
 SnapEdges = true
 #-------------------------------
 [375]
-# Duskbound Dungeon B1F
+# Duskbound Dungeon
 ShowArea = true
 MapPosition = 1,14,11
 Dungeon = true
 #-------------------------------
 [376]
-# Duskbound Dungeon B2F
+# Duskbound Dungeon
 ShowArea = true
 MapPosition = 1,14,12
 Dungeon = true
 #-------------------------------
 [377]
-# Duskbound Dungeon B3F
+# Ogan Dungeon
 ShowArea = true
 MapPosition = 1,14,12
 SnapEdges = false
 Dungeon = true
 #-------------------------------
 [379]
-# Woods Dungeon B1F
+# Woods Dungeon
 ShowArea = true
 MapPosition = 0,18,1
 Dungeon = true
 #-------------------------------
 [380]
-# Woods Dungeon B2F
+# Woods Dungeon
 ShowArea = true
 MapPosition = 0,18,1
 Dungeon = true
 #-------------------------------
 [381]
-# Woods Dungeon B3F
+# Ogan Gym Dungeon
 ShowArea = true
 MapPosition = 0,18,1
 Dungeon = true
 #-------------------------------
+[382]
+# Garon Woods Cave
+ShowArea = true
+#-------------------------------
 [383]
-# Wolfram Dungeon B1F
+# Wolfram Dungeon
 ShowArea = true
 Bicycle = false
 MapPosition = 1,15,8
 Dungeon = true
 #-------------------------------
 [384]
-# Wolfram Dungeon B2F
+# Wolfram Dungeon
 ShowArea = true
 MapPosition = 1,15,8
 Dungeon = true
 #-------------------------------
 [385]
-# Wolfram Dungeon B3F
+# Ogan Dungeon
 ShowArea = true
 MapPosition = 1,15,8
 SnapEdges = false
 Dungeon = true
 #-------------------------------
 [386]
-# Wolfram Dungeon B4F
+# Ogan Cave
 ShowArea = true
 MapPosition = 1,15,8
 SnapEdges = false
-Dungeon = true
 #-------------------------------
 [387]
-# Wolfram Dungeon B5F
+# Ogan Gym Dungeon
 Outdoor = false
 ShowArea = true
 MapPosition = 1,15,8
 Dungeon = true
 #-------------------------------
 [389]
-# 27 Dungeon B1F
+# 27 Dungeon
 ShowArea = true
 Dungeon = true
 #-------------------------------
 [390]
-# 27 Dungeon B2F
+# 27 Dungeon
 Outdoor = false
 ShowArea = true
 SnapEdges = false
 Dungeon = true
 #-------------------------------
 [391]
-# 27 Dungeon B3F
+# Neonn Gym Dungeon
 ShowArea = true
 Dungeon = true
 #-------------------------------
 [392]
-# 27 Dungeon B4F
+# Neonn Gym Dungeon
 ShowArea = true
 Dungeon = true
 #-------------------------------
 [393]
-# 27 Dungeon B5F
+# Sodum Gym
 ShowArea = true
 Dungeon = true
 #-------------------------------
 [395]
-# Duskbound Dungeon B4F
+# Sodum Gym Dungeon
 ShowArea = true
 MapPosition = 1,14,12
 SnapEdges = false
 Dungeon = true
 #-------------------------------
 [396]
-# Duskbound Dungeon B5F
+# Sodum Gym Dungeon
 ShowArea = true
 MapPosition = 1,14,12
 SnapEdges = false
 Dungeon = true
 #-------------------------------
 [397]
-# Woods Dungeon B4F
+# Krypto Gym Dungeon
 ShowArea = true
 MapPosition = 0,18,1
 Dungeon = true
 #-------------------------------
 [398]
-# Woods Dungeon B5F
+# Krypto Gym Dungeon
 ShowArea = true
 MapPosition = 0,18,1
 Dungeon = true
 #-------------------------------
 [399]
-# Boro Dungeon B1F
+# Boro Dungeon
 ShowArea = true
 MapPosition = 0,18,1
 Dungeon = true
 #-------------------------------
 [400]
-# Boro Dungeon B2F
+# Boro Dungeon
 ShowArea = true
 MapPosition = 0,18,1
 Dungeon = true
 #-------------------------------
 [401]
-# Boro Dungeon B3F
+# Chloros Gym Dungeon
 ShowArea = true
 MapPosition = 0,18,1
 Dungeon = true
 #-------------------------------
 [402]
-# Boro Dungeon B4F
+# Chloros Gym Dungeon
 ShowArea = true
 MapPosition = 0,18,1
 Dungeon = true
 #-------------------------------
 [403]
-# Boro Dungeon B5F
+# Nitro Gym Dungeon
 ShowArea = true
 MapPosition = 0,18,1
 Dungeon = true
@@ -1975,122 +1978,230 @@ ShowArea = true
 MapPosition = 0,18,1
 #-------------------------------
 [415]
-# Stibni Dungeon B1F
+# Stibni Dojo Dungeon
 ShowArea = true
 MapPosition = 1,16,18
 Dungeon = true
 #-------------------------------
 [416]
-# Stibni Dungeon B2F
+# Stibni Dojo Dungeon
 ShowArea = true
 MapPosition = 1,16,18
 Dungeon = true
 #-------------------------------
 [417]
-# Stibni Dungeon B3F
+# Wolfram Dojo Dungeon
 ShowArea = true
 MapPosition = 1,16,18
 Dungeon = true
 #-------------------------------
 [418]
-# Stibni Dungeon B4F
+# Oro Dojo Dungeon
 ShowArea = true
 MapPosition = 1,16,18
 Dungeon = true
 #-------------------------------
 [419]
-# Stibni Dungeon B5F
+# Oro Dojo Dungeon
 ShowArea = true
 MapPosition = 1,16,18
 Dungeon = true
 #-------------------------------
 [420]
-# Stibni Dungeon B6F
+# Kallim Dojo Dungeon
 ShowArea = true
 MapPosition = 1,16,18
 Dungeon = true
 #-------------------------------
 [421]
-# Stibni Dungeon B7F
+# Kallim Dojo Dungeon
 ShowArea = true
 MapPosition = 1,16,18
 Dungeon = true
 #-------------------------------
 [422]
-# Stibni Dungeon B8F
+# Alumi Dojo Dungeon
 ShowArea = true
 MapPosition = 1,16,18
 Dungeon = true
 #-------------------------------
 [423]
-# Stibni Dungeon B9F
+# Alumi Dojo Dungeon
 ShowArea = true
 MapPosition = 1,16,18
 Dungeon = true
 #-------------------------------
 [424]
-# Stibni Dungeon B10F
+# Nenox Dungeon
 ShowArea = true
 MapPosition = 1,16,18
 Dungeon = true
 #-------------------------------
 [425]
-# Helum Dungeon B1F
+# Helum Gym Dungeon
 ShowArea = true
 MapPosition = 0,10,1
 Dungeon = true
 #-------------------------------
 [426]
-# Helum Dungeon B2F
+# Helum Gym Dungeon
 ShowArea = true
 MapPosition = 0,10,1
 Dungeon = true
 #-------------------------------
 [427]
-# Helum Dungeon B3F
+# Nenox Dungeon
 ShowArea = true
 MapPosition = 0,10,1
 Dungeon = true
 #-------------------------------
 [428]
-# Helum Dungeon B4F
+# Nenox Cave
 ShowArea = true
 MapPosition = 0,10,1
 Dungeon = true
 #-------------------------------
 [429]
-# Helum Dungeon B5F
+# 4 Dungeon
 ShowArea = true
 MapPosition = 0,10,1
 Dungeon = true
 #-------------------------------
 [430]
-# Helum Dungeon B6F
+# 4 Dungeon
 ShowArea = true
 MapPosition = 0,10,1
 Dungeon = true
 #-------------------------------
 [431]
-# Helum Dungeon B7F
+# Route 4 Cave
 ShowArea = true
 MapPosition = 0,10,1
 Dungeon = true
 #-------------------------------
 [432]
-# Helum Dungeon B8F
+# 5 Dungeon
 ShowArea = true
 MapPosition = 0,10,1
 Dungeon = true
 #-------------------------------
 [433]
-# Helum Dungeon B9F
+# 5 Dungeon
 ShowArea = true
 MapPosition = 0,10,1
 Dungeon = true
 #-------------------------------
 [434]
-# Helum Dungeon B10F
+# Route 5 Cave
 ShowArea = true
 MapPosition = 0,10,1
 Dungeon = true
 #-------------------------------
+[435]
+# 2 Dungeon
+ShowArea = true
+Dungeon = true
+#-------------------------------
+[436]
+# 2 Dungeon
+ShowArea = true
+Dungeon = true
+#-------------------------------
+[437]
+# Route 2 Cave
+ShowArea = true
+#-------------------------------
+[438]
+# 1 Dungeon
+ShowArea = true
+SnapEdges = false
+Dungeon = true
+#-------------------------------
+[439]
+# 1 Dungeon
+Outdoor = false
+ShowArea = true
+Dungeon = true
+#-------------------------------
+[440]
+# Route 1 Cave
+ShowArea = true
+#-------------------------------
+[441]
+# Helum Dungeon
+ShowArea = true
+Dungeon = true
+#-------------------------------
+[442]
+# Helum Dungeon
+ShowArea = true
+Dungeon = true
+#-------------------------------
+[443]
+# Helum Cave
+ShowArea = true
+#-------------------------------
+[444]
+# Garon Dungeon
+ShowArea = true
+Dungeon = true
+#-------------------------------
+[445]
+# Garon Dungeon
+ShowArea = true
+Dungeon = true
+#-------------------------------
+[446]
+# Garon Cave
+ShowArea = true
+#-------------------------------
+[447]
+# Canyon Dungeon
+ShowArea = true
+Bicycle = false
+SnapEdges = false
+Dungeon = true
+#-------------------------------
+[448]
+# Canyon Dungeon
+ShowArea = true
+Dungeon = true
+#-------------------------------
+[449]
+# Canyon Cave
+ShowArea = true
+#-------------------------------
+[450]
+# Dungeon Entrance
+SafariMap = false
+SnapEdges = true
+#-------------------------------
+[451]
+# Caverns Dungeon
+ShowArea = true
+Dungeon = true
+#-------------------------------
+[452]
+# Caverns Dungeon
+ShowArea = true
+Dungeon = true
+#-------------------------------
+[453]
+# Caverns Cave
+ShowArea = true
+#-------------------------------
+[454]
+# 3 Dungeon
+ShowArea = true
+SnapEdges = false
+Dungeon = true
+#-------------------------------
+[455]
+# 3 Dungeon
+Outdoor = false
+ShowArea = true
+Dungeon = true
+#-------------------------------
+[456]
+# Route 3 Cave
+ShowArea = true

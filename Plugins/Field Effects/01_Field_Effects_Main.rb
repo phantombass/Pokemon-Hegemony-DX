@@ -75,6 +75,7 @@ module Fields
   SWAMP_REMOVAL = swamp
   LAVA_REMOVAL = [:ICEBEAM,:BLIZZARD,:GLACIALLANCE,:SHEERCOLD,:ICESPINNER,:ICICLECRASH,:ICEHAMMER] + water
   HURRICANE_MOVES = hurricane
+  UNDERWATER_MOVES = [:DIVE]
   MAGNET_REMOVAL = swamp + [:GRAVITY,:POLARITYPULSE]
   RICOCHET_MOVES = [:DAZZLINGGLEAM,:MIRRORSHOT,:MIRRORRUSH,:LIGHTOFRUIN,:MAKEITRAIN,:FLASH,:FLASHCANNON,:AURORABEAM,:MOONBLAST,:STARBEAM,
     :PHOTONGEYSER,:ICEBEAM,:LUSTERPURGE,:MISTBALL,:SNIPESHOT,:BUBBLEBEAM,:PSYBEAM,:AURASPHERE,:CHARGEBEAM,:THUNDERBOLT]
@@ -101,6 +102,11 @@ GameData::FieldEffects.register({
 GameData::FieldEffects.register({
   :id   => :Garden,
   :name => _INTL("Garden")
+})
+
+GameData::FieldEffects.register({
+  :id   => :Graveyard,
+  :name => _INTL("Graveyard")
 })
 
 GameData::FieldEffects.register({
@@ -545,6 +551,8 @@ class PokemonTemp
     else
       battle.defaultField = battleRules["defaultField"]
     end
+    battle.defaultField = :Water if $PokemonGlobal.surfing
+    battle.defaultField = :Water if [:OldRod,:GoodRod,:SuperRod].include?($PokemonTemp.encounterType)
     # Environment
     if battleRules["environment"].nil?
       battle.environment = pbGetEnvironment
@@ -653,9 +661,7 @@ class PokeBattle_Battle
   end
   def pbStartBattleCore
     # Set up the battlers on each side
-    if $game_switches[899] && $game_switches[900]
-      pbHegemonyClauses
-    end
+    pbHegemonyClauses
     sendOuts = pbSetUpSides
     olditems = []
     pbParty(0).each_with_index do |pkmn,i|
@@ -663,6 +669,7 @@ class PokeBattle_Battle
       olditems.push(item)
     end
     $olditems = olditems
+    $PokemonTemp.battleRules["defaultField"] = :Water if $PokemonGlobal.surfing
     @field.field_effects = $PokemonTemp.battleRules["defaultField"]
     @field.defaultField = $PokemonTemp.battleRules["defaultField"]
     $field_effect_bg = nil
@@ -1126,7 +1133,7 @@ class PokeBattle_Battle
         battler.pbRecoverHP(battler.totalhp / 16)
         pbDisplay(_INTL("{1}'s HP was restored.", battler.pbThis))
       end
-      if battler.affectedByHurricane? && battler.takesIndirectDamage? && $hurricane > 0
+      if battler.affectedByHurricane? && battler.takesIndirectDamage? && @field.effects[PBEffects::Hurricane] > 0
         PBDebug.log("[Lingering effect] Hurricane hurts #{battler.pbThis(true)}")
         battler.pbReduceHP(battler.totalhp / 16)
         pbDisplay(_INTL("{1}'s was thrown about by the hurricane.", battler.pbThis))
@@ -1140,6 +1147,12 @@ class PokeBattle_Battle
         PBDebug.log("[Lingering effect] Underwater Field hurts #{battler.pbThis(true)}")
         battler.pbReduceHP(battler.totalhp / 8)
         pbDisplay(_INTL("{1}'s was scorched.", battler.pbThis))
+      end
+    when :Graveyard
+      if battler.affectedByGraveyard? && battler.takesIndirectDamage? && @field.effects[PBEffects::Hurricane] > 0
+        PBDebug.log("[Lingering effect] Hurricane hurts #{battler.pbThis(true)}")
+        battler.pbReduceHP(battler.totalhp / 16)
+        pbDisplay(_INTL("{1}'s was thrown about by the hurricane.", battler.pbThis))
       end
     end
     #add damage done at the end of the field by field effects
@@ -1173,6 +1186,9 @@ class PokeBattle_Battler
   end
   def affectedByHurricane?
     return !pbHasType?(:WATER)
+  end
+  def affectedByGraveyard?
+    return !pbHasType?(:GHOST)
   end
   def affectedByUnderwater?
     return pbHasType?(:FIRE)
@@ -1350,7 +1366,7 @@ class PokeBattle_Move
       #New Field Effect Modifier Method
   	if fe[:type_type_mod].keys != nil
   		for type_mod in fe[:type_type_mod].keys
-  			if ret == GameData::Type.const_get(type_mod.to_sym)
+  			if ret == type_mod
   				ret = GameData::Type.get(fe[:type_type_mod][type_mod]).id
   				for message in fe[:type_change_message].keys
   					if fe[:type_change_message][message].include?(type_mod)
@@ -1716,20 +1732,20 @@ class PokeBattle_Move
        for dmg in fe[:move_damage_boost].keys
          if @battle.field.field_effects != :None
           if fe[:move_damage_boost][dmg].is_a?(Array)
-            if fe[:move_damage_boost][dmg].include?(self.id)
+            if fe[:move_damage_boost][dmg].any? {|d| d.include?(self.id)}
               multipliers[:final_damage_multiplier] *= dmg 
-              mesg = true if j == type
+              mesg = true
             end
-          elsif type == getConst(PBTypes,fe[:move_damage_boost][dmg])
+          elsif self.id == fe[:move_damage_boost][dmg]
             multipliers[:final_damage_multiplier] *= dmg
             mesg = true
           end
           if mesg == true
             for mess in fe[:move_messages].keys
               if fe[:move_messages][mess].is_a?(Array)
-                msg2 = mess if fe[:move_messages][mess].include?(self.id)
+                msg2 = mess if fe[:move_messages][mess].any? {|m| m.include?(self.id)}
               else
-                msg2 = mess if GameData::Type.get(fe[:move_messages][mess]).id == type
+                msg2 = mess if GameData::Move.get(fe[:move_messages][mess]).id == self.id
               end
             end
             @battle.pbDisplay(_INTL("#{msg2}")) if $test_trigger == false
@@ -1772,6 +1788,9 @@ class PokeBattle_Move
           when "hurricane"
             @battle.pbDisplay(_INTL("The attack whipped up a hurricane!")) if $test_trigger == false
             @battle.field.effects[PBEffects::Hurricane] = 3
+          when "spirits"
+            @battle.pbDisplay(_INTL("The attack stirred up restless spirits!")) if $test_trigger == false
+            @battle.field.effects[PBEffects::Spirits] = 3
           end
         end
       end
@@ -1830,18 +1849,20 @@ class PokeBattle_Move
   				eff = Effectiveness.calculate_one(key,defType)
   				ret *= eff.to_f / Effectiveness::NORMAL_EFFECTIVE_ONE
   				for mess in fe[:type_mod_message].keys
-  					pbDisplay(_INTL("#{mess}")) if fe[:type_mod_message][mess] == moveType
+  					@battle.pbDisplay(_INTL("#{mess}")) if fe[:type_mod_message][mess] == moveType
   				end
   			end
   		end
   	end
   	if fe[:move_type_mod] != nil
   		for mv in fe[:move_type_mod].keys
-  			if fe[:move_type_mod][mv].include?(self.id)
+  			if fe[:move_type_mod][mv].any? {|md| md.include?(self.id)}
   				eff = Effectiveness.calculate_one(mv,defType)
   				ret *= eff.to_f / Effectiveness::NORMAL_EFFECTIVE_ONE
   				for msg in fe[:move_messages].keys
-  					pbDisplay(_INTL("#{msg}")) if fe[:move_messages][msg].include?(self.id)
+            for mo in fe[:move_damage_boost].keys
+  					 @battle.pbDisplay(_INTL("#{msg}")) if fe[:move_messages][msg].any? {|m| m.include?(self.id)} && !fe[:move_damage_boost][mo].any? {|mm| mm.include?(self.id)}
+            end
   				end
   			end
   		end

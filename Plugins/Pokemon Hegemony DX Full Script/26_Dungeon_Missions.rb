@@ -323,17 +323,17 @@ class Dungeon_Missions
 
 
   def valid_locations
-    loc = [81,85,321,328,352]
+    loc = [78,79,81,85,142,321,328,352,125,173,450,100,102,108,117,140,120,460,141,146,139,148,320]
     return loc
   end
 
   def location_names
-    loc = [80,83,317,311,351]
+    loc = [32,77,80,83,88,317,311,351,91,97,98,99,101,107,113,128,120,130,129,133,139,136,310]
     return loc
   end
 
   def reward_locations
-    loc = [382,404,388,394,378]
+    loc = [446,440,382,404,437,388,394,378,443,449,453,456,386,428,431,434,459,463,466,469,472,475,478]
     return loc
   end
 
@@ -421,11 +421,13 @@ class Dungeon_Missions
       Game.level_cap_update
       pbMessage(_INTL("\\me[Key item get]You now have access to 2-star Dungeons!"))
       pbMessage(_INTL("Don't let your work slip or you might lose your access to higher-star Dungeons!"))
+      $dx_orb.add_max_points(1)
     elsif $game_system.reputation >= 120 && $game_system.reputation < 150 && level_cap_increment == 2
       Game.level_cap_update
       if $game_system.reputation >= 135
         pbMessage(_INTL("\\me[Key item get]You now have access to 3-star Dungeons!"))
         pbMessage(_INTL("Don't let your work slip or you might lose your access to higher-star Dungeons!"))
+        $dx_orb.add_max_points(1)
       end
     elsif $game_system.reputation >= 150 && $game_system.reputation < 180 && level_cap_increment == 3
       Game.level_cap_update
@@ -433,11 +435,13 @@ class Dungeon_Missions
       Game.level_cap_update
       pbMessage(_INTL("\\me[Key item get]You now have access to 4-star Dungeons!"))
       pbMessage(_INTL("Don't let your work slip or you might lose your access to higher-star Dungeons!"))
+      $dx_orb.add_max_points(1)
     elsif $game_system.reputation >= 210 && $game_system.reputation < 240 && level_cap_increment == 5
       Game.level_cap_update
       if $game_system.reputation >= 225
         pbMessage(_INTL("\\me[Key item get]You now have access to 5-star Dungeons!"))
         pbMessage(_INTL("Don't let your work slip or you might lose your access to higher-star Dungeons!"))
+        $dx_orb.add_max_points(1)
       end
     elsif $game_system.reputation >= 240 && $game_system.reputation < 270 && level_cap_increment == 6
       Game.level_cap_update
@@ -458,13 +462,29 @@ class Dungeon_Missions
       break if i == location
       loc += 1
     end
-    if ((@locations.nil? || @name[loc] == nil) && !@mission_data.has_key?(location)) || mission_complete?(@mission_data[location][:id])
+    no_location_data = ((@locations.nil? ||@name[loc] == nil) && !@mission_data.has_key?(location))
+    no_missions = (@mission_data == 0 || @mission_data == {} || @mission_data == nil)
+    if !no_missions
+      mission_complete = mission_complete?(@mission_data[location][:id])
+    else
+      mission_complete = false
+    end
+    if no_location_data && no_missions && !mission_complete
+      text = "Dungeon Closed"
+      $game_switches[DungeonMissions::Mon_Switch] = false
+      $game_switches[DungeonMissions::Item_Switch] = false
+    elsif mission_complete
       text = "Dungeon Closed"
       $game_switches[DungeonMissions::Mon_Switch] = false
       $game_switches[DungeonMissions::Item_Switch] = false
     else
-      name = @mission_data[location][:name].nil? ? @name[loc] : @mission_data[location][:name]
-      star = @mission_data[location][:stars].nil? ? @stars[loc] : @mission_data[location][:stars]
+      if no_missions
+        name = @name[loc]
+        star = @stars[loc]
+      else
+        name = @mission_data[location][:name].nil? ? @name[loc] : @mission_data[location][:name]
+        star = @mission_data[location][:stars].nil? ? @stars[loc] : @mission_data[location][:stars]
+      end
       stars = "Stars: #{star}"
       text = "#{name}\n#{stars}"
       case name
@@ -485,17 +505,19 @@ class Dungeon_Missions
         break if i == location
         loc += 1
       end
-    return true if @name[loc] == ("Dungeon of Support" || "Dungeon of Learning")
+    return true if @name[loc] == "Dungeon of Support"
+    return true if @name[loc] == "Dungeon of Learning"
     return false
   end
 
   def reward_is_pokemon?(location)
     loc = 0
     for i in @locations
-        break if i == location
-        loc += 1
-      end
-    return true if @name[loc] == ("Dungeon of Life" || "Dungeon of Experiments")
+      break if i == location
+      loc += 1
+    end
+    return true if @name[loc] == "Dungeon of Life"
+    return true if @name[loc] == "Dungeon of Experiments"
     return false
   end
 
@@ -604,8 +626,8 @@ class Dungeon_Missions
 
   def entrance(location)
     if $game_switches[68]
-      $game_switches[926] = reward_is_pokemon?($game_map.map_id)
-      $game_switches[927] = reward_is_item?($game_map.map_id)
+      $game_switches[DungeonMissions::Mon_Switch] = reward_is_pokemon?($game_map.map_id)
+      $game_switches[DungeonMissions::Item_Switch] = reward_is_item?($game_map.map_id)
       $game_variables[74] = star(location)
       $game_switches[932] = false
       $game_variables[DungeonMissions::Floor] = star_floor(location)
@@ -632,6 +654,7 @@ class Dungeon_Missions
         "Wolfram City"]
       for i in 0...leaders.length
         leaders.delete_at(i) if @gym_leaders_defeated.include?(leaders[i])
+        leader_location.delete_at(i) if @gym_leaders_defeated.include?(leaders[i])
       end
       num = rand(leaders.length)
       leader = leaders[num]
@@ -658,6 +681,9 @@ class Dungeon_Missions
 
   def gym_leader_dialogue(leader,location)
     text = []
+    key = @gym_leader_data.keys
+    loc = key.is_a?(Array) ? key[0] : key
+    location = location.is_a?(Integer) ? @gym_leader_data[loc][:gym_location] : location
     case leader
     when :DOJO_Wendy
       text.push("\\[463f0000]Ah, don't mind me. I was just exploring down here.")
@@ -714,27 +740,37 @@ class Dungeon_Missions
     $game_self_switches[[$game_map.map_id,3,"A"]] = false if $game_map.map_id != location
     $game_self_switches[[$game_map.map_id,8,"A"]] = false if $game_map.map_id != location
     loc = 0
-    for loc in reward_locations
-      break if loc == location
+    for l in reward_locations
+      break if l == location
       loc += 1
     end
     $game_variables[74] = 3
     $game_variables[DungeonMissions::Floor] = 0
     $game_variables[DungeonMissions::Floor_Target] = 0
+    $game_variables[DungeonMissions::Target_Location] = 0
     $game_variables[1] = 0
-    if @mission_data[pbGet(222)][:complete] == false
-      lose_reputation(@mission_data[pbGet(222)][:stars])
-      @mission_data.each_key do |key|
-        next if @mission_data[key][:id] == @mission_data[pbGet(222)][:id]
-        temp[key] = @mission_data[key]
+    no_missions = (@mission_data == 0 || @mission_data == {} || @mission_data == nil)
+    if !no_missions
+      if @mission_data[pbGet(222)][:complete] == false
+        lose_reputation(@mission_data[pbGet(222)][:stars])
+        @mission_data.each_key do |key|
+          next if @mission_data[key][:id] == @mission_data[pbGet(222)][:id]
+          temp[key] = @mission_data[key]
+        end
+        @mission_data = temp
       end
-      @mission_data = temp
     end
+    @locations[loc] = nil
     @name[loc] = nil
+    @dungeon_reward[loc] = nil
+    @stars[loc] = nil
     $game_switches[928] = false
+    $game_switches[932] = false
+    $game_variables[29] = 0
+    $gym_notif = false
   end
 
-  def correct_floor?(value=0)
+  def correct_floor?(value=pbGet(29))
     if $game_variables[DungeonMissions::Floor_Target] == value
       $game_switches[928] = true
       pbWait(8)
@@ -743,13 +779,34 @@ class Dungeon_Missions
     else
       $game_switches[928] = false
     end
-    if $game_variables[2] == value
+    if (@gym_leader_data != [] || @gym_leader_data != nil || @gym_leader_data != 0) && !$gym_notif
+      key = @gym_leader_data.keys
+      location = key.is_a?(Array) ? key[0] : key
+      if $game_variables[DungeonMissions::Target_Location] == location
+        pbWait(8)
+        pbMessage(_INTL("A Gym Leader has been located in this Dungeon!"))
+        pbMessage(_INTL("Keep your eyes open! They could be on any floor!"))
+      end
+      $gym_notif = true
+    else
+      key = -1
+    end
+    location = key.is_a?(Array) ? key[0] : key
+    if $game_variables[2] == value && $gym_notif
       $game_switches[932] = true
       refresh_gym_leader_sprite
     else
       $game_switches[932] = false
     end
     $game_map.refresh
+  end
+
+  def more_floors?(value=pbGet(218))
+    if !$game_switches[68]
+      return $game_variables[29] < 3
+    else
+      return value > pbGet(29)
+    end
   end
 end
 

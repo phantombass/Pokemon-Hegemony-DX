@@ -888,6 +888,8 @@ ItemHandlers::UseFromBag.add(:ESCAPEROPE,proc { |item|
   if ($PokemonGlobal.escapePoint rescue false) && $PokemonGlobal.escapePoint.length>0
     $game_switches[926] = false
     $game_switches[927] = false
+    $game_switches[928] = false
+    $dungeon.close($game_variables[DungeonMissions::Target_Location])
     $game_system.save_disabled = false
     next 2   # End screen and consume item
   end
@@ -917,6 +919,8 @@ ItemHandlers::UseInField.add(:ESCAPEROPE,proc { |item|
     $game_map.refresh
     $game_switches[926] = false
     $game_switches[927] = false
+    $game_switches[928] = false
+    $dungeon.close($game_variables[DungeonMissions::Target_Location])
     $game_system.save_disabled = false
   }
   pbEraseEscapePoint

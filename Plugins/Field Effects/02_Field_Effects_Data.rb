@@ -358,7 +358,7 @@ FIELD_EFFECTS = {
 				:LIQUIDVOICE => [[:SPECIAL_ATTACK,1]]
 			},
 			:move_damage_boost => {
-			1.3 => [Fields::ECHO_MOVES]
+				1.0 => [Fields::ECHO_MOVES]
 			},
 			:move_messages => {"The cave echoed loudly!" => [Fields::ECHO_MOVES]},
 			:move_type_change => {},
@@ -565,7 +565,7 @@ FIELD_EFFECTS = {
 			},
 			:move_messages => {
 				"The chilling winds kicked up!" => [Fields::WIND_MOVES],
-				"The rocks picked up ice!" => [:ROCKSLIDE],
+				"The rocks picked up ice!" => [[:ROCKSLIDE]],
 				"AVALANCHE!" => [Fields::ECHO_MOVES]
 			},
 			:move_type_change => {},
@@ -760,9 +760,11 @@ FIELD_EFFECTS = {
 			:abilities => [:SWIFTSWIM,:STORMDRAIN,:WATERCOMPACTION,:STEAMENGINE,:WATERABSORB,:DRYSKIN],
 			:ability_effects => {},
 			:move_damage_boost => {
-				1.2 => [Fields::HURRICANE_MOVES]
+				1.2 => [Fields::WIND_MOVES]
 			},
-			:move_messages => {},
+			:move_messages => {
+				"The wind rushed over the water!" => [Fields::WIND_MOVES]
+			},
 			:move_type_change => {},
 			:move_type_mod => {},
 			:move_accuracy_change => {},
@@ -781,9 +783,9 @@ FIELD_EFFECTS = {
 			:type_type_change => {},
 			:type_change_message => {},
 			:type_accuracy_change => {},
-			:side_effects => {"hurricane" => Fields::WIND_MOVES},
-			:field_changers => {:Underwater => [:DIVE]},
-			:change_message => {"The battle moved underwater!" => [:DIVE]},
+			:side_effects => {"hurricane" => Fields::HURRICANE_MOVES},
+			:field_changers => {:Underwater => [Fields::UNDERWATER_MOVES]},
+			:change_message => {"The battle moved underwater!" => [Fields::UNDERWATER_MOVES]},
 			:field_change_conditions => {} 
 		},
 		:Underwater => {
@@ -798,10 +800,10 @@ FIELD_EFFECTS = {
 			:move_damage_boost => {
 				1.5 => [Fields::PULSE_MOVES],
 				1.2 => [Fields::SOUND_MOVES],
-				0.8 => [Fields::PUNCHING_MOVES,Fields::KICKING_MOVES]
+				0.8 => [Fields::PUNCHING_MOVES,Fields::KICKING_MOVES,Fields::WIND_MOVES]
 			},
 			:move_messages => {
-				"The water slowed the attack!" => [Fields::PUNCHING_MOVES,Fields::KICKING_MOVES],
+				"The water slowed the attack!" => [Fields::PUNCHING_MOVES,Fields::KICKING_MOVES,Fields::WIND_MOVES],
 				"The sound reverberated strongly through the water!" => [Fields::SOUND_MOVES],
 				"Underwater pressure gave a massive boost!" => [Fields::PULSE_MOVES]
 			},
@@ -1048,9 +1050,9 @@ FIELD_EFFECTS = {
 			:intro_script => nil,
 			:abilities => [:VOLTABSORB,:LIGHTNINGROD,:MOTORDRIVE,:QUARKDRIVE,:SURGESURFER,:DOWNLOAD],
 			:ability_effects => {},
-			:move_damage_boost => {1.3 => [:SPAMRAID]},
+			:move_damage_boost => {1.3 => [[:SPAMRAID]]},
 			:move_messages => {
-				"ERROR: VIRUS DETECTED" => [:SPAMRAID]
+				"ERROR: VIRUS DETECTED" => [[:SPAMRAID]]
 			},
 			:move_type_change => {},
 			:move_type_mod => {},
@@ -1317,6 +1319,51 @@ FIELD_EFFECTS = {
 			:type_change_message => {},
 			:type_accuracy_change => {},
 			:side_effects => {},
+			:field_changers => {},
+			:change_message => {},
+			:field_change_conditions => {} 
+		},
+		:Graveyard => {
+			:field_name => "Graveyard",
+			:intro_message => "The headstones are watching...",
+			:field_gfx => "graveyard",
+			:nature_power => :SHADOWBALL,
+			:mimicry => :GHST,
+			:intro_script => nil,
+			:abilities => [:CURSEDBODY,:PERISHBODY,:HAUNTED,:SHADOWGUARD,:SHADOWTAG],
+			:ability_effects => {
+				:CURSEDBODY => [[:DEFENSE,1]],
+				:PERISHBODY => [[:DEFENSE,1],[:SPECIAL_DEFENSE,1]],
+				:HAUNTED => [[:SPECIAL_ATTACK,1]],
+				:SHADOWGUARD => [[:SPECIAL_DEFENSE,1]],
+				:SHADOWTAG => [[:DEFENSE,1],[:SPECIAL_DEFENSE,1]]
+			},
+			:move_damage_boost => {},
+			:move_messages => {
+				"The wind is haunting!" => [Fields::WIND_MOVES]
+			},
+			:move_type_change => {},
+			:move_type_mod => {
+				:GHOST => [Fields::WIND_MOVES]
+			},
+			:move_accuracy_change => {},
+			:defensive_modifiers => {
+				2 => [:GHOST,"fullhp"]
+			},
+			:type_damage_change => {
+				1.2 => [:GHOST,:DARK,:GROUND],
+				0.8 => [:PSYCHIC,:FAIRY,:FIGHTING]
+			},
+			:type_messages => {
+				"The graveyard boosted the attack!" => [:GHOST,:DARK,:GROUND],
+				"The crippling fear weakens the attack!" => [:PSYCHIC,:FAIRY,:FIGHTING]
+			},
+			:type_type_mod => {},
+			:type_mod_message => {},
+			:type_type_change => {},
+			:type_change_message => {},
+			:type_accuracy_change => {},
+			:side_effects => {"spirits" => [Fields::QUAKE_MOVES]},
 			:field_changers => {},
 			:change_message => {},
 			:field_change_conditions => {} 
