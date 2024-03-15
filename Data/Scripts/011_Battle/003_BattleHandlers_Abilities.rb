@@ -34,13 +34,13 @@ BattleHandlers::SpeedCalcAbility.add(:SLOWSTART,
 
 BattleHandlers::SpeedCalcAbility.add(:SLUSHRUSH,
   proc { |ability,battler,mult|
-    next mult * 2 if ([:Hail].include?(battler.battle.pbWeather) || [:SnowyMountainside,:Icy].include?(battler.activeField))
+    next mult * 2 if ([:Hail].include?(battler.battle.pbWeather) || [:SnowyMountainside,:Icy].include?(battler.battle.field.field_effects))
   }
 )
 
 BattleHandlers::SpeedCalcAbility.add(:SURGESURFER,
   proc { |ability,battler,mult|
-    next mult*2 if battler.battle.field.terrain == :Electric
+    next mult*2 if [:Electric,:Magnetic,:Digital].include?(battler.battle.field.field_effects) && battler.battle.pbWeather != :Storm
     next mult*2 if battler.battle.pbWeather == :Storm
   }
 )
@@ -48,6 +48,7 @@ BattleHandlers::SpeedCalcAbility.add(:SURGESURFER,
 BattleHandlers::SpeedCalcAbility.add(:SWIFTSWIM,
   proc { |ability,battler,mult|
     next mult * 2 if [:Rain, :HeavyRain, :Storm].include?(battler.battle.pbWeather) && !battler.hasUtilityUmbrella?
+    next mult * 2 if ![:Rain, :HeavyRain, :Storm].include?(battler.battle.pbWeather) && [:Water,:Underwater].include?(battler.battle.field.field_effects)
   }
 )
 
@@ -1350,6 +1351,7 @@ BattleHandlers::DamageCalcTargetAllyAbility.add(:FRIENDGUARD,
 BattleHandlers::CriticalCalcUserAbility.add(:MERCILESS,
   proc { |ability,user,target,c|
     next 99 if target.poisoned?
+    next 99 if user.activeField == :Swamp
   }
 )
 

@@ -917,6 +917,8 @@ module Compiler
     compile_dungeon_tilesets(*text_files[:DungeonTileset][1])
     yield(_INTL("Compiling dungeon parameters"))
     compile_dungeon_parameters(*text_files[:DungeonParameters][1])
+    yield(_INTL("Compiling Pokémon metrics"))
+    compile_pokemon_metrics
     yield(_INTL("Converting events"))
     compile_trainer_events(mustCompile)
     yield(_INTL("Saving messages"))
@@ -935,6 +937,8 @@ module Compiler
     begin
       dataFiles = [
          "berry_plants.dat",
+         "dungeon_parameters.dat",
+         "dungeon_tilesets.dat",
          "encounters.dat",
          "form2species.dat",
          "items.dat",
@@ -961,6 +965,8 @@ module Compiler
          "abilities.txt",
          "berryplants.txt",
          "connections.txt",
+         "dungeon_parameters.txt",
+         "dungeon_tilesets.txt",
          "encounters.txt",
          "items.txt",
          "metadata.txt",
@@ -968,6 +974,7 @@ module Compiler
          "phone.txt",
          "pokemon.txt",
          "pokemonforms.txt",
+         "pokemon_metrics.txt",
          "regionaldexes.txt",
          "ribbons.txt",
          "shadowmoves.txt",

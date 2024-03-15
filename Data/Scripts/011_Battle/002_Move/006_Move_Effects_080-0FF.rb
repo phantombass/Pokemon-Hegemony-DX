@@ -2608,6 +2608,9 @@ class PokeBattle_Move_0D8 < PokeBattle_HealingMove
     if @battle.field.field_effects == :Space && @type == :FAIRY
       @healAmount = (user.totalhp*2/3)
     end
+    if @battle.field.field_effects == :FairyLights && @type != :FAIRY
+      @healAmount = (user.totalhp*2/3)
+    end
   end
 
   def pbHealAmount(user)

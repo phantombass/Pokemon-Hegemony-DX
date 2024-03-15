@@ -2693,7 +2693,7 @@ end
 #===============================================================================
 class PokeBattle_Move_07B < PokeBattle_Move
   def pbBaseDamage(baseDmg,user,target)
-    if target.poisoned? &&
+    if (target.poisoned? || user.activeField == :Swamp) &&
        (target.effects[PBEffects::Substitute]==0 || ignoresSubstitute?(user))
       baseDmg *= 2
     end
