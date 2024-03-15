@@ -89,7 +89,7 @@ module GameData
       return pbGetMessage(MessageTypes::ItemDescriptions, @id_number)
     end
 
-    def is_TM?;              return @field_use == 3; end
+    def is_TM?;              return @field_use == 6; end
     def is_HM?;              return @field_use == 4; end
     def is_TR?;              return @field_use == 6; end
     def is_machine?;         return is_TM? || is_HM? || is_TR?; end

@@ -800,6 +800,66 @@ module Compiler
     Graphics.update
   end
 
+   #=============================================================================
+  # Compile Pokémon metrics data
+  #=============================================================================
+  def compile_pokemon_metrics(path = "PBS/pokemon_metrics.txt")
+    return if !safeExists?(path)
+    compile_pbs_file_message_start(path)
+    schema = GameData::SpeciesMetrics::SCHEMA
+    # Read from PBS file
+    File.open(path, "rb") { |f|
+      FileLineData.file = path   # For error reporting
+      # Read a whole section's lines at once, then run through this code.
+      # contents is a hash containing all the XXX=YYY lines in that section, where
+      # the keys are the XXX and the values are the YYY (as unprocessed strings).
+      idx = 0
+      pbEachFileSection(f) { |contents, section_name|
+        echo "." if idx % 50 == 0
+        idx += 1
+        Graphics.update if idx % 250 == 0
+        FileLineData.setSection(section_name, "header", nil)   # For error reporting
+        # Split section_name into a species number and form number
+        split_section_name = section_name.split(/[-,\s]/)
+        if split_section_name.length == 0 || split_section_name.length > 2
+          raise _INTL("Section name {1} is invalid ({2}). Expected syntax like [XXX] or [XXX,Y] (XXX=species ID, Y=form number).", section_name, path)
+        end
+        species_symbol = csvEnumField!(split_section_name[0], :Species, nil, nil)
+        form           = (split_section_name[1]) ? csvPosInt!(split_section_name[1]) : 0
+        # Go through schema hash of compilable data and compile this section
+        schema.each_key do |key|
+          # Skip empty properties (none are required)
+          if nil_or_empty?(contents[key])
+            contents[key] = nil
+            next
+          end
+          FileLineData.setSection(section_name, key, contents[key])   # For error reporting
+          # Compile value for key
+          value = pbGetCsvRecord(contents[key], key, schema[key])
+          value = nil if value.is_a?(Array) && value.length == 0
+          contents[key] = value
+        end
+        # Construct species hash
+        form_symbol = (form > 0) ? sprintf("%s_%d", species_symbol.to_s, form).to_sym : species_symbol
+        species_hash = {
+          :id                    => form_symbol,
+          :species               => species_symbol,
+          :form                  => form,
+          :back_sprite           => contents["BackSprite"],
+          :front_sprite          => contents["FrontSprite"],
+          :front_sprite_altitude => contents["FrontSpriteAltitude"],
+          :shadow_x              => contents["ShadowX"],
+          :shadow_size           => contents["ShadowSize"]
+        }
+        # Add form's data to records
+        GameData::SpeciesMetrics.register(species_hash)
+      }
+    }
+    # Save all data
+    GameData::SpeciesMetrics.save
+    process_pbs_file_message_end
+  end
+
   #=============================================================================
   # Compile TM/TM/Move Tutor compatibilities
   #=============================================================================

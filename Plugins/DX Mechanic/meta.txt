@@ -1,4 +1,0 @@
-Name         = Pokemon Hegemony DX Mechanic
-Version      = 1.0
-Website      = https://reliccastle.com/members/7217/
-Credits      = Phantombass

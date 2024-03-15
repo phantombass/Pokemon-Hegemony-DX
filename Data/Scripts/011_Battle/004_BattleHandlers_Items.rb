@@ -1563,7 +1563,7 @@ BattleHandlers::EOREffectItem.add(:TOXICORB,
 
 BattleHandlers::EOREffectItem.add(:ROOMSERVICE,
   proc { |item,battler,battle|
-    next if battle.field.effects[PBEffects::TrickRoom] == 0
+    next if battle.field.effects[PBEffects::TrickRoom] == 0 && battle.field.field_effects != :Dream
     next if !battler.pbCanLowerStatStage?(:SPEED,battler)
     battle.pbCommonAnimation("UseItem",battler)
     itemName = battler.itemName

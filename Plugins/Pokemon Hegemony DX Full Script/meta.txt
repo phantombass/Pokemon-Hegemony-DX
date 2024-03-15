@@ -1,6 +1,0 @@
-Name         = Pokemon Hegemony Full Script
-Version      = 1.0
-Website      = https://reliccastle.com/members/7217/
-Requires     = Luka's Scripting Utilities,3.2
-Requires	 = Modular Field Effects
-Credits      = Phantombass: the majority of the scripts within,Marin: Common Tiles backbone,IndianAnimator and eriedaberrie#1569: PLA Evolution Script,Boonzeet: Terrain Tag Stairs,Voltseon: Voltseons Handy Tools,Boonzeet: Item Find,suzerain: backbone for DexNav,NuriYuri and the developers of SimpleEncounterUI,joltik: backbone for Level Balance,#NotImportant: backbone for Better AI
