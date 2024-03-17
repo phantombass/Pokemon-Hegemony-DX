@@ -288,12 +288,13 @@ if !defined?(EliteBattle)
     class Species
       def self.front_sprite_bitmap(species, form = 0, gender = 0, shiny = false, shadow = false)
         filename = self.front_sprite_filename(species, form, gender, shiny, shadow)
-        return (filename) ? EBDXBitmapWrapper.new(filename) : nil
+        p (1/@front_sprite_scale)
+        return (filename) ? EBDXBitmapWrapper.new(filename,@front_sprite_scale) : nil
       end
 
       def self.back_sprite_bitmap(species, form = 0, gender = 0, shiny = false, shadow = false)
         filename = self.back_sprite_filename(species, form, gender, shiny, shadow)
-        return (filename) ? EBDXBitmapWrapper.new(filename,Settings::BACK_BATTLER_SPRITE_SCALE) : nil
+        return (filename) ? EBDXBitmapWrapper.new(filename,@back_sprite_scale) : nil
       end
 
       def self.egg_sprite_bitmap(species, form = 0)
