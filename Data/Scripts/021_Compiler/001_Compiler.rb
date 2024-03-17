@@ -889,6 +889,8 @@ module Compiler
     compile_items                  # Depends on Move
     yield(_INTL("Compiling berry plant data"))
     compile_berry_plants           # Depends on Item
+    yield(_INTL("Compiling Pokémon metrics"))
+    compile_pokemon_metrics
     yield(_INTL("Compiling Pokémon data"))
     compile_pokemon                # Depends on Move, Item, Type, Ability
     yield(_INTL("Compiling Pokémon forms data"))
@@ -917,8 +919,6 @@ module Compiler
     compile_dungeon_tilesets(*text_files[:DungeonTileset][1])
     yield(_INTL("Compiling dungeon parameters"))
     compile_dungeon_parameters(*text_files[:DungeonParameters][1])
-    yield(_INTL("Compiling Pokémon metrics"))
-    compile_pokemon_metrics
     yield(_INTL("Converting events"))
     compile_trainer_events(mustCompile)
     yield(_INTL("Saving messages"))

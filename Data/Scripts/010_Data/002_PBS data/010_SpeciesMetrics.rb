@@ -8,16 +8,21 @@ module GameData
     attr_accessor :front_sprite_altitude
     attr_accessor :shadow_x
     attr_accessor :shadow_size
+    attr_accessor :front_sprite_scale
+    attr_accessor :back_sprite_scale
 
     DATA = {}
     DATA_FILENAME = "species_metrics.dat"
+    PBS_BASE_FILENAME = "pokemon_metrics"
 
     SCHEMA = {
       "BackSprite"          => [0, "ii"],
       "FrontSprite"         => [0, "ii"],
       "FrontSpriteAltitude" => [0, "i"],
       "ShadowX"             => [0, "i"],
-      "ShadowSize"          => [0, "u"]
+      "ShadowSize"          => [0, "u"],
+      "FrontSpriteScale"  => [0, "i"],
+      "BackSpriteScale"   => [0, "i"],
     }
 
     extend ClassMethodsSymbols
@@ -44,7 +49,9 @@ module GameData
             :front_sprite          => DATA[species].front_sprite.clone,
             :front_sprite_altitude => DATA[species].front_sprite_altitude,
             :shadow_x              => DATA[species].shadow_x,
-            :shadow_size           => DATA[species].shadow_size
+            :shadow_size           => DATA[species].shadow_size,
+            :front_sprite_scale    => DATA[species].front_sprite_scale,
+            :back_sprite_scale     => DATA[species].back_sprite_scale
           })
         end
         return DATA[trial]
@@ -62,6 +69,8 @@ module GameData
       @front_sprite_altitude = hash[:front_sprite_altitude] || 0
       @shadow_x              = hash[:shadow_x]              || 0
       @shadow_size           = hash[:shadow_size]           || 2
+      @front_sprite_scale = hash[:front_sprite_scale] || Settings::FRONT_BATTLER_SPRITE_SCALE
+      @back_sprite_scale  = hash[:back_sprite_scale]  || Settings::BACK_BATTLER_SPRITE_SCALE
     end
 
     def apply_metrics_to_sprite(sprite, index, shadow = false)

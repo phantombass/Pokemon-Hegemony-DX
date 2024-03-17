@@ -557,7 +557,9 @@ module Compiler
           :front_sprite_y        => contents["BattlerEnemyY"],
           :front_sprite_altitude => contents["BattlerAltitude"],
           :shadow_x              => contents["BattlerShadowX"],
-          :shadow_size           => contents["BattlerShadowSize"]
+          :shadow_size           => contents["BattlerShadowSize"],
+          :front_sprite_scale    => contents["FrontSpriteScale"],
+          :back_sprite_scale     => contents["BackSpriteScale"],
         }
         # Add species' data to records
         GameData::Species.register(species_hash)
@@ -565,6 +567,20 @@ module Compiler
         species_form_names[species_number]      = species_hash[:form_name]
         species_categories[species_number]      = species_hash[:category]
         species_pokedex_entries[species_number] = species_hash[:pokedex_entry]
+        if contents["BattlerPlayerX"] || contents["BattlerPlayerY"] ||
+           contents["BattlerEnemyX"] || contents["BattlerEnemyY"] ||
+           contents["BattlerAltitude"] || contents["BattlerShadowX"] ||
+           contents["BattlerShadowSize"]
+          metrics_hash = {
+            :id                    => contents["InternalName"].to_sym,
+            :back_sprite           => [contents["BattlerPlayerX"] || 0, contents["BattlerPlayerY"] || 0],
+            :front_sprite          => [contents["BattlerEnemyX"] || 0, contents["BattlerEnemyY"] || 0],
+            :front_sprite_altitude => contents["BattlerAltitude"] || 0,
+            :shadow_x              => contents["BattlerShadowX"] || 0,
+            :shadow_size           => contents["BattlerShadowSize"] || 2
+          }
+          GameData::SpeciesMetrics.register(metrics_hash)
+        end
       }
     }
     # Enumerate all evolution species and parameters (this couldn't be done earlier)
@@ -760,7 +776,9 @@ module Compiler
           :front_sprite_y        => contents["BattlerEnemyY"] || base_data.front_sprite_y,
           :front_sprite_altitude => contents["BattlerAltitude"] || base_data.front_sprite_altitude,
           :shadow_x              => contents["BattlerShadowX"] || base_data.shadow_x,
-          :shadow_size           => contents["BattlerShadowSize"] || base_data.shadow_size
+          :shadow_size           => contents["BattlerShadowSize"] || base_data.shadow_size,
+          :front_sprite_scale    => contents["FrontSpriteScale"],
+          :back_sprite_scale     => contents["BackSpriteScale"],
         }
         # If form is single-typed, ensure it remains so if base species is dual-typed
         species_hash[:type2] = contents["Type1"] if contents["Type1"] && !contents["Type2"]
@@ -776,6 +794,30 @@ module Compiler
         species_form_names[form_number]      = species_hash[:form_name]
         species_categories[form_number]      = species_hash[:category]
         species_pokedex_entries[form_number] = species_hash[:pokedex_entry]
+        if contents["BattlerPlayerX"] || contents["BattlerPlayerY"] ||
+           contents["BattlerEnemyX"] || contents["BattlerEnemyY"] ||
+           contents["BattlerAltitude"] || contents["BattlerShadowX"] ||
+           contents["BattlerShadowSize"]
+          base_metrics = GameData::SpeciesMetrics.get_species_form(species_symbol, 0)
+          back_x      = contents["BattlerPlayerX"] || base_metrics.back_sprite[0]
+          back_y      = contents["BattlerPlayerY"] || base_metrics.back_sprite[1]
+          front_x     = contents["BattlerEnemyX"] || base_metrics.front_sprite[0]
+          front_y     = contents["BattlerEnemyY"] || base_metrics.front_sprite[1]
+          altitude    = contents["BattlerAltitude"] || base_metrics.front_sprite_altitude
+          shadow_x    = contents["BattlerShadowX"] || base_metrics.shadow_x
+          shadow_size = contents["BattlerShadowSize"] || base_metrics.shadow_size
+          metrics_hash = {
+            :id                    => form_symbol,
+            :species               => species_symbol,
+            :form                  => form,
+            :back_sprite           => [back_x, back_y],
+            :front_sprite          => [front_x, front_y],
+            :front_sprite_altitude => altitude,
+            :shadow_x              => shadow_x,
+            :shadow_size           => shadow_size
+          }
+          GameData::SpeciesMetrics.register(metrics_hash)
+        end
       }
     }
     # Add prevolution "evolution" entry for all evolved forms that define their
@@ -827,7 +869,7 @@ module Compiler
         species_symbol = csvEnumField!(split_section_name[0], :Species, nil, nil)
         form           = (split_section_name[1]) ? csvPosInt!(split_section_name[1]) : 0
         # Go through schema hash of compilable data and compile this section
-        schema.each_key do |key|
+        schema.keys.each do |key|
           # Skip empty properties (none are required)
           if nil_or_empty?(contents[key])
             contents[key] = nil
@@ -849,7 +891,9 @@ module Compiler
           :front_sprite          => contents["FrontSprite"],
           :front_sprite_altitude => contents["FrontSpriteAltitude"],
           :shadow_x              => contents["ShadowX"],
-          :shadow_size           => contents["ShadowSize"]
+          :shadow_size           => contents["ShadowSize"],
+          :front_sprite_scale    => contents["FrontSpriteScale"],
+          :back_sprite_scale     => contents["BackSpriteScale"],
         }
         # Add form's data to records
         GameData::SpeciesMetrics.register(species_hash)
