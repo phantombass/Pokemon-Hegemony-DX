@@ -63,19 +63,21 @@ module GameData
       return self.front_sprite_filename(species, form, gender, shiny, shadow)
     end
 
-    def self.front_sprite_bitmap(species, form = 0, gender = 0, shiny = false, shadow = false)
+     def self.front_sprite_bitmap(species, form = 0, gender = 0, shiny = false, shadow = false)
       filename = self.front_sprite_filename(species, form, gender, shiny, shadow)
-      return (filename) ? AnimatedBitmap.new(filename) : nil
+      scale = self.get(species).front_sprite_scale
+      return (filename) ? EBDXBitmapWrapper.new(filename,scale) : nil
     end
 
     def self.back_sprite_bitmap(species, form = 0, gender = 0, shiny = false, shadow = false)
       filename = self.back_sprite_filename(species, form, gender, shiny, shadow)
-      return (filename) ? AnimatedBitmap.new(filename) : nil
+      scale = self.get(species).back_sprite_scale
+      return (filename) ? EBDXBitmapWrapper.new(filename,scale) : nil
     end
 
     def self.egg_sprite_bitmap(species, form = 0)
       filename = self.egg_sprite_filename(species, form)
-      return (filename) ? AnimatedBitmap.new(filename) : nil
+      return (filename) ? EBDXBitmapWrapper.new(filename) : nil
     end
 
     def self.sprite_bitmap(species, form = 0, gender = 0, shiny = false, shadow = false, back = false, egg = false)
@@ -93,13 +95,14 @@ module GameData
       else
         ret = self.front_sprite_bitmap(species, pkmn.form, pkmn.gender, pkmn.shiny?, pkmn.shadowPokemon?)
       end
-      alter_bitmap_function = MultipleForms.getFunction(species, "alterBitmap")
-      if ret && alter_bitmap_function
-        new_ret = ret.copy
-        ret.dispose
-        new_ret.each { |bitmap| alter_bitmap_function.call(pkmn, bitmap) }
-        ret = new_ret
+      alter_bitmap_function = nil
+      alter_bitmap_function = MultipleForms.getFunction(species, "alterBitmap") if ret && ret.totalFrames == 1
+      return ret if !alter_bitmap_function
+      ret.prepare_strip
+      for i in 0...ret.totalFrames
+        alter_bitmap_function.call(pkmn, ret.alter_bitmap(i))
       end
+      ret.compile_strip
       return ret
     end
 

@@ -49,6 +49,8 @@ module GameData
     attr_accessor :front_sprite_altitude
     attr_accessor :shadow_x
     attr_accessor :shadow_size
+    attr_accessor :front_sprite_scale
+    attr_accessor :back_sprite_scale
     DATA = {}
     DATA_FILENAME = "species.dat"
     PBS_BASE_FILENAME = ["pokemon","pokemon_forms"]
