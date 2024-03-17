@@ -49,7 +49,6 @@ module GameData
     attr_accessor :front_sprite_altitude
     attr_accessor :shadow_x
     attr_accessor :shadow_size
-
     DATA = {}
     DATA_FILENAME = "species.dat"
     PBS_BASE_FILENAME = ["pokemon","pokemon_forms"]
@@ -109,7 +108,9 @@ module GameData
         "BattlerEnemyY"     => [0, "i"],
         "BattlerAltitude"   => [0, "i"],
         "BattlerShadowX"    => [0, "i"],
-        "BattlerShadowSize" => [0, "u"]
+        "BattlerShadowSize" => [0, "u"],
+        "FrontSpriteScale"  => [0, "i"],
+        "BackSpriteScale"   => [0, "i"],
       }
       if compiling_forms
         ret["PokedexForm"]  = [0, "u"]
@@ -132,6 +133,7 @@ module GameData
     end
 
     def initialize(hash)
+      metrics_data = GameData::SpeciesMetrics::DATA
       @id                    = hash[:id]
       @id_number             = hash[:id_number]             || -1
       @species               = hash[:species]               || @id
@@ -185,6 +187,8 @@ module GameData
       @front_sprite_altitude = hash[:front_sprite_altitude] || 0
       @shadow_x              = hash[:shadow_x]              || 0
       @shadow_size           = hash[:shadow_size]           || 2
+      @front_sprite_scale    = hash[:front_sprite_scale] || Settings::FRONT_BATTLER_SPRITE_SCALE
+      @back_sprite_scale     = hash[:back_sprite_scale]  || Settings::BACK_BATTLER_SPRITE_SCALE
     end
 
     # @return [String] the translated name of this species

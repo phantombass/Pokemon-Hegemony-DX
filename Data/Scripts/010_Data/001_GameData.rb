@@ -242,6 +242,7 @@ module GameData
     Trainer.load
     Metadata.load
     MapMetadata.load
+    SpeciesMetrics.load
     DungeonTileset.load
     DungeonParameters.load
   end

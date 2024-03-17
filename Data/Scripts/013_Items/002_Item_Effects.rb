@@ -34,7 +34,7 @@ ItemHandlers::UseFromBag.add(:ESCAPEROPE,proc { |item|
   next 0
 })
 
-ItemHandlers::UseFromBag.copy(:ESCAPEROPE,:INFINITEROPE)
+#ItemHandlers::UseFromBag.copy(:ESCAPEROPE,:INFINITEROPE)
 
 ItemHandlers::UseFromBag.add(:BICYCLE,proc { |item|
   next (pbBikeCheck) ? 2 : 0
@@ -171,9 +171,14 @@ ItemHandlers::UseInField.add(:ESCAPEROPE,proc { |item|
   end
   pbUseItemMessage(item)
   pbFadeOutIn {
+    $game_switches[926] = false
+    $game_switches[927] = false
+    $game_switches[928] = false
+    $dungeon.close($game_variables[DungeonMissions::Target_Location])
+    $game_system.save_disabled = false
     $game_temp.player_new_map_id    = escape[0]
     $game_temp.player_new_x         = escape[1]
-    $game_temp.player_new_y         = escape[2]
+    $game_temp.player_new_y         = escape[2] + 1
     $game_temp.player_new_direction = escape[3]
     pbCancelVehicles
     $scene.transfer_player
@@ -184,7 +189,7 @@ ItemHandlers::UseInField.add(:ESCAPEROPE,proc { |item|
   next 3
 })
 
-ItemHandlers::UseInField.copy(:ESCAPEROPE,:INFINITEROPE)
+#ItemHandlers::UseInField.copy(:ESCAPEROPE,:INFINITEROPE)
 
 ItemHandlers::UseInField.add(:SACREDASH,proc { |item|
   if $Trainer.pokemon_count == 0
