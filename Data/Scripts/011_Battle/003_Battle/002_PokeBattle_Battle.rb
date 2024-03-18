@@ -159,10 +159,7 @@ class PokeBattle_Battle
        [-1] * (@player ? @player.length : 1),
        [-1] * (@opponent ? @opponent.length : 1)
     ]
-    @dx_temp_stat      = [
-       [1] * (@player ? @player.length : 1),
-       [1] * (@opponent ? @opponent.length : 1)
-    ]
+    @dx_temp_stat      = [[1],[1],[1],[1]]
     @initialItems      = [
        Array.new(@party1.length) { |i| (@party1[i]) ? @party1[i].item_id : nil },
        Array.new(@party2.length) { |i| (@party2[i]) ? @party2[i].item_id : nil }
