@@ -2508,7 +2508,7 @@ BattleHandlers::AbilityOnSwitchIn.add(:FOREWARN,
           battler.pbThis, forewarnMoveName))
       end
       stat = $cat == 0 ? :DEFENSE : :SPECIAL_DEFENSE
-      battler.pbRaiseStatStage(stat, 1, battler, true) if user.pbCanRaiseStatStage?(stat, battler, self)
+      battler.pbRaiseStatStage(stat, 1, battler, true) if battler.pbCanRaiseStatStage?(stat, battler, self)
       battle.pbHideAbilitySplash(battler)
     end
   }

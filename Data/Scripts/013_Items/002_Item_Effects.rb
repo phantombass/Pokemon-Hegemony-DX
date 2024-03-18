@@ -174,11 +174,10 @@ ItemHandlers::UseInField.add(:ESCAPEROPE,proc { |item|
     $game_switches[926] = false
     $game_switches[927] = false
     $game_switches[928] = false
-    $dungeon.close($game_variables[DungeonMissions::Target_Location])
     $game_system.save_disabled = false
     $game_temp.player_new_map_id    = escape[0]
     $game_temp.player_new_x         = escape[1]
-    $game_temp.player_new_y         = escape[2] + 1
+    $game_temp.player_new_y         = escape[2]
     $game_temp.player_new_direction = escape[3]
     pbCancelVehicles
     $scene.transfer_player
