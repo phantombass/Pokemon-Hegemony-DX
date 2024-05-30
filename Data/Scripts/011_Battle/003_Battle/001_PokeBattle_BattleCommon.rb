@@ -4,6 +4,7 @@ module PokeBattle_BattleCommon
   #=============================================================================
   def pbStorePokemon(pkmn)
     # Nickname the Pokémon (unless it's a Shadow Pokémon)
+    register_starter(pkmn.species)
     if $game_switches[916]
       pkmn = egglocke_generator
     else

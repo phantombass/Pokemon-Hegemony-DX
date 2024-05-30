@@ -495,10 +495,7 @@ def pbBattleConfusionBerry(battler,battle,item,forced,flavor,confuseMsg)
   return false if !forced && !battler.canConsumePinchBerry?(Settings::MECHANICS_GENERATION >= 7)
   itemName = GameData::Item.get(item).name
   battle.pbCommonAnimation("EatBerry",battler) if !forced
-  fraction_to_heal = 8   # Gens 6 and lower
-  if Settings::MECHANICS_GENERATION == 7;    fraction_to_heal = 2
-  elsif Settings::MECHANICS_GENERATION >= 8; fraction_to_heal = 3
-  end
+  fraction_to_heal = 2
   fraction_to_heal /= 2 if battler.hasActiveAbility?(:RIPEN)
   amt = battler.pbRecoverHP(battler.totalhp / fraction_to_heal)
   if amt>0
