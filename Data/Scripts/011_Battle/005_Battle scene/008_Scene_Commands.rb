@@ -131,7 +131,7 @@ class PokeBattle_Scene
         $spam_block_flags[:yawn].push(chosen_move) if !@battle.doublebattle
         $spam_block_flags[:protect_switch].push(chosen_move) if chosen_move.is_a?(PokeBattle_ProtectMove) && !@battle.doublebattle
         $spam_block_flags[:choice] = battler.moves[cw.index]
-        $spam_block_flags[:triple_switch].clear
+        $spam_block_flags[:triple_switch] = []
         break if yield cw.index
         needFullRefresh = true
         needRefresh = true
