@@ -275,7 +275,7 @@ def pbPickBerry(berry, qty = 1)
   thisEvent=interp.get_character(0)
   berryData=interp.getVariable
   berry=GameData::Item.get(berry)
-  case berry
+  case berry.id
   when :CUSTAPBERRY,:ENIGMABERRY,:IAPAPABERRY,:WIKIBERRY,:FIGYBERRY,:AGUAVBERRY,:MAGOBERRY,:JABOCABERRY,:ROWAPBERRY
     qty = rand(3) + 1
   when :ORANBERRY,:CHERIBERRY,:RAWSTBERRY,:PERSIMBERRY,:PECHABERRY,:ASPEARBERRY,:CHESTOBERRY
