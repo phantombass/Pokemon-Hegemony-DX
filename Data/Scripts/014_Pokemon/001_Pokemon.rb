@@ -692,7 +692,7 @@ class Pokemon
   # Returns the list of moves this Pokémon can learn by levelling up.
   # @return [Array<Array<Integer,Symbol>>] this Pokémon's move list, where every element is [level, move ID]
   def getMoveList
-    return !Randomizer.movesets.nil? ? getRandMoves(self.species) : species_data.moves
+    return Restrictions.active? ? getRestrictedMoves(self.species) : species_data.moves
   end
 
   # Sets this Pokémon's movelist to the default movelist it originally had.
