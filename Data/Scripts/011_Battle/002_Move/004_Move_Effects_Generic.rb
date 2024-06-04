@@ -238,7 +238,7 @@ class PokeBattle_StatUpMove < PokeBattle_Move
 
   def pbEffectGeneral(user)
     return if damagingMove?
-    return if Restrictions.active? && user..pbOwnedByPlayer?
+    return if Restrictions.active? && user.pbOwnedByPlayer?
     dojo_moves = [:MEDITATE]
     dojo = true if dojo_moves.include?(@id) && @battle.field.field_effects == :Dojo
     mod = (dojo_moves.include?(@id) && @battle.field.field_effects == :Dojo) ? 2 : 1
