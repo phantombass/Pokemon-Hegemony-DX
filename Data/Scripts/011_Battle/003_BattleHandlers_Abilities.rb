@@ -2437,7 +2437,7 @@ BattleHandlers::AbilityOnSwitchIn.add(:DOWNLOAD,
       oSpDef += b.spdef
     end
     stat = (oDef<oSpDef) ? :ATTACK : :SPECIAL_ATTACK
-    num = battler.hasActiveItem?(:UPGRADE) ? 2 : 1
+    num = battler.item == :UPGRADE ? 2 : 1
     battler.pbRaiseStatStageByAbility(stat,num,battler)
   }
 )
