@@ -279,9 +279,9 @@ def pbPickBerry(berry, qty = 1)
   when :CUSTAPBERRY,:ENIGMABERRY,:IAPAPABERRY,:WIKIBERRY,:FIGYBERRY,:AGUAVBERRY,:MAGOBERRY,:JABOCABERRY,:ROWAPBERRY
     qty = rand(3) + 1
   when :ORANBERRY,:CHERIBERRY,:RAWSTBERRY,:PERSIMBERRY,:PECHABERRY,:ASPEARBERRY,:CHESTOBERRY
-    qty = rand(61) + 10
+    qty = rand(11) + 10
   else
-    qty = rand(21) + 10
+    qty = rand(6) + 10
   end
   itemname=(qty>1) ? berry.name_plural : berry.name
   if qty>1
