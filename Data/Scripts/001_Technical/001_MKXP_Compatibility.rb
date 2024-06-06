@@ -53,7 +53,7 @@ if System::VERSION != Essentials::MKXPZ_VERSION
                  System::VERSION, Essentials::MKXPZ_VERSION))
   printf("\e[1;33mWARNING: Pokémon Essentials may not work properly.\e[0m\r\n")
 end
-
+$MOBILE = true #sets variable for Mobile version
 module Essentials
   GEN_8_VERSION = "1.1.0"
 end
