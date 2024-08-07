@@ -71,6 +71,9 @@ module GameData
       @field_use        = hash[:field_use]   || 0
       @battle_use       = hash[:battle_use]  || 0
       @type             = hash[:type]        || 0
+      if @type == 12
+        @pocket = 7
+      end
       @move             = hash[:move]
     end
 
