@@ -196,8 +196,8 @@ module Settings
       _INTL("Poké Balls"),
       _INTL("TMs & HMs"),
       _INTL("Berries"),
-      _INTL("Mail"),
-      _INTL("Battle Items"),
+      _INTL("Ability Orbs"),
+      _INTL("Mega Stones"),
       _INTL("Key Items")
     ]
   end
