@@ -296,6 +296,7 @@ class PokeBattle_Battler
       if abilityActive?
         if BattleHandlers.triggerStatLossImmunityAbility(self.ability,self,:ATTACK,@battle,false) ||
            BattleHandlers.triggerStatLossImmunityAbilityNonIgnorable(self.ability,self,:ATTACK,@battle,false) ||
+           BattleHandlers.triggerStatLossImmunityAbilityNonIgnorableSandy(@ability,self,:SPECIAL_ATTACK,@battle,false)
            hasActiveAbility?(:INNERFOCUS) || hasActiveAbility?(:OWNTEMPO) ||
            hasActiveAbility?(:OBLIVIOUS) || hasActiveAbility?(:SCRAPPY)
           @battle.pbShowAbilitySplash(self) if PokeBattle_SceneConstants::USE_ABILITY_SPLASH
