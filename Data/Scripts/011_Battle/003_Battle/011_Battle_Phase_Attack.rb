@@ -127,6 +127,7 @@ class PokeBattle_Battle
       end
       @dx_temp_stat[b.idxOwnSide][owner] = -1
     end
+    pbCalculatePriority if Settings::RECALCULATE_TURN_ORDER_AFTER_SPEED_CHANGES
   end
 
   def pbAttackPhaseMoves
