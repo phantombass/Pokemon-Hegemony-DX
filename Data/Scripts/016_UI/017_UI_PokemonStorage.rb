@@ -1534,7 +1534,7 @@ class PokemonStorageScreen
             commands[cmdWithdraw=commands.length] = (selected[0]==-1) ? _INTL("Store") : _INTL("Withdraw")
             commands[cmdItem=commands.length]     = _INTL("Item")
             commands[cmdMark=commands.length]     = _INTL("Mark")
-            commands[cmdRelease=commands.length]  = _INTL("Release")
+            commands[cmdRelease=commands.length]  = _INTL("Release") if $DEBUG
             commands[cmdDebug=commands.length]    = _INTL("Debug") if $DEBUG
             commands[cmdCancel=commands.length]   = _INTL("Cancel")
             command=pbShowCommands(helptext,commands)
@@ -1589,14 +1589,14 @@ class PokemonStorageScreen
              _INTL("Withdraw"),
              _INTL("Summary"),
              _INTL("Mark"),
-             _INTL("Release"),
+             #_INTL("Release"),
              _INTL("Cancel")
           ])
           case command
           when 0 then pbWithdraw(selected, nil)
           when 1 then pbSummary(selected, nil)
           when 2 then pbMark(selected, nil)
-          when 3 then pbRelease(selected, nil)
+          #when 3 then pbRelease(selected, nil)
           end
         end
       end
@@ -1621,14 +1621,14 @@ class PokemonStorageScreen
              _INTL("Store"),
              _INTL("Summary"),
              _INTL("Mark"),
-             _INTL("Release"),
+             #_INTL("Release"),
              _INTL("Cancel")
           ])
           case command
           when 0 then pbStore([-1, selected], nil)
           when 1 then pbSummary([-1, selected], nil)
           when 2 then pbMark([-1, selected], nil)
-          when 3 then pbRelease([-1, selected], nil)
+          #when 3 then pbRelease([-1, selected], nil)
           end
         end
       end
